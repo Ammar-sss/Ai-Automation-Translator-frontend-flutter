@@ -1,0 +1,31 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'login_response.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+LoginResponse _$LoginResponseFromJson(Map<String, dynamic> json) =>
+    LoginResponse(
+      token: json['token'] as String?,
+      refreshToken: json['refreshToken'] as String?,
+      expiresIn: (json['expiresIn'] as num?)?.toInt(),
+      refreshExpiresIn: (json['refreshExpiresIn'] as num?)?.toInt(),
+      user: json['user'] == null
+          ? null
+          : User.fromJson(json['user'] as Map<String, dynamic>),
+      roles: (json['roles'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
+    );
+
+Map<String, dynamic> _$LoginResponseToJson(LoginResponse instance) =>
+    <String, dynamic>{
+      'token': instance.token,
+      'refreshToken': instance.refreshToken,
+      'expiresIn': instance.expiresIn,
+      'refreshExpiresIn': instance.refreshExpiresIn,
+      'user': instance.user,
+      'roles': instance.roles,
+    };

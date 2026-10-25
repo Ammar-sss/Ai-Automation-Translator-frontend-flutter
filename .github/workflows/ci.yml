@@ -1,0 +1,32 @@
+name: CI
+
+# When should this run?
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    # This name is what you will pick later in the branch protection settings
+    name: Analyze and test
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Download your code
+      - uses: actions/checkout@v4
+
+      # 2. Install Flutter
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      # 3. Install your app's packages
+      - run: flutter pub get
+
+      # 4. Look for code problems
+      - run: flutter analyze
+
+      # 5. Run your tests
+      - run: flutter test
