@@ -1,5 +1,3 @@
-import 'dart:io' show Platform;
-
 class Env {
   Env._();
 
@@ -9,12 +7,9 @@ class Env {
     if (_definedBaseUrl.isNotEmpty) {
       return _definedBaseUrl;
     }
-    if (Platform.isAndroid) {
-      return 'http://192.168.1.7:8080'; // Android emulator -> host loopback
-    }
-    return 'http://localhost:8080';
+    return 'https://ai-automation-translater-backend.onrender.com';
   }
 
-  static const Duration connectTimeout = Duration(seconds: 10);
-  static const Duration receiveTimeout = Duration(seconds: 15);
+  static const Duration connectTimeout = Duration(seconds: 60);
+  static const Duration receiveTimeout = Duration(seconds: 65);
 }

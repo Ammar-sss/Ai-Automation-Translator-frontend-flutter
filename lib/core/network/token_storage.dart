@@ -7,6 +7,7 @@ class TokenStorage {
     : _storage = storage ?? const FlutterSecureStorage();
 
   final FlutterSecureStorage _storage;
+  static const _keyOnboardingSeen = 'has_seen_onboarding';
 
   Future<void> saveTokens({
     required String accessToken,
@@ -50,6 +51,15 @@ class TokenStorage {
   Future<List<String>> readRoles() async {
     final raw = await _storage.read(key: AppConstants.keyRoles);
     return (raw == null || raw.isEmpty) ? [] : raw.split(',');
+  }
+
+  Future<bool> hasSeenOnboarding() async {
+    final val = await _storage.read(key: _keyOnboardingSeen);
+    return val == 'true';
+  }
+
+  Future<void> setOnboardingSeen() async {
+    await _storage.write(key: _keyOnboardingSeen, value: 'true');
   }
 
   Future<void> clear() async {

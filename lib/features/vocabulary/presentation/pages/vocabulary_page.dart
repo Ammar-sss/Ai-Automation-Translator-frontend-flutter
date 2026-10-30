@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_translator/features/vocabulary/presentation/controllers/vocabulary_cubit.dart';
 
-import '../../data/repositories/vocabulary_repository.dart';
+import '../../domain/repositories/vocabulary_repository.dart';
 
 class VocabularyPage extends StatelessWidget {
   const VocabularyPage({super.key});

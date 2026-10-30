@@ -27,3 +27,8 @@ final class AuthLogoutRequested extends AuthEvent {
 final class AuthSessionRestoredRequested extends AuthEvent {
   const AuthSessionRestoredRequested();
 }
+
+/// Triggered when the refresh token expires or is rejected (HTTP 401).
+final class AuthSessionExpiredRequested extends AuthEvent {
+  const AuthSessionExpiredRequested();
+}

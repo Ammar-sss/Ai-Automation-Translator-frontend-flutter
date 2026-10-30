@@ -2,7 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/errors/api_exception.dart';
 import '../../../translation/data/models/ai_response.dart';
 import '../../data/models/term.dart';
-import '../../data/repositories/vocabulary_repository.dart';
+import '../../domain/repositories/vocabulary_repository.dart';
 
 part 'vocabulary_state.dart';
 
