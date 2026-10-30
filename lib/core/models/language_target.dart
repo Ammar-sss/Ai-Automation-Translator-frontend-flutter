@@ -1,17 +1,33 @@
+import 'package:json_annotation/json_annotation.dart';
+
 enum LanguageTarget {
-  ar('AR'),
-  en('EN'),
-  es('ES'),
-  fr('FR');
+  @JsonValue("ARABIC")
+  arabic,
 
-  const LanguageTarget(this.code);
+  @JsonValue("ENGLISH")
+  english,
 
-  final String code;
+  @JsonValue("FRENCH")
+  french,
 
-  static LanguageTarget fromCode(String? code) {
-    return values.firstWhere(
-      (e) => e.code == code,
-      orElse: () => LanguageTarget.en,
-    );
-  }
+  @JsonValue("GERMANY")
+  germany,
+
+  @JsonValue("ITALIAN")
+  italy,
+
+  @JsonValue("SPANISH")
+  spanish,
+
+  @JsonValue("RUSSIAN")
+  russian,
+
+  @JsonValue("KURDISH_SORANI")
+  kurdishSorani,
+
+  @JsonValue("KURDISH_KURMANJI")
+  kurdishKurmanji,
+
+  @JsonValue("DUTCH")
+  dutch,
 }

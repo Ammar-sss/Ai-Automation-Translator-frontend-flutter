@@ -1,11 +1,12 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_translator/core/models/user.dart';
-import 'package:smart_translator/features/user/data/repositories/user_repository.dart';
+import 'package:smart_translator/features/user/domain/repositories/user_repository.dart';
 
 import '../../../../core/errors/api_exception.dart';
 import '../../../../core/network/token_storage.dart';
-import '../../data/repositories/auth_repository.dart';
+import '../../domain/repositories/auth_repository.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';
@@ -20,6 +21,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthRegisterRequested>(_onRegisterRequested);
     on<AuthLogoutRequested>(_onLogoutRequested);
     on<AuthSessionRestoredRequested>(_onSessionRestoredRequested);
+    on<AuthSessionExpiredRequested>(_onSessionExpiredRequested);
   }
 
   final AuthRepository _authRepository;
@@ -54,6 +56,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
     } on ApiException catch (e) {
       emit(AuthFailure(e.message));
+    } catch (_) {
+      emit(const AuthFailure('An unexpected error occurred. Please try again.'));
     }
   }
 
@@ -72,6 +76,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthRegistered(user));
     } on ApiException catch (e) {
       emit(AuthFailure(e.message));
+    } catch (_) {
+      emit(const AuthFailure('Registration failed. Please try again.'));
     }
   }
 
@@ -85,10 +91,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (refreshToken != null && refreshToken.isNotEmpty) {
         await _authRepository.logout(refreshToken);
       }
-    } on ApiException {
+    } catch (_) {
       // Ignore network errors on logout — clear storage locally anyway
     } finally {
-      await _tokenStorage.clear();
+      try {
+        await _tokenStorage.clear();
+      } catch (_) {}
       emit(const AuthUnauthenticated());
     }
   }
@@ -97,27 +105,43 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthSessionRestoredRequested event,
     Emitter<AuthState> emit,
   ) async {
-    final token = await _tokenStorage.readAccessToken();
-    if (token == null || token.isEmpty) {
-      emit(const AuthUnauthenticated());
-      return;
-    }
-
     try {
+      final token = await _tokenStorage.readAccessToken();
+      if (token == null || token.isEmpty) {
+        emit(const AuthUnauthenticated());
+        return;
+      }
+
       final user = await _userRepository.getProfile();
-      emit(
-        AuthAuthenticated(user: user, roles: await _tokenStorage.readRoles()),
-      );
-    } on ApiException {
-      await _tokenStorage.clear();
+      final roles = await _tokenStorage.readRoles();
+      emit(AuthAuthenticated(user: user, roles: roles));
+    } catch (_) {
+      try {
+        await _tokenStorage.clear();
+      } catch (_) {}
       emit(const AuthUnauthenticated());
     }
   }
 
+  Future<void> _onSessionExpiredRequested(
+    AuthSessionExpiredRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    try {
+      await _tokenStorage.clear();
+    } catch (_) {}
+    emit(const AuthUnauthenticated());
+  }
+
+  /// Restores previous user session with a guaranteed safety timeout.
   Future<void> restoreSession() async {
     add(const AuthSessionRestoredRequested());
-    await stream.firstWhere(
-      (state) => state is! AuthInitial && state is! AuthLoading,
-    );
+    try {
+      await stream
+          .firstWhere((state) => state is! AuthInitial && state is! AuthLoading)
+          .timeout(const Duration(seconds: 5));
+    } catch (_) {
+      add(const AuthSessionExpiredRequested());
+    }
   }
 }

@@ -14,4 +14,18 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
   Map<String, dynamic> toJson() => _$UserToJson(this);
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is User &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          username == other.username &&
+          email == other.email &&
+          enabled == other.enabled;
+
+  @override
+  int get hashCode =>
+      id.hashCode ^ username.hashCode ^ email.hashCode ^ enabled.hashCode;
 }

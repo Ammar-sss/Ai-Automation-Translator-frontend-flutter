@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 
 import '../config/api_endpoints.dart';
@@ -9,12 +10,16 @@ import 'token_storage.dart';
 /// Adds the Bearer token to authenticated requests and transparently
 /// refreshes the access token once when a 401 comes back.
 class AuthInterceptor extends Interceptor {
-  AuthInterceptor({required this._tokenStorage, required this._dio})
-    : _refreshDio = Dio(BaseOptions(baseUrl: Env.baseUrl));
+  AuthInterceptor({
+    required this._tokenStorage,
+    required this._dio,
+    this.onSessionExpired,
+  }) : _refreshDio = Dio(BaseOptions(baseUrl: Env.baseUrl));
 
   final TokenStorage _tokenStorage;
   final Dio _dio; // main client — used to retry the failed request
   final Dio _refreshDio; // bare client for the refresh call (no interceptors)
+  final VoidCallback? onSessionExpired;
 
   Future<String?>? _refreshFuture;
 
@@ -54,9 +59,10 @@ class AuthInterceptor extends Interceptor {
           handler.resolve(response);
           return;
         }
-      } on DioException {
-        // refresh failed → fall through and surface the original 401
+      } catch (_) {
+        // refresh failed
       }
+      onSessionExpired?.call();
     }
     handler.next(err);
   }
@@ -90,7 +96,7 @@ class AuthInterceptor extends Interceptor {
         roles: login.roles,
       );
       return login.token;
-    } on DioException {
+    } catch (_) {
       return null;
     }
   }

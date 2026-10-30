@@ -1,32 +1,63 @@
 name: CI
 
-# When should this run?
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
 
+# 🚀 Cancel in-progress runs on the same branch if a new commit is pushed
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  test:
-    # This name is what you will pick later in the branch protection settings
-    name: Analyze and test
+  quality_check:
+    name: Lint, Format & Test
     runs-on: ubuntu-latest
     steps:
-      # 1. Download your code
       - uses: actions/checkout@v4
 
-      # 2. Install Flutter
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
 
-      # 3. Install your app's packages
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 1. Enforce strict code formatting
+      - name: Verify formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      # 2. Static analysis
+      - name: Analyze code
+        run: flutter analyze --fatal-infos
+
+      # 3. Test execution with code coverage
+      - name: Run unit tests
+        run: flutter test --coverage
+
+  build_check:
+    name: Build Android Verification
+    needs: quality_check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+          cache: 'gradle'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
       - run: flutter pub get
 
-      # 4. Look for code problems
-      - run: flutter analyze
-
-      # 5. Run your tests
-      - run: flutter test
+      # 4. Guarantee Android native builds without errors
+      - name: Build Android APK
+        run: flutter build apk --debug
