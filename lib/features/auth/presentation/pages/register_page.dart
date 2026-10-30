@@ -28,8 +28,9 @@ class _RegisterPageState extends State<RegisterPage> {
     if (text.isEmpty) return 0;
     int score = 0;
     if (text.length >= 8) score++;
-    if (RegExp(r'[A-Z]').hasMatch(text) && RegExp(r'[a-z]').hasMatch(text))
+    if (RegExp(r'[A-Z]').hasMatch(text) && RegExp(r'[a-z]').hasMatch(text)) {
       score++;
+    }
     if (RegExp(r'\d').hasMatch(text)) score++;
     if (RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(text)) score++;
     return score;
@@ -421,10 +422,12 @@ class _RegisterPageState extends State<RegisterPage> {
                       TextFormField(
                         controller: _confirmPasswordController,
                         validator: (value) {
-                          if (value == null || value.isEmpty)
+                          if (value == null || value.isEmpty) {
                             return 'Please confirm your password';
-                          if (value != _passwordController.text)
+                          }
+                          if (value != _passwordController.text) {
                             return 'Passwords do not match';
+                          }
                           return null;
                         },
                         obscureText: _obscureConfirmPassword,
