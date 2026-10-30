@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   quality_check:
-    name: Lint, Format & Test
+    name: Analyze and test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
