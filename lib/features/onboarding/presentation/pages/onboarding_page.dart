@@ -21,13 +21,15 @@ class _OnboardingPageState extends State<OnboardingPage> {
     OnboardingSlideData(
       title: 'Translate any word',
       subtitle: 'Instant contextual definitions',
-      description: 'Instant contextual definitions and pronunciation on the fly.',
+      description:
+          'Instant contextual definitions and pronunciation on the fly.',
       illustrationType: OnboardingIllustrationType.translate,
     ),
     OnboardingSlideData(
       title: 'Save & sync your terms',
       subtitle: 'Personal Cloud Library',
-      description: 'Build your personal library and access it across all devices.',
+      description:
+          'Build your personal library and access it across all devices.',
       illustrationType: OnboardingIllustrationType.sync,
     ),
     OnboardingSlideData(
@@ -88,7 +90,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     },
                     icon: Icon(
                       Icons.arrow_back_ios_new_rounded,
-                      color: _currentIndex > 0 ? Colors.white : Colors.transparent,
+                      color: _currentIndex > 0
+                          ? Colors.white
+                          : Colors.transparent,
                       size: 20,
                     ),
                   ),

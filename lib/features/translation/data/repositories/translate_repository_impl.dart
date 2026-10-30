@@ -8,9 +8,7 @@ class TranslateRepositoryImpl implements TranslateRepository {
   const TranslateRepositoryImpl(this._remoteDataSource);
 
   factory TranslateRepositoryImpl.fromDio(Dio dio) {
-    return TranslateRepositoryImpl(
-      TranslateRemoteDataSourceImpl(dio),
-    );
+    return TranslateRepositoryImpl(TranslateRemoteDataSourceImpl(dio));
   }
 
   final TranslateRemoteDataSource _remoteDataSource;

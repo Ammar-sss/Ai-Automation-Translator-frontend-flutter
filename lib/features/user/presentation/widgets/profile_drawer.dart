@@ -98,8 +98,10 @@ class ProfileDrawer extends StatelessWidget {
                               ),
                               child: Row(
                                 children: [
-                                  CircleAvatar(child: Text(user.username!.substring(0, 1))),
-                                  Text("")
+                                  CircleAvatar(
+                                    child: Text(user.username!.substring(0, 1)),
+                                  ),
+                                  Text(""),
                                 ],
                               ),
                             ),

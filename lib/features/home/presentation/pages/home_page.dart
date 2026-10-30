@@ -100,7 +100,9 @@ class _HomePageState extends State<HomePage> {
                 color: const Color(0xFF282935),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: _isOnline ? successGreen.withValues(alpha: 0.5) : offlineOrange.withValues(alpha: 0.5),
+                  color: _isOnline
+                      ? successGreen.withValues(alpha: 0.5)
+                      : offlineOrange.withValues(alpha: 0.5),
                 ),
               ),
               child: Row(
@@ -157,7 +159,10 @@ class _HomePageState extends State<HomePage> {
               // Offline Alert Banner (Only shown in offline mode when not dismissed)
               if (!_isOnline && _showOfflineBanner) ...[
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFF33200A),
                     borderRadius: BorderRadius.circular(12),
@@ -243,16 +248,16 @@ class _HomePageState extends State<HomePage> {
                         if (!_isOnline)
                           const Text(
                             'Offline Mode Active',
-                            style: TextStyle(
-                              color: textMuted,
-                              fontSize: 11,
-                            ),
+                            style: TextStyle(color: textMuted, fontSize: 11),
                           ),
                       ],
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF282935),
                       borderRadius: BorderRadius.circular(12),
@@ -306,7 +311,10 @@ class _HomePageState extends State<HomePage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFF282935),
                             borderRadius: BorderRadius.circular(14),
@@ -322,7 +330,11 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ),
                               const SizedBox(width: 4),
-                              const Icon(Icons.keyboard_arrow_down_rounded, color: textMuted, size: 18),
+                              const Icon(
+                                Icons.keyboard_arrow_down_rounded,
+                                color: textMuted,
+                                size: 18,
+                              ),
                             ],
                           ),
                         ),
@@ -342,7 +354,10 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFF282935),
                             borderRadius: BorderRadius.circular(14),
@@ -358,7 +373,11 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ),
                               const SizedBox(width: 4),
-                              const Icon(Icons.keyboard_arrow_down_rounded, color: textMuted, size: 18),
+                              const Icon(
+                                Icons.keyboard_arrow_down_rounded,
+                                color: textMuted,
+                                size: 18,
+                              ),
                             ],
                           ),
                         ),
@@ -373,8 +392,13 @@ class _HomePageState extends State<HomePage> {
                       onChanged: (_) => setState(() {}),
                       style: const TextStyle(color: Colors.white, fontSize: 16),
                       decoration: InputDecoration(
-                        hintText: _isOnline ? 'Type word or phrase to translate...' : 'Type word or phrase...',
-                        hintStyle: const TextStyle(color: textMuted, fontSize: 15),
+                        hintText: _isOnline
+                            ? 'Type word or phrase to translate...'
+                            : 'Type word or phrase...',
+                        hintStyle: const TextStyle(
+                          color: textMuted,
+                          fontSize: 15,
+                        ),
                         border: InputBorder.none,
                         contentPadding: EdgeInsets.zero,
                       ),
@@ -388,7 +412,11 @@ class _HomePageState extends State<HomePage> {
                         children: [
                           Row(
                             children: const [
-                              Icon(Icons.check_circle_outline_rounded, color: successGreen, size: 14),
+                              Icon(
+                                Icons.check_circle_outline_rounded,
+                                color: successGreen,
+                                size: 14,
+                              ),
                               SizedBox(width: 6),
                               Text(
                                 'Cached dictionary available',
@@ -402,7 +430,10 @@ class _HomePageState extends State<HomePage> {
                           ),
                           Text(
                             '${_inputController.text.length} / 250',
-                            style: const TextStyle(color: textMuted, fontSize: 11),
+                            style: const TextStyle(
+                              color: textMuted,
+                              fontSize: 11,
+                            ),
                           ),
                         ],
                       ),
@@ -416,11 +447,19 @@ class _HomePageState extends State<HomePage> {
                         children: [
                           IconButton(
                             onPressed: () {},
-                            icon: const Icon(Icons.mic_none_rounded, color: Colors.white70, size: 22),
+                            icon: const Icon(
+                              Icons.mic_none_rounded,
+                              color: Colors.white70,
+                              size: 22,
+                            ),
                           ),
                           IconButton(
                             onPressed: () {},
-                            icon: const Icon(Icons.content_paste_rounded, color: Colors.white70, size: 20),
+                            icon: const Icon(
+                              Icons.content_paste_rounded,
+                              color: Colors.white70,
+                              size: 20,
+                            ),
                           ),
                           const Spacer(),
                           // Large Orange Submit Button (→)
@@ -439,16 +478,26 @@ class _HomePageState extends State<HomePage> {
                               ],
                             ),
                             child: IconButton(
-                              icon: const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 24),
+                              icon: const Icon(
+                                Icons.arrow_forward_rounded,
+                                color: Colors.white,
+                                size: 24,
+                              ),
                               onPressed: () {
                                 final text = _inputController.text.trim();
                                 TranslationResultBottomSheet.show(
                                   context,
                                   aiResponse: AiResponse(
-                                    termWord: text.isNotEmpty ? text : 'Serendipity',
-                                    exampleSentence: '"Finding this quaint bookstore in the gentle rain was pure serendipity."',
-                                    termDefinitions: {'The occurrence and development of events by chance in a happy, delightful, or beneficial way.'},
-                                    exampleDefinition: '"Encontrar esta pintoresca librería bajo la suave lluvia fue pura serendipia."',
+                                    termWord: text.isNotEmpty
+                                        ? text
+                                        : 'Serendipity',
+                                    exampleSentence:
+                                        '"Finding this quaint bookstore in the gentle rain was pure serendipity."',
+                                    termDefinitions: {
+                                      'The occurrence and development of events by chance in a happy, delightful, or beneficial way.',
+                                    },
+                                    exampleDefinition:
+                                        '"Encontrar esta pintoresca librería bajo la suave lluvia fue pura serendipia."',
                                   ),
                                 );
                               },
@@ -462,14 +511,22 @@ class _HomePageState extends State<HomePage> {
                         children: [
                           IconButton(
                             onPressed: () {},
-                            icon: const Icon(Icons.content_paste_rounded, color: textMuted, size: 20),
+                            icon: const Icon(
+                              Icons.content_paste_rounded,
+                              color: textMuted,
+                              size: 20,
+                            ),
                           ),
                           IconButton(
                             onPressed: () {
                               _inputController.clear();
                               setState(() {});
                             },
-                            icon: const Icon(Icons.backspace_outlined, color: textMuted, size: 20),
+                            icon: const Icon(
+                              Icons.backspace_outlined,
+                              color: textMuted,
+                              size: 20,
+                            ),
                           ),
                           const Spacer(),
                           SizedBox(
@@ -484,10 +541,16 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ),
                               onPressed: () {},
-                              icon: const Icon(Icons.wifi_off_rounded, size: 16),
+                              icon: const Icon(
+                                Icons.wifi_off_rounded,
+                                size: 16,
+                              ),
                               label: const Text(
                                 'Translate',
-                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
@@ -536,7 +599,10 @@ class _HomePageState extends State<HomePage> {
                   child: ListView(
                     scrollDirection: Axis.horizontal,
                     children: const [
-                      _RecentChip(term: 'Ephemeral', phonetics: '/ɪˈfem.ər.əl/'),
+                      _RecentChip(
+                        term: 'Ephemeral',
+                        phonetics: '/ɪˈfem.ər.əl/',
+                      ),
                       SizedBox(width: 8),
                       _RecentChip(term: 'Ikigai', phonetics: '/i.ki.ɡai/'),
                       SizedBox(width: 8),
@@ -573,7 +639,11 @@ class _HomePageState extends State<HomePage> {
                                     letterSpacing: 0.8,
                                   ),
                                 ),
-                                Icon(Icons.local_fire_department_rounded, color: Color(0xFFFFB020), size: 18),
+                                Icon(
+                                  Icons.local_fire_department_rounded,
+                                  color: Color(0xFFFFB020),
+                                  size: 18,
+                                ),
                               ],
                             ),
                             const SizedBox(height: 12),
@@ -629,7 +699,11 @@ class _HomePageState extends State<HomePage> {
                                     letterSpacing: 0.8,
                                   ),
                                 ),
-                                Icon(Icons.check_circle_rounded, color: successGreen, size: 18),
+                                Icon(
+                                  Icons.check_circle_rounded,
+                                  color: successGreen,
+                                  size: 18,
+                                ),
                               ],
                             ),
                             const SizedBox(height: 12),
@@ -668,7 +742,11 @@ class _HomePageState extends State<HomePage> {
                   children: const [
                     Row(
                       children: [
-                        Icon(Icons.history_rounded, color: Color(0xFFFFB020), size: 18),
+                        Icon(
+                          Icons.history_rounded,
+                          color: Color(0xFFFFB020),
+                          size: 18,
+                        ),
                         SizedBox(width: 6),
                         Text(
                           'Recent Cached',
@@ -759,10 +837,7 @@ class _HomePageState extends State<HomePage> {
                             SizedBox(height: 2),
                             Text(
                               '42 MB • Fully installed',
-                              style: TextStyle(
-                                color: textMuted,
-                                fontSize: 12,
-                              ),
+                              style: TextStyle(color: textMuted, fontSize: 12),
                             ),
                           ],
                         ),
@@ -789,10 +864,7 @@ class _HomePageState extends State<HomePage> {
 }
 
 class _RecentChip extends StatelessWidget {
-  const _RecentChip({
-    required this.term,
-    required this.phonetics,
-  });
+  const _RecentChip({required this.term, required this.phonetics});
 
   final String term;
   final String phonetics;
@@ -820,10 +892,7 @@ class _RecentChip extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             phonetics,
-            style: const TextStyle(
-              color: Color(0xFFAB8981),
-              fontSize: 11,
-            ),
+            style: const TextStyle(color: Color(0xFFAB8981), fontSize: 11),
           ),
         ],
       ),
@@ -871,7 +940,11 @@ class _CachedTermCard extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const Icon(Icons.check_circle_rounded, color: Color(0xFF4AE183), size: 14),
+              const Icon(
+                Icons.check_circle_rounded,
+                color: Color(0xFF4AE183),
+                size: 14,
+              ),
             ],
           ),
           Column(
@@ -891,10 +964,7 @@ class _CachedTermCard extends StatelessWidget {
                 translation,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: textMuted,
-                  fontSize: 11,
-                ),
+                style: const TextStyle(color: textMuted, fontSize: 11),
               ),
             ],
           ),

@@ -52,7 +52,11 @@ class _LoginPageState extends State<LoginPage> {
         backgroundColor: backgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
+            size: 20,
+          ),
           onPressed: () {
             if (Navigator.of(context).canPop()) {
               context.pop();
@@ -63,7 +67,11 @@ class _LoginPageState extends State<LoginPage> {
         ),
         title: const Text(
           'Login',
-          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
       ),
@@ -71,9 +79,7 @@ class _LoginPageState extends State<LoginPage> {
         child: BlocListener<AuthBloc, AuthState>(
           listener: (context, state) {
             if (state is AuthFailure) {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(
+              ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.message),
                   backgroundColor: Colors.red,
@@ -116,7 +122,10 @@ class _LoginPageState extends State<LoginPage> {
 
                   // Live Status Chip
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF1A1B26),
                       borderRadius: BorderRadius.circular(20),
@@ -161,10 +170,7 @@ class _LoginPageState extends State<LoginPage> {
                   const Text(
                     'Log in to sync your terms and practice decks',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Color(0xFFE4BEB5),
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: Color(0xFFE4BEB5), fontSize: 14),
                   ),
                   const SizedBox(height: 32),
 
@@ -196,18 +202,27 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           filled: true,
                           fillColor: containerColor,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: primaryOrange, width: 1.5),
+                            borderSide: const BorderSide(
+                              color: primaryOrange,
+                              width: 1.5,
+                            ),
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+                            borderSide: const BorderSide(
+                              color: Colors.redAccent,
+                              width: 1.5,
+                            ),
                           ),
                         ),
                       ),
@@ -243,7 +258,9 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           suffixIcon: IconButton(
                             icon: Icon(
-                              _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                              _obscurePassword
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
                               color: const Color(0xFFE4BEB5),
                               size: 20,
                             ),
@@ -255,18 +272,27 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           filled: true,
                           fillColor: containerColor,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: primaryOrange, width: 1.5),
+                            borderSide: const BorderSide(
+                              color: primaryOrange,
+                              width: 1.5,
+                            ),
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+                            borderSide: const BorderSide(
+                              color: Colors.redAccent,
+                              width: 1.5,
+                            ),
                           ),
                         ),
                       ),
@@ -346,7 +372,10 @@ class _LoginPageState extends State<LoginPage> {
                     child: RichText(
                       text: const TextSpan(
                         text: 'No account? ',
-                        style: TextStyle(color: Color(0xFFAB8981), fontSize: 14),
+                        style: TextStyle(
+                          color: Color(0xFFAB8981),
+                          fontSize: 14,
+                        ),
                         children: [
                           TextSpan(
                             text: 'Register',

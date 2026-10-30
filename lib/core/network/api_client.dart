@@ -16,7 +16,10 @@ class ApiClient {
 
   final Dio dio;
 
-  static Dio _build(TokenStorage tokenStorage, {VoidCallback? onSessionExpired}) {
+  static Dio _build(
+    TokenStorage tokenStorage, {
+    VoidCallback? onSessionExpired,
+  }) {
     final d = Dio(
       BaseOptions(
         baseUrl: Env.baseUrl,

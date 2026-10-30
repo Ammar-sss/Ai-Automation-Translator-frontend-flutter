@@ -57,7 +57,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } on ApiException catch (e) {
       emit(AuthFailure(e.message));
     } catch (_) {
-      emit(const AuthFailure('An unexpected error occurred. Please try again.'));
+      emit(
+        const AuthFailure('An unexpected error occurred. Please try again.'),
+      );
     }
   }
 

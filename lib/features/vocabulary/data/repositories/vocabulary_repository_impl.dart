@@ -7,10 +7,7 @@ import 'package:smart_translator/features/vocabulary/data/models/term.dart';
 import 'package:smart_translator/features/vocabulary/domain/repositories/vocabulary_repository.dart';
 
 class VocabularyRepositoryImpl implements VocabularyRepository {
-  const VocabularyRepositoryImpl(
-    this._remoteDataSource,
-    this._localDataSource,
-  );
+  const VocabularyRepositoryImpl(this._remoteDataSource, this._localDataSource);
 
   factory VocabularyRepositoryImpl.create(Dio dio, AppDatabase db) {
     return VocabularyRepositoryImpl(

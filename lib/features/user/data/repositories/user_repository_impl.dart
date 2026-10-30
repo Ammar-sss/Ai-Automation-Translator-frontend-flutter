@@ -16,5 +16,6 @@ class UserRepositoryImpl implements UserRepository {
   Future<User> getProfile() => _remoteDataSource.getProfile();
 
   @override
-  Future<User> updateProfile(User user) => _remoteDataSource.updateProfile(user);
+  Future<User> updateProfile(User user) =>
+      _remoteDataSource.updateProfile(user);
 }

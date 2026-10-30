@@ -6,7 +6,7 @@ class RadioWaveDot extends StatefulWidget {
     this.color = const Color(0xFF4AE183),
     this.size = 6.0,
     this.duration = const Duration(milliseconds: 1500), // Speed of 1 wave cycle
-    this.maxScale = 3.2,                                 // How big the wave expands
+    this.maxScale = 3.2, // How big the wave expands
   });
 
   final Color color;
@@ -26,10 +26,8 @@ class _RadioWaveDotState extends State<RadioWaveDot>
   void initState() {
     super.initState();
     // Loops infinitely from 0.0 to 1.0
-    _controller = AnimationController(
-      vsync: this,
-      duration: widget.duration,
-    )..repeat();
+    _controller = AnimationController(vsync: this, duration: widget.duration)
+      ..repeat();
   }
 
   @override
@@ -64,10 +62,7 @@ class _RadioWaveDotState extends State<RadioWaveDot>
                   height: widget.size,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(
-                      color: widget.color,
-                      width: 1.5,
-                    ),
+                    border: Border.all(color: widget.color, width: 1.5),
                   ),
                 ),
               ),

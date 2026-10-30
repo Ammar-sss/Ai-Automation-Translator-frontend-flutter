@@ -373,7 +373,7 @@ class OnboardingSlide extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: const [
-                  RadioWaveDot(color: Color(0xFF4AE183),),
+                  RadioWaveDot(color: Color(0xFF4AE183)),
                   SizedBox(width: 6),
                   Text(
                     'SYNC',

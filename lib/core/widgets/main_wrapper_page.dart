@@ -15,9 +15,9 @@ class _MainWrapperPageState extends State<MainWrapperPage> {
   int _index = 0;
 
   final List<Widget> _pages = const [
-    HomePage(),       // Home is now the Translation page!
+    HomePage(), // Home is now the Translation page!
     VocabularyPage(), // Vocab
-    TranslatePage(),  // Practice / Extra Translate view
+    TranslatePage(), // Practice / Extra Translate view
   ];
 
   @override

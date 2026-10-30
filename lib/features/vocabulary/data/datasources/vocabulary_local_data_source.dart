@@ -55,13 +55,15 @@ class VocabularyLocalDataSourceImpl implements VocabularyLocalDataSource {
 
   @override
   Future<LocalTerm?> getLocalTermById(int id) {
-    return (_db.select(_db.terms)..where((t) => t.id.equals(id))).getSingleOrNull();
+    return (_db.select(
+      _db.terms,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
   }
 
   @override
   Stream<List<LocalTerm>> watchLocalTerms() {
-    return (_db.select(_db.terms)
-          ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
-        .watch();
+    return (_db.select(
+      _db.terms,
+    )..orderBy([(t) => OrderingTerm.desc(t.createdAt)])).watch();
   }
 }

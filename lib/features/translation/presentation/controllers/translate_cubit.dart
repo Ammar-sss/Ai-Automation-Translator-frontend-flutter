@@ -13,12 +13,20 @@ class TranslateCubit extends Cubit<TranslateState> {
 
   final TranslateRepository _translateRepository;
 
-  Future<void> translate(String termWord, LanguageTarget sourceLanguage, LanguageTarget targetLanguage) async {
+  Future<void> translate(
+    String termWord,
+    LanguageTarget sourceLanguage,
+    LanguageTarget targetLanguage,
+  ) async {
     if (termWord.trim().isEmpty) return;
 
     emit(const TranslateLoading());
     try {
-      final result = await _translateRepository.translate(termWord.trim(),sourceLanguage, targetLanguage);
+      final result = await _translateRepository.translate(
+        termWord.trim(),
+        sourceLanguage,
+        targetLanguage,
+      );
       emit(TranslateSuccess(result));
     } on ApiException catch (e) {
       emit(TranslateFailure(e.message));

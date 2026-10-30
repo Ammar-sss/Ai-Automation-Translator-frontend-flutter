@@ -28,10 +28,12 @@ Future<void> main() async {
   );
 
   // Instantiating implementations, typed as abstract domain contracts
-  final AuthRepository authRepository =
-      AuthRepositoryImpl.fromDio(apiClient.dio);
-  final UserRepository userRepository =
-      UserRepositoryImpl.fromDio(apiClient.dio);
+  final AuthRepository authRepository = AuthRepositoryImpl.fromDio(
+    apiClient.dio,
+  );
+  final UserRepository userRepository = UserRepositoryImpl.fromDio(
+    apiClient.dio,
+  );
   final TranslateRepository translateRepository =
       TranslateRepositoryImpl.fromDio(apiClient.dio);
 
@@ -59,8 +61,12 @@ Future<void> main() async {
       providers: [
         RepositoryProvider<AuthRepository>.value(value: authRepository),
         RepositoryProvider<UserRepository>.value(value: userRepository),
-        RepositoryProvider<TranslateRepository>.value(value: translateRepository),
-        RepositoryProvider<VocabularyRepository>.value(value: vocabularyRepository),
+        RepositoryProvider<TranslateRepository>.value(
+          value: translateRepository,
+        ),
+        RepositoryProvider<VocabularyRepository>.value(
+          value: vocabularyRepository,
+        ),
         RepositoryProvider.value(value: tokenStorage),
         RepositoryProvider.value(value: apiClient),
         RepositoryProvider.value(value: appDatabase),

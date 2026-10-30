@@ -19,7 +19,8 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   int get _passwordStrengthScore {
@@ -27,7 +28,8 @@ class _RegisterPageState extends State<RegisterPage> {
     if (text.isEmpty) return 0;
     int score = 0;
     if (text.length >= 8) score++;
-    if (RegExp(r'[A-Z]').hasMatch(text) && RegExp(r'[a-z]').hasMatch(text)) score++;
+    if (RegExp(r'[A-Z]').hasMatch(text) && RegExp(r'[a-z]').hasMatch(text))
+      score++;
     if (RegExp(r'\d').hasMatch(text)) score++;
     if (RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(text)) score++;
     return score;
@@ -84,7 +86,11 @@ class _RegisterPageState extends State<RegisterPage> {
         elevation: 0,
         title: const Text(
           'Register',
-          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
       ),
@@ -155,10 +161,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   const Text(
                     'Start saving and mastering terms today',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Color(0xFFE4BEB5),
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: Color(0xFFE4BEB5), fontSize: 14),
                   ),
                   const SizedBox(height: 28),
 
@@ -189,18 +192,27 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           filled: true,
                           fillColor: containerColor,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: primaryOrange, width: 1.5),
+                            borderSide: const BorderSide(
+                              color: primaryOrange,
+                              width: 1.5,
+                            ),
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+                            borderSide: const BorderSide(
+                              color: Colors.redAccent,
+                              width: 1.5,
+                            ),
                           ),
                         ),
                       ),
@@ -236,18 +248,27 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           filled: true,
                           fillColor: containerColor,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: primaryOrange, width: 1.5),
+                            borderSide: const BorderSide(
+                              color: primaryOrange,
+                              width: 1.5,
+                            ),
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+                            borderSide: const BorderSide(
+                              color: Colors.redAccent,
+                              width: 1.5,
+                            ),
                           ),
                         ),
                       ),
@@ -284,7 +305,9 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           suffixIcon: IconButton(
                             icon: Icon(
-                              _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                              _obscurePassword
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
                               color: const Color(0xFFE4BEB5),
                               size: 20,
                             ),
@@ -296,18 +319,27 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           filled: true,
                           fillColor: containerColor,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: primaryOrange, width: 1.5),
+                            borderSide: const BorderSide(
+                              color: primaryOrange,
+                              width: 1.5,
+                            ),
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+                            borderSide: const BorderSide(
+                              color: Colors.redAccent,
+                              width: 1.5,
+                            ),
                           ),
                         ),
                       ),
@@ -318,10 +350,14 @@ class _RegisterPageState extends State<RegisterPage> {
                           final isActive = index < _passwordStrengthScore;
                           return Expanded(
                             child: Container(
-                              margin: EdgeInsets.only(right: index < 3 ? 4.0 : 0.0),
+                              margin: EdgeInsets.only(
+                                right: index < 3 ? 4.0 : 0.0,
+                              ),
                               height: 4,
                               decoration: BoxDecoration(
-                                color: isActive ? primaryOrange : const Color(0xFF333440),
+                                color: isActive
+                                    ? primaryOrange
+                                    : const Color(0xFF333440),
                                 borderRadius: BorderRadius.circular(2),
                               ),
                             ),
@@ -335,15 +371,21 @@ class _RegisterPageState extends State<RegisterPage> {
                           Row(
                             children: [
                               Icon(
-                                _passwordStrengthScore == 4 ? Icons.verified_rounded : Icons.info_outline_rounded,
-                                color: _passwordStrengthScore > 0 ? primaryOrange : const Color(0xFFAB8981),
+                                _passwordStrengthScore == 4
+                                    ? Icons.verified_rounded
+                                    : Icons.info_outline_rounded,
+                                color: _passwordStrengthScore > 0
+                                    ? primaryOrange
+                                    : const Color(0xFFAB8981),
                                 size: 14,
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 _passwordStrengthLabel,
                                 style: TextStyle(
-                                  color: _passwordStrengthScore > 0 ? primaryOrange : const Color(0xFFAB8981),
+                                  color: _passwordStrengthScore > 0
+                                      ? primaryOrange
+                                      : const Color(0xFFAB8981),
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -352,7 +394,10 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           Text(
                             '$_passwordStrengthScore of 4 checks',
-                            style: const TextStyle(color: Color(0xFFAB8981), fontSize: 11),
+                            style: const TextStyle(
+                              color: Color(0xFFAB8981),
+                              fontSize: 11,
+                            ),
                           ),
                         ],
                       ),
@@ -376,8 +421,10 @@ class _RegisterPageState extends State<RegisterPage> {
                       TextFormField(
                         controller: _confirmPasswordController,
                         validator: (value) {
-                          if (value == null || value.isEmpty) return 'Please confirm your password';
-                          if (value != _passwordController.text) return 'Passwords do not match';
+                          if (value == null || value.isEmpty)
+                            return 'Please confirm your password';
+                          if (value != _passwordController.text)
+                            return 'Passwords do not match';
                           return null;
                         },
                         obscureText: _obscureConfirmPassword,
@@ -392,30 +439,42 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           suffixIcon: IconButton(
                             icon: Icon(
-                              _obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                              _obscureConfirmPassword
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
                               color: const Color(0xFFE4BEB5),
                               size: 20,
                             ),
                             onPressed: () {
                               setState(() {
-                                _obscureConfirmPassword = !_obscureConfirmPassword;
+                                _obscureConfirmPassword =
+                                    !_obscureConfirmPassword;
                               });
                             },
                           ),
                           filled: true,
                           fillColor: containerColor,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: primaryOrange, width: 1.5),
+                            borderSide: const BorderSide(
+                              color: primaryOrange,
+                              width: 1.5,
+                            ),
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+                            borderSide: const BorderSide(
+                              color: Colors.redAccent,
+                              width: 1.5,
+                            ),
                           ),
                         ),
                       ),
@@ -476,7 +535,10 @@ class _RegisterPageState extends State<RegisterPage> {
                     child: RichText(
                       text: const TextSpan(
                         text: 'Already have an account? ',
-                        style: TextStyle(color: Color(0xFFAB8981), fontSize: 14),
+                        style: TextStyle(
+                          color: Color(0xFFAB8981),
+                          fontSize: 14,
+                        ),
                         children: [
                           TextSpan(
                             text: 'Log in',

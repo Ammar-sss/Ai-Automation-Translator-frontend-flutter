@@ -1,11 +1,6 @@
 /// Pure domain entity representing an authenticated user.
 class UserEntity {
-  const UserEntity({
-    this.id,
-    this.username,
-    this.email,
-    this.enabled,
-  });
+  const UserEntity({this.id, this.username, this.email, this.enabled});
 
   final int? id;
   final String? username;

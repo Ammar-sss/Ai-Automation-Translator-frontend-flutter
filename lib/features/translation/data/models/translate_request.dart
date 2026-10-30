@@ -5,7 +5,11 @@ part 'translate_request.g.dart';
 
 @JsonSerializable()
 class TranslateRequest {
-  TranslateRequest({required this.termWord, required this.sourceLanguage,required this.targetLanguage});
+  TranslateRequest({
+    required this.termWord,
+    required this.sourceLanguage,
+    required this.targetLanguage,
+  });
 
   final String? termWord;
   final LanguageTarget? sourceLanguage;

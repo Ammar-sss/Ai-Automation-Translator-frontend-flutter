@@ -173,13 +173,12 @@ class _TranslateViewState extends State<_TranslateView> {
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
                             ),
-                            items:
-                                LanguageTarget.values.map((e) {
-                                  return DropdownMenuItem(
-                                    value: e,
-                                    child: Text(_formatLangName(e)),
-                                  );
-                                }).toList(),
+                            items: LanguageTarget.values.map((e) {
+                              return DropdownMenuItem(
+                                value: e,
+                                child: Text(_formatLangName(e)),
+                              );
+                            }).toList(),
                             onChanged: (val) {
                               if (val != null) {
                                 setState(() => _sourceLanguage = val);
@@ -203,13 +202,12 @@ class _TranslateViewState extends State<_TranslateView> {
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
                             ),
-                            items:
-                                LanguageTarget.values.map((e) {
-                                  return DropdownMenuItem(
-                                    value: e,
-                                    child: Text(_formatLangName(e)),
-                                  );
-                                }).toList(),
+                            items: LanguageTarget.values.map((e) {
+                              return DropdownMenuItem(
+                                value: e,
+                                child: Text(_formatLangName(e)),
+                              );
+                            }).toList(),
                             onChanged: (val) {
                               if (val != null) {
                                 setState(() => _targetLanguage = val);
@@ -264,11 +262,9 @@ class _TranslateViewState extends State<_TranslateView> {
                           controller: _inputController,
                           maxLines: 3,
                           onChanged: (_) => setState(() {}),
-                          validator:
-                              (v) =>
-                                  v == null || v.trim().isEmpty
-                                      ? 'Please enter a word or sentence'
-                                      : null,
+                          validator: (v) => v == null || v.trim().isEmpty
+                              ? 'Please enter a word or sentence'
+                              : null,
                           style: const TextStyle(
                             color: Colors.black,
                             fontSize: 16,
@@ -352,9 +348,7 @@ class _TranslateViewState extends State<_TranslateView> {
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: const Color(0xFFE5E7EB),
-                            ),
+                            border: Border.all(color: const Color(0xFFE5E7EB)),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withValues(alpha: 0.03),
@@ -505,14 +499,13 @@ class _TranslateViewState extends State<_TranslateView> {
                                           foregroundColor: Colors.white,
                                           elevation: 0,
                                           shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
                                           ),
                                         ),
-                                        onPressed:
-                                            () => _onAddToVocabularyPressed(
-                                              res,
-                                            ),
+                                        onPressed: () =>
+                                            _onAddToVocabularyPressed(res),
                                         child: const Text(
                                           '+ Save term',
                                           style: TextStyle(
@@ -548,7 +541,10 @@ class _TranslateViewState extends State<_TranslateView> {
                             padding: EdgeInsets.all(32.0),
                             child: Text(
                               'Enter a word above to see translation',
-                              style: TextStyle(color: Colors.grey, fontSize: 13),
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 13,
+                              ),
                             ),
                           ),
                         );

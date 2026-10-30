@@ -23,7 +23,5 @@ class Translation {
 
   @override
   int get hashCode =>
-      termWord.hashCode ^
-      exampleSentence.hashCode ^
-      exampleDefinition.hashCode;
+      termWord.hashCode ^ exampleSentence.hashCode ^ exampleDefinition.hashCode;
 }

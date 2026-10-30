@@ -53,15 +53,14 @@ class TokenStorage {
     return (raw == null || raw.isEmpty) ? [] : raw.split(',');
   }
 
-  Future<bool> hasSeenOnboarding() async{
+  Future<bool> hasSeenOnboarding() async {
     final val = await _storage.read(key: _keyOnboardingSeen);
     return val == 'true';
   }
 
-  Future<void> setOnboardingSeen() async{
+  Future<void> setOnboardingSeen() async {
     await _storage.write(key: _keyOnboardingSeen, value: 'true');
   }
-
 
   Future<void> clear() async {
     await _storage.delete(key: AppConstants.keyAccessToken);

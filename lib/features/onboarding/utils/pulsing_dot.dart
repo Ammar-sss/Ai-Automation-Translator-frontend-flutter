@@ -30,10 +30,8 @@ class _PulsingDotState extends State<PulsingDot>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: widget.duration,
-    )..repeat(reverse: true);
+    _controller = AnimationController(vsync: this, duration: widget.duration)
+      ..repeat(reverse: true);
 
     _animation = Tween<double>(
       begin: widget.minSize,
@@ -58,7 +56,10 @@ class _PulsingDotState extends State<PulsingDot>
           shape: BoxShape.circle,
           color: widget.color,
           boxShadow: [
-            BoxShadow(color: widget.color.withValues(alpha: 0.7), blurRadius: 4),
+            BoxShadow(
+              color: widget.color.withValues(alpha: 0.7),
+              blurRadius: 4,
+            ),
           ],
         ),
       ),

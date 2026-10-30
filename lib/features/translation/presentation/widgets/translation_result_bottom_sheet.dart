@@ -20,10 +20,8 @@ class TranslationResultBottomSheet extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => TranslationResultBottomSheet(
-        aiResponse: aiResponse,
-        onSave: onSave,
-      ),
+      builder: (context) =>
+          TranslationResultBottomSheet(aiResponse: aiResponse, onSave: onSave),
     );
   }
 
@@ -56,12 +54,15 @@ class _TranslationResultBottomSheetState
 
     final res = widget.aiResponse;
     final term = res.termWord ?? 'Serendipity';
-    final definition = (res.termDefinitions != null && res.termDefinitions!.isNotEmpty)
+    final definition =
+        (res.termDefinitions != null && res.termDefinitions!.isNotEmpty)
         ? res.termDefinitions!.first
         : 'The occurrence and development of events by chance in a happy, delightful, or beneficial way.';
-    final exampleEn = res.exampleSentence ??
+    final exampleEn =
+        res.exampleSentence ??
         '"Finding this quaint bookstore in the gentle rain was pure serendipity."';
-    final exampleEs = res.exampleDefinition ??
+    final exampleEs =
+        res.exampleDefinition ??
         '"Encontrar esta pintoresca librería bajo la suave lluvia fue pura serendipia."';
 
     return Container(
@@ -94,11 +95,16 @@ class _TranslationResultBottomSheetState
             // Saved State Toast Banner (Shown when saved)
             if (_isSaved) ...[
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFF1E2A22),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: successGreen.withValues(alpha: 0.4)),
+                  border: Border.all(
+                    color: successGreen.withValues(alpha: 0.4),
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -126,15 +132,24 @@ class _TranslationResultBottomSheetState
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF332A18),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: pendingGold.withValues(alpha: 0.5)),
+                        border: Border.all(
+                          color: pendingGold.withValues(alpha: 0.5),
+                        ),
                       ),
                       child: Row(
                         children: const [
-                          Icon(Icons.hourglass_top_rounded, color: pendingGold, size: 12),
+                          Icon(
+                            Icons.hourglass_top_rounded,
+                            color: pendingGold,
+                            size: 12,
+                          ),
                           SizedBox(width: 4),
                           Text(
                             'Pending sync',
@@ -158,7 +173,10 @@ class _TranslationResultBottomSheetState
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: cardColor,
                     borderRadius: BorderRadius.circular(12),
@@ -175,7 +193,11 @@ class _TranslationResultBottomSheetState
                         ),
                       ),
                       SizedBox(width: 4),
-                      Icon(Icons.arrow_forward_rounded, color: primaryOrange, size: 12),
+                      Icon(
+                        Icons.arrow_forward_rounded,
+                        color: primaryOrange,
+                        size: 12,
+                      ),
                       SizedBox(width: 4),
                       Text(
                         'ES',
@@ -261,10 +283,7 @@ class _TranslationResultBottomSheetState
                       const SizedBox(height: 4),
                       const Text(
                         "/,serən'dɪpəti/",
-                        style: TextStyle(
-                          color: textMuted,
-                          fontSize: 13,
-                        ),
+                        style: TextStyle(color: textMuted, fontSize: 13),
                       ),
                     ],
                   ),
@@ -313,7 +332,11 @@ class _TranslationResultBottomSheetState
                       if (_isSaved)
                         Row(
                           children: const [
-                            Icon(Icons.check_circle_rounded, color: successGreen, size: 12),
+                            Icon(
+                              Icons.check_circle_rounded,
+                              color: successGreen,
+                              size: 12,
+                            ),
                             SizedBox(width: 4),
                             Text(
                               'Exact Match',
@@ -374,7 +397,11 @@ class _TranslationResultBottomSheetState
                 children: [
                   Row(
                     children: const [
-                      Icon(Icons.format_quote_rounded, color: primaryOrange, size: 16),
+                      Icon(
+                        Icons.format_quote_rounded,
+                        color: primaryOrange,
+                        size: 16,
+                      ),
                       SizedBox(width: 6),
                       Text(
                         'CONTEXTUAL USAGE',
@@ -446,7 +473,9 @@ class _TranslationResultBottomSheetState
                     decoration: BoxDecoration(
                       color: cardColor,
                       borderRadius: BorderRadius.circular(26),
-                      border: Border.all(color: successGreen.withValues(alpha: 0.5)),
+                      border: Border.all(
+                        color: successGreen.withValues(alpha: 0.5),
+                      ),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -474,11 +503,16 @@ class _TranslationResultBottomSheetState
                         ),
                         const SizedBox(width: 12),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFF332A18),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: pendingGold.withValues(alpha: 0.5)),
+                            border: Border.all(
+                              color: pendingGold.withValues(alpha: 0.5),
+                            ),
                           ),
                           child: const Text(
                             'Queued',
@@ -500,10 +534,7 @@ class _TranslationResultBottomSheetState
                       SizedBox(width: 6),
                       Text(
                         'Saved on this device first, syncs when online',
-                        style: TextStyle(
-                          color: textMuted,
-                          fontSize: 11,
-                        ),
+                        style: TextStyle(color: textMuted, fontSize: 11),
                       ),
                     ],
                   ),

@@ -18,7 +18,9 @@ GoRouter createRouter(AuthBloc authBloc, {required bool hasSeenOnboarding}) {
       final isSignIn = authBloc.state is AuthAuthenticated;
       final location = state.matchedLocation;
       final isAuthRoute =
-          location == RouteName.login || location == RouteName.register || location == RouteName.onboarding;
+          location == RouteName.login ||
+          location == RouteName.register ||
+          location == RouteName.onboarding;
 
       // 1. Unauthenticated users cannot access protected screens
       if (!isSignIn && !isAuthRoute) return RouteName.login;
@@ -52,7 +54,7 @@ GoRouter createRouter(AuthBloc authBloc, {required bool hasSeenOnboarding}) {
       GoRoute(
         path: RouteName.onboarding,
         builder: (context, state) => const OnboardingPage(),
-      )
+      ),
     ],
   );
 }
