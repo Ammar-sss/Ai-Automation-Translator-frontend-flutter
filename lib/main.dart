@@ -62,8 +62,12 @@ Future<void> main() async {
       providers: [
         RepositoryProvider<AuthRepository>.value(value: authRepository),
         RepositoryProvider<UserRepository>.value(value: userRepository),
-        RepositoryProvider<TranslateRepository>.value(value: translateRepository),
-        RepositoryProvider<VocabularyRepository>.value(value: vocabularyRepository),
+        RepositoryProvider<TranslateRepository>.value(
+          value: translateRepository,
+        ),
+        RepositoryProvider<VocabularyRepository>.value(
+          value: vocabularyRepository,
+        ),
         RepositoryProvider.value(value: tokenStorage),
         RepositoryProvider.value(value: apiClient),
         RepositoryProvider.value(value: appDatabase),

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../../user/presentation/widgets/profile_drawer.dart';
@@ -12,7 +11,7 @@ class TranslatePage extends StatefulWidget {
   State<TranslatePage> createState() => _TranslatePage();
 }
 
-class _TranslatePage extends State<TranslatePage>{
+class _TranslatePage extends State<TranslatePage> {
   final TextEditingController _inputController = TextEditingController();
   bool _isOnline = true; // Toggle between Online and Offline modes
   bool _showOfflineBanner = true;
@@ -444,7 +443,7 @@ class _TranslatePage extends State<TranslatePage>{
 
                     // Bottom Action Row
                     if (_isOnline)
-                    // ONLINE MODE: Mic icon, Paste icon + Large Floating Orange Submit Button (→)
+                      // ONLINE MODE: Mic icon, Paste icon + Large Floating Orange Submit Button (→)
                       Row(
                         children: [
                           IconButton(
@@ -494,12 +493,12 @@ class _TranslatePage extends State<TranslatePage>{
                                         ? text
                                         : 'Serendipity',
                                     exampleSentence:
-                                    '"Finding this quaint bookstore in the gentle rain was pure serendipity."',
+                                        '"Finding this quaint bookstore in the gentle rain was pure serendipity."',
                                     termDefinitions: {
                                       'The occurrence and development of events by chance in a happy, delightful, or beneficial way.',
                                     },
                                     exampleDefinition:
-                                    '"Encontrar esta pintoresca librería bajo la suave lluvia fue pura serendipia."',
+                                        '"Encontrar esta pintoresca librería bajo la suave lluvia fue pura serendipia."',
                                   ),
                                 );
                               },
@@ -508,7 +507,7 @@ class _TranslatePage extends State<TranslatePage>{
                         ],
                       )
                     else
-                    // OFFLINE MODE: Actions bar
+                      // OFFLINE MODE: Actions bar
                       Row(
                         children: [
                           IconButton(

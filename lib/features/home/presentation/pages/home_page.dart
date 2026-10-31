@@ -275,8 +275,11 @@ class _Greeting extends StatelessWidget {
           child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.local_fire_department_rounded,
-                  color: _C.orange, size: 16),
+              Icon(
+                Icons.local_fire_department_rounded,
+                color: _C.orange,
+                size: 16,
+              ),
               SizedBox(width: 4),
               Text(
                 '7 Days',
@@ -298,10 +301,7 @@ class _Greeting extends StatelessWidget {
 // Translate input card
 // ---------------------------------------------------------------------------
 class _TranslateInputCard extends StatelessWidget {
-  const _TranslateInputCard({
-    required this.controller,
-    required this.onSubmit,
-  });
+  const _TranslateInputCard({required this.controller, required this.onSubmit});
 
   final TextEditingController controller;
   final VoidCallback onSubmit;
@@ -317,8 +317,11 @@ class _TranslateInputCard extends StatelessWidget {
               const _LangPill(code: 'EN'),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 6),
-                child: Icon(Icons.swap_horiz_rounded,
-                    color: _C.textMuted, size: 16),
+                child: Icon(
+                  Icons.swap_horiz_rounded,
+                  color: _C.textMuted,
+                  size: 16,
+                ),
               ),
               const _LangPill(code: 'ES'),
               const Spacer(),
@@ -343,10 +346,7 @@ class _TranslateInputCard extends StatelessWidget {
                   onSubmitted: (_) => onSubmit(),
                   textInputAction: TextInputAction.done,
                   cursorColor: _C.orange,
-                  style: const TextStyle(
-                    color: _C.textPrimary,
-                    fontSize: 14,
-                  ),
+                  style: const TextStyle(color: _C.textPrimary, fontSize: 14),
                   decoration: const InputDecoration(
                     isDense: true,
                     border: InputBorder.none,
@@ -360,8 +360,7 @@ class _TranslateInputCard extends StatelessWidget {
                 onPressed: () {
                   // TODO: start speech-to-text.
                 },
-                icon: const Icon(Icons.mic_rounded,
-                    color: _C.orange, size: 20),
+                icon: const Icon(Icons.mic_rounded, color: _C.orange, size: 20),
                 visualDensity: VisualDensity.compact,
               ),
               const SizedBox(width: 4),
@@ -374,8 +373,11 @@ class _TranslateInputCard extends StatelessWidget {
                   child: const SizedBox(
                     width: 38,
                     height: 38,
-                    child: Icon(Icons.arrow_forward_rounded,
-                        color: Colors.white, size: 20),
+                    child: Icon(
+                      Icons.arrow_forward_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
                   ),
                 ),
               ),
@@ -508,8 +510,11 @@ class _DailyFocusCard extends StatelessWidget {
           const SizedBox(height: 14),
           Row(
             children: [
-              const Icon(Icons.check_circle_outline_rounded,
-                  color: _C.green, size: 16),
+              const Icon(
+                Icons.check_circle_outline_rounded,
+                color: _C.green,
+                size: 16,
+              ),
               const SizedBox(width: 6),
               const Expanded(
                 child: Text(
@@ -526,8 +531,10 @@ class _DailyFocusCard extends StatelessWidget {
                 style: TextButton.styleFrom(
                   backgroundColor: _C.cardAlt,
                   foregroundColor: _C.textPrimary,
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   shape: RoundedRectangleBorder(
@@ -594,8 +601,11 @@ class _WordOfTheDayCard extends StatelessWidget {
                     color: Color(0x33FF5A2C),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.volume_up_rounded,
-                      color: _C.orange, size: 18),
+                  child: const Icon(
+                    Icons.volume_up_rounded,
+                    color: _C.orange,
+                    size: 18,
+                  ),
                 ),
               ),
             ],
@@ -658,8 +668,11 @@ class _WordOfTheDayCard extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              const Icon(Icons.workspace_premium_outlined,
-                  color: _C.orange, size: 15),
+              const Icon(
+                Icons.workspace_premium_outlined,
+                color: _C.orange,
+                size: 15,
+              ),
               const SizedBox(width: 6),
               const Expanded(
                 child: Text(
@@ -677,8 +690,10 @@ class _WordOfTheDayCard extends StatelessWidget {
                 style: TextButton.styleFrom(
                   backgroundColor: _C.cardAlt,
                   foregroundColor: saved ? _C.orange : _C.textPrimary,
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 7,
+                  ),
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   shape: RoundedRectangleBorder(
@@ -687,13 +702,17 @@ class _WordOfTheDayCard extends StatelessWidget {
                   ),
                 ),
                 icon: Icon(
-                  saved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+                  saved
+                      ? Icons.bookmark_rounded
+                      : Icons.bookmark_border_rounded,
                   size: 15,
                 ),
                 label: Text(
                   saved ? 'Saved' : 'Save to Vocab',
                   style: const TextStyle(
-                      fontSize: 11, fontWeight: FontWeight.w600),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
@@ -819,8 +838,11 @@ class _RecentTile extends StatelessWidget {
                   color: _C.cardAlt,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.translate,
-                    color: _C.textSecondary, size: 17),
+                child: const Icon(
+                  Icons.translate,
+                  color: _C.textSecondary,
+                  size: 17,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -839,10 +861,7 @@ class _RecentTile extends StatelessWidget {
                     Text(
                       '${item.translated} • ${item.language}',
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: _C.textMuted,
-                        fontSize: 11,
-                      ),
+                      style: const TextStyle(color: _C.textMuted, fontSize: 11),
                     ),
                   ],
                 ),
@@ -852,8 +871,11 @@ class _RecentTile extends StatelessWidget {
                 style: const TextStyle(color: _C.textMuted, fontSize: 10),
               ),
               const SizedBox(width: 4),
-              const Icon(Icons.chevron_right_rounded,
-                  color: _C.textMuted, size: 18),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: _C.textMuted,
+                size: 18,
+              ),
             ],
           ),
         ),
@@ -866,10 +888,7 @@ class _RecentTile extends StatelessWidget {
 // Shared card container
 // ---------------------------------------------------------------------------
 class _Card extends StatelessWidget {
-  const _Card({
-    required this.child,
-    this.padding = const EdgeInsets.all(14),
-  });
+  const _Card({required this.child, this.padding = const EdgeInsets.all(14)});
 
   final Widget child;
   final EdgeInsets padding;

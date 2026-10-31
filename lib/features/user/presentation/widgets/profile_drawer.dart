@@ -56,13 +56,21 @@ class ProfileDrawer extends StatelessWidget {
         color: drawerBackground,
         child: BlocBuilder<UserCubit, UserState>(
           builder: (context, state) {
-            final userName = (state is UserLoaded && state.user.username != null && state.user.username!.isNotEmpty)
+            final userName =
+                (state is UserLoaded &&
+                    state.user.username != null &&
+                    state.user.username!.isNotEmpty)
                 ? state.user.username!
                 : 'Linh Tran';
-            final userEmail = (state is UserLoaded && state.user.email != null && state.user.email!.isNotEmpty)
+            final userEmail =
+                (state is UserLoaded &&
+                    state.user.email != null &&
+                    state.user.email!.isNotEmpty)
                 ? state.user.email!
                 : 'linh.tran@workspace.io';
-            final userInitial = userName.isNotEmpty ? userName[0].toUpperCase() : 'L';
+            final userInitial = userName.isNotEmpty
+                ? userName[0].toUpperCase()
+                : 'L';
 
             return SafeArea(
               child: Column(
@@ -70,7 +78,10 @@ class ProfileDrawer extends StatelessWidget {
                 children: [
                   // Top Profile Header Row
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -102,7 +113,10 @@ class ProfileDrawer extends StatelessWidget {
                               decoration: BoxDecoration(
                                 color: successGreen,
                                 shape: BoxShape.circle,
-                                border: Border.all(color: drawerBackground, width: 2),
+                                border: Border.all(
+                                  color: drawerBackground,
+                                  width: 2,
+                                ),
                               ),
                             ),
                           ],
@@ -126,11 +140,18 @@ class ProfileDrawer extends StatelessWidget {
                                   ),
                                   const SizedBox(width: 8),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: const Color(0xFF381F18),
                                       borderRadius: BorderRadius.circular(10),
-                                      border: Border.all(color: primaryOrange.withValues(alpha: 0.5)),
+                                      border: Border.all(
+                                        color: primaryOrange.withValues(
+                                          alpha: 0.5,
+                                        ),
+                                      ),
                                     ),
                                     child: const Text(
                                       'PRO',
@@ -210,7 +231,10 @@ class ProfileDrawer extends StatelessWidget {
                           // Single Stats Card: TERMS LEARNED (842)
                           Container(
                             width: double.infinity,
-                            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 16,
+                              horizontal: 20,
+                            ),
                             decoration: BoxDecoration(
                               color: cardColor,
                               borderRadius: BorderRadius.circular(20),
@@ -231,7 +255,11 @@ class ProfileDrawer extends StatelessWidget {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: const [
-                                    Icon(Icons.auto_stories_rounded, color: primaryOrange, size: 20),
+                                    Icon(
+                                      Icons.auto_stories_rounded,
+                                      color: primaryOrange,
+                                      size: 20,
+                                    ),
                                     SizedBox(width: 8),
                                     Text(
                                       '842',
@@ -301,7 +329,10 @@ class ProfileDrawer extends StatelessWidget {
                             icon: Icons.auto_awesome_rounded,
                             title: 'About AI Translator',
                             badge: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF282935),
                                 borderRadius: BorderRadius.circular(10),
@@ -325,7 +356,10 @@ class ProfileDrawer extends StatelessWidget {
 
                   // Bottom Log Out Button
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
                     child: SizedBox(
                       width: double.infinity,
                       height: 52,
@@ -340,12 +374,17 @@ class ProfileDrawer extends StatelessWidget {
                         ),
                         onPressed: () {
                           Navigator.of(context).pop();
-                          context.read<AuthBloc>().add(const AuthLogoutRequested());
+                          context.read<AuthBloc>().add(
+                            const AuthLogoutRequested(),
+                          );
                         },
                         icon: const Icon(Icons.logout_rounded, size: 20),
                         label: const Text(
                           'Log Out',
-                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
@@ -415,15 +454,8 @@ class _MenuTile extends StatelessWidget {
                 ],
               ),
             ),
-            if (badge != null) ...[
-              badge!,
-              const SizedBox(width: 8),
-            ],
-            const Icon(
-              Icons.chevron_right_rounded,
-              color: textMuted,
-              size: 20,
-            ),
+            if (badge != null) ...[badge!, const SizedBox(width: 8)],
+            const Icon(Icons.chevron_right_rounded, color: textMuted, size: 20),
           ],
         ),
       ),

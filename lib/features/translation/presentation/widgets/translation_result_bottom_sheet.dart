@@ -56,15 +56,18 @@ class _TranslationResultBottomSheetState
     final term = (res.termWord != null && res.termWord!.isNotEmpty)
         ? res.termWord!
         : 'fat cat';
-    final exampleEn = (res.exampleSentence != null && res.exampleSentence!.isNotEmpty)
+    final exampleEn =
+        (res.exampleSentence != null && res.exampleSentence!.isNotEmpty)
         ? res.exampleSentence!
         : '"The workers complained about the greed of the fat cat."';
-    final exampleEs = (res.exampleDefinition != null && res.exampleDefinition!.isNotEmpty)
+    final exampleEs =
+        (res.exampleDefinition != null && res.exampleDefinition!.isNotEmpty)
         ? res.exampleDefinition!
         : 'Los trabajadores se quejaron de la codicia del pez gordo (del magnate adinerado).';
 
     // Parse list of definitions or fallback to sample definitions
-    final definitions = (res.termDefinitions != null && res.termDefinitions!.isNotEmpty)
+    final definitions =
+        (res.termDefinitions != null && res.termDefinitions!.isNotEmpty)
         ? res.termDefinitions!.toList()
         : [
             'A wealthy and powerful person, especially a businessman or politician.',
@@ -392,10 +395,7 @@ class _TranslationResultBottomSheetState
                       ),
                       Text(
                         '${definitions.length} senses',
-                        style: const TextStyle(
-                          color: textMuted,
-                          fontSize: 11,
-                        ),
+                        style: const TextStyle(color: textMuted, fontSize: 11),
                       ),
                     ],
                   ),

@@ -72,7 +72,7 @@ GoRouter createRouter(AuthBloc authBloc, {required bool hasSeenOnboarding}) {
       GoRoute(
         path: RouteName.profile,
         builder: (context, state) => const ProfilePage(),
-      )
+      ),
     ],
   );
 }

@@ -54,7 +54,9 @@ class _VocabularyViewState extends State<_VocabularyView> {
       builder: (dialogContext) {
         return AlertDialog(
           backgroundColor: const Color(0xFF1E1F2A),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: const Text(
             'Add Term Manually',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -96,18 +98,29 @@ class _VocabularyViewState extends State<_VocabularyView> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Cancel', style: TextStyle(color: Color(0xFFAB8981))),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Color(0xFFAB8981)),
+              ),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFF5A2C),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               onPressed: () {
                 Navigator.of(dialogContext).pop();
                 context.read<VocabularyCubit>().load();
               },
-              child: const Text('Add', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              child: const Text(
+                'Add',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
         );
@@ -139,7 +152,10 @@ class _VocabularyViewState extends State<_VocabularyView> {
           listener: (context, state) {
             if (state is VocabularyFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
+                ),
               );
             }
           },
@@ -158,7 +174,10 @@ class _VocabularyViewState extends State<_VocabularyView> {
               children: [
                 // Header Bar (Title, Count, Search, Sync buttons)
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
                   child: Row(
                     children: [
                       Text(
@@ -186,7 +205,11 @@ class _VocabularyViewState extends State<_VocabularyView> {
                             _isSearching = !_isSearching;
                           });
                         },
-                        icon: const Icon(Icons.search_rounded, color: Colors.white70, size: 22),
+                        icon: const Icon(
+                          Icons.search_rounded,
+                          color: Colors.white70,
+                          size: 22,
+                        ),
                       ),
                       IconButton(
                         onPressed: () {
@@ -208,7 +231,10 @@ class _VocabularyViewState extends State<_VocabularyView> {
                 // Search Field (Shown when search icon is tapped)
                 if (_isSearching)
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 4,
+                    ),
                     child: TextField(
                       controller: _searchController,
                       style: const TextStyle(color: Colors.white),
@@ -218,7 +244,10 @@ class _VocabularyViewState extends State<_VocabularyView> {
                         prefixIcon: const Icon(Icons.search, color: textMuted),
                         filled: true,
                         fillColor: containerColor,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
                           borderSide: BorderSide.none,
@@ -230,7 +259,10 @@ class _VocabularyViewState extends State<_VocabularyView> {
                 // Syncing Progress Banner (Shown when syncing)
                 if (_isSyncing)
                   Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 8,
+                    ),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: containerColor,
@@ -255,13 +287,21 @@ class _VocabularyViewState extends State<_VocabularyView> {
                                 const SizedBox(width: 8),
                                 const Text(
                                   'Syncing 3 terms to cloud...',
-                                  style: TextStyle(color: primaryOrange, fontSize: 12, fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                    color: primaryOrange,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ],
                             ),
                             Text(
                               '${(_syncProgress * 100).toInt()}%',
-                              style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ],
                         ),
@@ -281,7 +321,10 @@ class _VocabularyViewState extends State<_VocabularyView> {
 
                 // Filter Pills Row
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
                   child: Row(
                     children: [
                       _FilterPill(
@@ -311,18 +354,23 @@ class _VocabularyViewState extends State<_VocabularyView> {
 
                 // Term List or Empty State
                 Expanded(
-                  child: (state is VocabularyLoading || state is VocabularyInitial)
-                      ? const Center(child: CircularProgressIndicator(color: primaryOrange))
+                  child:
+                      (state is VocabularyLoading || state is VocabularyInitial)
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                            color: primaryOrange,
+                          ),
+                        )
                       : allTerms.isEmpty
-                          ? _buildEmptyState(context)
-                          : ListView.builder(
-                              padding: const EdgeInsets.symmetric(horizontal: 20),
-                              itemCount: allTerms.length,
-                              itemBuilder: (context, index) {
-                                final term = allTerms[index];
-                                return _buildTermItem(context, term, index);
-                              },
-                            ),
+                      ? _buildEmptyState(context)
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          itemCount: allTerms.length,
+                          itemBuilder: (context, index) {
+                            final term = allTerms[index];
+                            return _buildTermItem(context, term, index);
+                          },
+                        ),
                 ),
               ],
             );
@@ -372,11 +420,7 @@ class _VocabularyViewState extends State<_VocabularyView> {
             const Text(
               'Start translating words and save them to build your personal vocabulary deck.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: textMuted,
-                fontSize: 14,
-                height: 1.4,
-              ),
+              style: TextStyle(color: textMuted, fontSize: 14, height: 1.4),
             ),
             const SizedBox(height: 32),
 
@@ -399,7 +443,10 @@ class _VocabularyViewState extends State<_VocabularyView> {
                   children: const [
                     Text(
                       'Translate a word',
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     SizedBox(width: 8),
                     Icon(Icons.arrow_forward_rounded, size: 18),
@@ -411,10 +458,7 @@ class _VocabularyViewState extends State<_VocabularyView> {
 
             const Text(
               '⊕ or tap + to enter a term manually',
-              style: TextStyle(
-                color: textMuted,
-                fontSize: 12,
-              ),
+              style: TextStyle(color: textMuted, fontSize: 12),
             ),
           ],
         ),
@@ -430,7 +474,8 @@ class _VocabularyViewState extends State<_VocabularyView> {
     const textMuted = Color(0xFFAB8981);
 
     final word = term.termWord ?? 'Term';
-    final def = (term.termDefinitions != null && term.termDefinitions!.isNotEmpty)
+    final def =
+        (term.termDefinitions != null && term.termDefinitions!.isNotEmpty)
         ? term.termDefinitions!.first.definition ?? ''
         : 'Definition';
 
@@ -451,7 +496,14 @@ class _VocabularyViewState extends State<_VocabularyView> {
             children: const [
               Icon(Icons.edit_rounded, color: Colors.black, size: 20),
               SizedBox(width: 6),
-              Text('UPDATE', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 12)),
+              Text(
+                'UPDATE',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
             ],
           ),
         ),
@@ -465,7 +517,14 @@ class _VocabularyViewState extends State<_VocabularyView> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: const [
-              Text('DELETE', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+              Text(
+                'DELETE',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
               SizedBox(width: 6),
               Icon(Icons.delete_outline_rounded, color: Colors.white, size: 20),
             ],
@@ -475,7 +534,9 @@ class _VocabularyViewState extends State<_VocabularyView> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                direction == DismissDirection.startToEnd ? 'Updating $word' : 'Deleted $word',
+                direction == DismissDirection.startToEnd
+                    ? 'Updating $word'
+                    : 'Deleted $word',
               ),
             ),
           );
@@ -491,102 +552,120 @@ class _VocabularyViewState extends State<_VocabularyView> {
             ),
             child: Row(
               children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            word,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          const Text(
+                            'noun',
+                            style: TextStyle(
+                              color: textMuted,
+                              fontSize: 12,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        def,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Color(0xFFE4BEB5),
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+
+                // Sync Status Badge
+                if (isSynced)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E2A22),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: successGreen.withValues(alpha: 0.4),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          word,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: successGreen,
                           ),
                         ),
-                        const SizedBox(width: 6),
-                        const Text(
-                          'noun',
-                          style: TextStyle(
-                            color: textMuted,
-                            fontSize: 12,
-                            fontStyle: FontStyle.italic,
-                          ),
+                        const SizedBox(width: 4),
+                        const Icon(
+                          Icons.check_rounded,
+                          color: successGreen,
+                          size: 12,
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      def,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Color(0xFFE4BEB5),
-                        fontSize: 13,
+                  )
+                else
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF332A18),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: pendingGold.withValues(alpha: 0.4),
                       ),
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-
-              // Sync Status Badge
-              if (isSynced)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1E2A22),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: successGreen.withValues(alpha: 0.4)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: successGreen,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: pendingGold,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 4),
-                      const Icon(Icons.check_rounded, color: successGreen, size: 12),
-                    ],
-                  ),
-                )
-              else
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF332A18),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: pendingGold.withValues(alpha: 0.4)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
+                        const SizedBox(width: 4),
+                        const Icon(
+                          Icons.cloud_outlined,
                           color: pendingGold,
+                          size: 12,
                         ),
-                      ),
-                      const SizedBox(width: 4),
-                      const Icon(Icons.cloud_outlined, color: pendingGold, size: 12),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }
 
 class _FilterPill extends StatelessWidget {

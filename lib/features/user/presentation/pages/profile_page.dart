@@ -75,7 +75,11 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_none_rounded, color: Colors.white70, size: 22),
+            icon: const Icon(
+              Icons.notifications_none_rounded,
+              color: Colors.white70,
+              size: 22,
+            ),
             onPressed: () {},
           ),
           Padding(
@@ -102,13 +106,21 @@ class _ProfilePageState extends State<ProfilePage> {
       body: SafeArea(
         child: BlocBuilder<UserCubit, UserState>(
           builder: (context, state) {
-            final userName = (state is UserLoaded && state.user.username != null && state.user.username!.isNotEmpty)
+            final userName =
+                (state is UserLoaded &&
+                    state.user.username != null &&
+                    state.user.username!.isNotEmpty)
                 ? state.user.username!
                 : 'Linh Nguyen';
-            final userEmail = (state is UserLoaded && state.user.email != null && state.user.email!.isNotEmpty)
+            final userEmail =
+                (state is UserLoaded &&
+                    state.user.email != null &&
+                    state.user.email!.isNotEmpty)
                 ? state.user.email!
                 : 'linh.nguyen@example.com';
-            final userInitial = userName.isNotEmpty ? userName[0].toUpperCase() : 'L';
+            final userInitial = userName.isNotEmpty
+                ? userName[0].toUpperCase()
+                : 'L';
 
             return SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -129,7 +141,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: primaryOrange.withValues(alpha: 0.45),
+                                    color: primaryOrange.withValues(
+                                      alpha: 0.45,
+                                    ),
                                     blurRadius: 28,
                                     spreadRadius: 2,
                                   ),
@@ -153,7 +167,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                 decoration: BoxDecoration(
                                   color: const Color(0xFF282935),
                                   shape: BoxShape.circle,
-                                  border: Border.all(color: backgroundColor, width: 2),
+                                  border: Border.all(
+                                    color: backgroundColor,
+                                    width: 2,
+                                  ),
                                 ),
                                 child: const Icon(
                                   Icons.edit_rounded,
@@ -178,7 +195,11 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                             ),
                             const SizedBox(width: 6),
-                            const Icon(Icons.verified_rounded, color: successGreen, size: 16),
+                            const Icon(
+                              Icons.verified_rounded,
+                              color: successGreen,
+                              size: 16,
+                            ),
                           ],
                         ),
                         const SizedBox(height: 2),
@@ -196,11 +217,16 @@ class _ProfilePageState extends State<ProfilePage> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF1E2A22),
                                 borderRadius: BorderRadius.circular(14),
-                                border: Border.all(color: successGreen.withValues(alpha: 0.4)),
+                                border: Border.all(
+                                  color: successGreen.withValues(alpha: 0.4),
+                                ),
                               ),
                               child: Row(
                                 children: [
@@ -226,15 +252,24 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                             const SizedBox(width: 6),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF332A18),
                                 borderRadius: BorderRadius.circular(14),
-                                border: Border.all(color: pendingGold.withValues(alpha: 0.4)),
+                                border: Border.all(
+                                  color: pendingGold.withValues(alpha: 0.4),
+                                ),
                               ),
                               child: Row(
                                 children: const [
-                                  Icon(Icons.bolt_rounded, color: pendingGold, size: 13),
+                                  Icon(
+                                    Icons.bolt_rounded,
+                                    color: pendingGold,
+                                    size: 13,
+                                  ),
                                   SizedBox(width: 4),
                                   Text(
                                     'Pro Learner',
@@ -249,15 +284,24 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                             const SizedBox(width: 6),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF1E2A22),
                                 borderRadius: BorderRadius.circular(14),
-                                border: Border.all(color: successGreen.withValues(alpha: 0.4)),
+                                border: Border.all(
+                                  color: successGreen.withValues(alpha: 0.4),
+                                ),
                               ),
                               child: Row(
                                 children: const [
-                                  Icon(Icons.check_rounded, color: successGreen, size: 12),
+                                  Icon(
+                                    Icons.check_rounded,
+                                    color: successGreen,
+                                    size: 12,
+                                  ),
                                   SizedBox(width: 4),
                                   Text(
                                     'Active',
@@ -373,11 +417,16 @@ class _ProfilePageState extends State<ProfilePage> {
                           title: 'Account status',
                           subtitle: 'Verified & active',
                           badge: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFF1E2A22),
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: successGreen.withValues(alpha: 0.4)),
+                              border: Border.all(
+                                color: successGreen.withValues(alpha: 0.4),
+                              ),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -393,7 +442,11 @@ class _ProfilePageState extends State<ProfilePage> {
                                 const SizedBox(width: 4),
                                 const Text(
                                   'Active',
-                                  style: TextStyle(color: successGreen, fontSize: 10, fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                    color: successGreen,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ],
                             ),
@@ -465,7 +518,9 @@ class _ProfilePageState extends State<ProfilePage> {
                       title: 'Log out',
                       titleColor: Colors.redAccent,
                       onTap: () {
-                        context.read<AuthBloc>().add(const AuthLogoutRequested());
+                        context.read<AuthBloc>().add(
+                          const AuthLogoutRequested(),
+                        );
                       },
                     ),
                   ),
@@ -474,10 +529,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   // Footer Version Info
                   const Text(
                     'AI Translator v2.4.1 (Build 890)',
-                    style: TextStyle(
-                      color: textMuted,
-                      fontSize: 11,
-                    ),
+                    style: TextStyle(color: textMuted, fontSize: 11),
                   ),
                   const SizedBox(height: 16),
                 ],
@@ -545,24 +597,14 @@ class _ProfileOptionTile extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       subtitle!,
-                      style: const TextStyle(
-                        color: textMuted,
-                        fontSize: 11,
-                      ),
+                      style: const TextStyle(color: textMuted, fontSize: 11),
                     ),
                   ],
                 ],
               ),
             ),
-            if (badge != null) ...[
-              badge!,
-              const SizedBox(width: 8),
-            ],
-            const Icon(
-              Icons.chevron_right_rounded,
-              color: textMuted,
-              size: 20,
-            ),
+            if (badge != null) ...[badge!, const SizedBox(width: 8)],
+            const Icon(Icons.chevron_right_rounded, color: textMuted, size: 20),
           ],
         ),
       ),

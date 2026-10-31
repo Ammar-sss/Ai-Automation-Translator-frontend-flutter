@@ -240,9 +240,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       final isActive = index < _passwordStrengthScore;
                       return Expanded(
                         child: Container(
-                          margin: EdgeInsets.only(
-                            right: index < 3 ? 4.0 : 0.0,
-                          ),
+                          margin: EdgeInsets.only(right: index < 3 ? 4.0 : 0.0),
                           height: 4,
                           decoration: BoxDecoration(
                             color: isActive
@@ -323,8 +321,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         onPressed: () {
                           setState(() {
-                            _obscureConfirmPassword =
-                                !_obscureConfirmPassword;
+                            _obscureConfirmPassword = !_obscureConfirmPassword;
                           });
                         },
                       ),
@@ -390,10 +387,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 child: RichText(
                   text: const TextSpan(
                     text: 'Already have an account? ',
-                    style: TextStyle(
-                      color: Color(0xFFAB8981),
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: Color(0xFFAB8981), fontSize: 14),
                     children: [
                       TextSpan(
                         text: 'Log in',

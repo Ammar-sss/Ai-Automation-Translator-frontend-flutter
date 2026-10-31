@@ -18,11 +18,16 @@ class TermDetailsPage extends StatelessWidget {
     const textMuted = Color(0xFFAB8981);
 
     final termWord = term?.termWord ?? 'fat cat';
-    final exampleEn = (term?.termExamples != null && term!.termExamples!.isNotEmpty)
-        ? term!.termExamples!.first.exampleSentence ?? '"The workers complained about the greed of the fat cat."'
+    final exampleEn =
+        (term?.termExamples != null && term!.termExamples!.isNotEmpty)
+        ? term!.termExamples!.first.exampleSentence ??
+              '"The workers complained about the greed of the fat cat."'
         : '"The workers complained about the greed of the fat cat."';
-    final exampleAr = (term?.exampleDefinitions != null && term!.exampleDefinitions!.isNotEmpty)
-        ? term!.exampleDefinitions!.first.exampleDefinition ?? 'تذمر العمال من جشع الرجل الثري المستغل.'
+    final exampleAr =
+        (term?.exampleDefinitions != null &&
+            term!.exampleDefinitions!.isNotEmpty)
+        ? term!.exampleDefinitions!.first.exampleDefinition ??
+              'تذمر العمال من جشع الرجل الثري المستغل.'
         : 'تذمر العمال من جشع الرجل الثري المستغل.';
 
     return Scaffold(
@@ -31,17 +36,29 @@ class TermDetailsPage extends StatelessWidget {
         backgroundColor: backgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
+            size: 20,
+          ),
           onPressed: () => context.pop(),
         ),
         title: const Text(
           'Term Details',
-          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.bookmark_border_rounded, color: Colors.white70, size: 22),
+            icon: const Icon(
+              Icons.bookmark_border_rounded,
+              color: Colors.white70,
+              size: 22,
+            ),
             onPressed: () {},
           ),
           Padding(
@@ -93,11 +110,16 @@ class TermDetailsPage extends StatelessWidget {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFF1E2A22),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: successGreen.withValues(alpha: 0.4)),
+                          border: Border.all(
+                            color: successGreen.withValues(alpha: 0.4),
+                          ),
                         ),
                         child: Row(
                           children: [
@@ -176,11 +198,16 @@ class TermDetailsPage extends StatelessWidget {
                               ),
                               const SizedBox(width: 10),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFF381F18),
                                   borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: primaryOrange.withValues(alpha: 0.5)),
+                                  border: Border.all(
+                                    color: primaryOrange.withValues(alpha: 0.5),
+                                  ),
                                 ),
                                 child: const Text(
                                   'NOUN · IDIOM',
@@ -197,10 +224,7 @@ class TermDetailsPage extends StatelessWidget {
                           const SizedBox(height: 4),
                           const Text(
                             "/,fæt 'kæt/",
-                            style: TextStyle(
-                              color: textMuted,
-                              fontSize: 13,
-                            ),
+                            style: TextStyle(color: textMuted, fontSize: 13),
                           ),
                         ],
                       ),
@@ -240,7 +264,11 @@ class TermDetailsPage extends StatelessWidget {
                       children: const [
                         Row(
                           children: [
-                            Icon(Icons.format_quote_rounded, color: primaryOrange, size: 16),
+                            Icon(
+                              Icons.format_quote_rounded,
+                              color: primaryOrange,
+                              size: 16,
+                            ),
                             SizedBox(width: 6),
                             Text(
                               'EXAMPLE SENTENCE',
@@ -253,7 +281,11 @@ class TermDetailsPage extends StatelessWidget {
                             ),
                           ],
                         ),
-                        Icon(Icons.content_copy_rounded, color: textMuted, size: 16),
+                        Icon(
+                          Icons.content_copy_rounded,
+                          color: textMuted,
+                          size: 16,
+                        ),
                       ],
                     ),
                     const SizedBox(height: 10),
@@ -287,7 +319,11 @@ class TermDetailsPage extends StatelessWidget {
                       children: const [
                         Row(
                           children: [
-                            Icon(Icons.menu_book_rounded, color: primaryOrange, size: 16),
+                            Icon(
+                              Icons.menu_book_rounded,
+                              color: primaryOrange,
+                              size: 16,
+                            ),
                             SizedBox(width: 6),
                             Text(
                               'TERM DEFINITIONS',
@@ -322,7 +358,11 @@ class TermDetailsPage extends StatelessWidget {
                           child: const Center(
                             child: Text(
                               '1',
-                              style: TextStyle(color: primaryOrange, fontSize: 11, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                color: primaryOrange,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
@@ -374,7 +414,11 @@ class TermDetailsPage extends StatelessWidget {
                           child: const Center(
                             child: Text(
                               '2',
-                              style: TextStyle(color: primaryOrange, fontSize: 11, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                color: primaryOrange,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
@@ -425,7 +469,11 @@ class TermDetailsPage extends StatelessWidget {
                   children: [
                     Row(
                       children: const [
-                        Icon(Icons.g_translate_rounded, color: successGreen, size: 16),
+                        Icon(
+                          Icons.g_translate_rounded,
+                          color: successGreen,
+                          size: 16,
+                        ),
                         SizedBox(width: 6),
                         Text(
                           'EXAMPLE DEFINITION',
@@ -469,7 +517,11 @@ class TermDetailsPage extends StatelessWidget {
                         color: Color(0xFF1E2A22),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.psychology_rounded, color: successGreen, size: 20),
+                      child: const Icon(
+                        Icons.psychology_rounded,
+                        color: successGreen,
+                        size: 20,
+                      ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
@@ -487,10 +539,7 @@ class TermDetailsPage extends StatelessWidget {
                           SizedBox(height: 2),
                           Text(
                             'Next review in 3 days',
-                            style: TextStyle(
-                              color: textMuted,
-                              fontSize: 12,
-                            ),
+                            style: TextStyle(color: textMuted, fontSize: 12),
                           ),
                         ],
                       ),
@@ -524,7 +573,11 @@ class TermDetailsPage extends StatelessWidget {
                   children: [
                     Row(
                       children: const [
-                        Icon(Icons.g_translate_rounded, color: successGreen, size: 16),
+                        Icon(
+                          Icons.g_translate_rounded,
+                          color: successGreen,
+                          size: 16,
+                        ),
                         SizedBox(width: 6),
                         Text(
                           'EXAMPLE DEFINITION',

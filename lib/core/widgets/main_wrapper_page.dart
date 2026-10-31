@@ -23,10 +23,10 @@ class _MainWrapperPageState extends State<MainWrapperPage> {
   int _index = _homeIndex;
 
   final List<Widget> _pages = const [
-    HomePage(),       // 0
+    HomePage(), // 0
     VocabularyPage(), // 1
-    TranslatePage(),  // 2
-    PracticePage(),   // 3
+    TranslatePage(), // 2
+    PracticePage(), // 3
   ];
 
   @override
