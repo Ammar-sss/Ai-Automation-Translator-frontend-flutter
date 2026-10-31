@@ -5,7 +5,10 @@ import 'package:smart_translator/core/widgets/main_wrapper_page.dart';
 import 'package:smart_translator/features/auth/presentation/pages/login_page.dart';
 import 'package:smart_translator/features/auth/presentation/pages/register_page.dart';
 import 'package:smart_translator/features/onboarding/presentation/pages/onboarding_page.dart';
+import 'package:smart_translator/features/user/presentation/pages/edit_profile_page.dart';
 import 'package:smart_translator/features/user/presentation/pages/profile_page.dart';
+import 'package:smart_translator/features/vocabulary/data/models/term.dart';
+import 'package:smart_translator/features/vocabulary/presentation/pages/term_details_page.dart';
 import 'package:smart_translator/features/vocabulary/presentation/pages/vocabulary_page.dart';
 
 import '../../features/auth/presentation/controllers/auth_bloc.dart';
@@ -54,6 +57,21 @@ GoRouter createRouter(AuthBloc authBloc, {required bool hasSeenOnboarding}) {
       GoRoute(
         path: RouteName.onboarding,
         builder: (context, state) => const OnboardingPage(),
+      ),
+      GoRoute(
+        path: RouteName.termDetails,
+        builder: (context, state) {
+          final term = state.extra as Term?;
+          return TermDetailsPage(term: term);
+        },
+      ),
+      GoRoute(
+        path: RouteName.editProfile,
+        builder: (context, state) => const EditProfilePage(),
+      ),
+      GoRoute(
+        path: RouteName.profile,
+        builder: (context, state) => const ProfilePage(),
       ),
     ],
   );

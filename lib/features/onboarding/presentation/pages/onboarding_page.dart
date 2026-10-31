@@ -1,8 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
-import 'package:smart_translator/core/network/token_storage.dart';
-import 'package:smart_translator/core/router/route_name.dart';
 import 'package:smart_translator/features/onboarding/presentation/widgets/onboarding_page_indicator.dart';
 import 'package:smart_translator/features/onboarding/presentation/widgets/onboarding_slide.dart';
 
@@ -40,20 +36,12 @@ class _OnboardingPageState extends State<OnboardingPage> {
     ),
   ];
 
-  Future<void> _completeOnboarding() async {
-    await context.read<TokenStorage>().setOnboardingSeen();
-    if (!mounted) return;
-    context.go(RouteName.login);
-  }
-
   void _onNextPressed() {
     if (_currentIndex < _slides.length - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 350),
         curve: Curves.easeInOutCubic,
       );
-    } else {
-      _completeOnboarding();
     }
   }
 
@@ -73,7 +61,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // Top App Bar (Back button + Skip button + Profile Icon Avatar)
+            // Top App Bar (Back button + Skip button)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               child: Row(
@@ -99,7 +87,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   Row(
                     children: [
                       TextButton(
-                        onPressed: _completeOnboarding,
+                        onPressed: () {},
                         child: const Text(
                           'Skip',
                           style: TextStyle(

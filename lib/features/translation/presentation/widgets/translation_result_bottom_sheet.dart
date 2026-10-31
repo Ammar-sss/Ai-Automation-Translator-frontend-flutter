@@ -53,17 +53,26 @@ class _TranslationResultBottomSheetState
     const textSlate = Color(0xFFE4BEB5);
 
     final res = widget.aiResponse;
-    final term = res.termWord ?? 'Serendipity';
-    final definition =
-        (res.termDefinitions != null && res.termDefinitions!.isNotEmpty)
-        ? res.termDefinitions!.first
-        : 'The occurrence and development of events by chance in a happy, delightful, or beneficial way.';
+    final term = (res.termWord != null && res.termWord!.isNotEmpty)
+        ? res.termWord!
+        : 'fat cat';
     final exampleEn =
-        res.exampleSentence ??
-        '"Finding this quaint bookstore in the gentle rain was pure serendipity."';
+        (res.exampleSentence != null && res.exampleSentence!.isNotEmpty)
+        ? res.exampleSentence!
+        : '"The workers complained about the greed of the fat cat."';
     final exampleEs =
-        res.exampleDefinition ??
-        '"Encontrar esta pintoresca librería bajo la suave lluvia fue pura serendipia."';
+        (res.exampleDefinition != null && res.exampleDefinition!.isNotEmpty)
+        ? res.exampleDefinition!
+        : 'Los trabajadores se quejaron de la codicia del pez gordo (del magnate adinerado).';
+
+    // Parse list of definitions or fallback to sample definitions
+    final definitions =
+        (res.termDefinitions != null && res.termDefinitions!.isNotEmpty)
+        ? res.termDefinitions!.toList()
+        : [
+            'A wealthy and powerful person, especially a businessman or politician.',
+            'Someone who receives a disproportionately large financial reward.',
+          ];
 
     return Container(
       decoration: const BoxDecoration(
@@ -79,7 +88,7 @@ class _TranslationResultBottomSheetState
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Drag Handle
+            // Top Drag Handle Bar
             Center(
               child: Container(
                 width: 38,
@@ -168,7 +177,7 @@ class _TranslationResultBottomSheetState
               const SizedBox(height: 16),
             ],
 
-            // Top Meta Header (Language Badge + Close Button / Saved Bookmark)
+            // Top Header (Language Tag + Close Button / Filled Bookmark)
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -183,25 +192,25 @@ class _TranslationResultBottomSheetState
                     border: Border.all(color: borderColor),
                   ),
                   child: Row(
-                    children: const [
+                    children: [
                       Text(
-                        'EN',
+                        _isSaved ? 'ENGLISH' : 'EN',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: _isSaved ? textMuted : Colors.white,
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(width: 4),
-                      Icon(
+                      const SizedBox(width: 4),
+                      const Icon(
                         Icons.arrow_forward_rounded,
                         color: primaryOrange,
                         size: 12,
                       ),
-                      SizedBox(width: 4),
+                      const SizedBox(width: 4),
                       Text(
-                        'ES',
-                        style: TextStyle(
+                        _isSaved ? 'SPANISH' : 'ES',
+                        style: const TextStyle(
                           color: primaryOrange,
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
@@ -224,31 +233,31 @@ class _TranslationResultBottomSheetState
                           color: primaryOrange,
                           size: 18,
                         ),
-                      ),
-                    const SizedBox(width: 8),
-                    GestureDetector(
-                      onTap: () => Navigator.of(context).pop(),
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: cardColor,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: borderColor),
+                      )
+                    else
+                      GestureDetector(
+                        onTap: () => Navigator.of(context).pop(),
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: cardColor,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: borderColor),
+                          ),
+                          child: const Icon(
+                            Icons.close_rounded,
+                            color: Colors.white70,
+                            size: 18,
+                          ),
                         ),
-                        child: const Icon(
-                          Icons.close_rounded,
-                          color: Colors.white70,
-                          size: 18,
-                        ),
                       ),
-                    ),
                   ],
                 ),
               ],
             ),
             const SizedBox(height: 16),
 
-            // Headword & Audio Button
+            // Headword, Part of Speech & Phonetics
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -271,7 +280,7 @@ class _TranslationResultBottomSheetState
                           ),
                           const SizedBox(width: 8),
                           const Text(
-                            'noun',
+                            'Idiom / noun',
                             style: TextStyle(
                               color: textMuted,
                               fontSize: 13,
@@ -282,7 +291,7 @@ class _TranslationResultBottomSheetState
                       ),
                       const SizedBox(height: 4),
                       const Text(
-                        "/,serən'dɪpəti/",
+                        "/,fæt 'kæt/",
                         style: TextStyle(color: textMuted, fontSize: 13),
                       ),
                     ],
@@ -306,85 +315,7 @@ class _TranslationResultBottomSheetState
             ),
             const SizedBox(height: 16),
 
-            // Translation Result Section Card
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: cardColor,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: borderColor),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'SPANISH TRANSLATION',
-                        style: TextStyle(
-                          color: primaryOrange,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                      if (_isSaved)
-                        Row(
-                          children: const [
-                            Icon(
-                              Icons.check_circle_rounded,
-                              color: successGreen,
-                              size: 12,
-                            ),
-                            SizedBox(width: 4),
-                            Text(
-                              'Exact Match',
-                              style: TextStyle(
-                                color: successGreen,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Serendipia',
-                        style: TextStyle(
-                          color: primaryOrange,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      if (_isSaved)
-                        const Icon(
-                          Icons.volume_up_rounded,
-                          color: Colors.white70,
-                          size: 18,
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    definition,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 13,
-                      height: 1.4,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 14),
-
-            // Contextual Usage Card
+            // Example Card ("EXAMPLE" / "CONTEXT EXAMPLE")
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -404,7 +335,7 @@ class _TranslationResultBottomSheetState
                       ),
                       SizedBox(width: 6),
                       Text(
-                        'CONTEXTUAL USAGE',
+                        'EXAMPLE',
                         style: TextStyle(
                           color: textMuted,
                           fontSize: 10,
@@ -424,7 +355,127 @@ class _TranslationResultBottomSheetState
                       height: 1.35,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+
+            // Term Definitions Section ("TERM DEFINITIONS")
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: cardColor,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: borderColor),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: const [
+                          Icon(
+                            Icons.menu_book_rounded,
+                            color: primaryOrange,
+                            size: 16,
+                          ),
+                          SizedBox(width: 6),
+                          Text(
+                            'TERM DEFINITIONS',
+                            style: TextStyle(
+                              color: primaryOrange,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        '${definitions.length} senses',
+                        style: const TextStyle(color: textMuted, fontSize: 11),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // Numbered Definitions List
+                  ...List.generate(definitions.length, (index) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 10.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 20,
+                            height: 20,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF381F18),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: Text(
+                                '${index + 1}',
+                                style: const TextStyle(
+                                  color: primaryOrange,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              definitions[index],
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                                height: 1.35,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+
+            // Example Definition Section ("EXAMPLE DEFINITION")
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: cardColor,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: borderColor),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: const [
+                      Icon(
+                        Icons.g_translate_rounded,
+                        color: successGreen,
+                        size: 16,
+                      ),
+                      SizedBox(width: 6),
+                      Text(
+                        'EXAMPLE DEFINITION',
+                        style: TextStyle(
+                          color: successGreen,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
                   Text(
                     exampleEs,
                     style: const TextStyle(
