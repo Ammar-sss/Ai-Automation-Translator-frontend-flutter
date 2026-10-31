@@ -89,10 +89,7 @@ class _TranslationResultBottomSheetState
           widget.onSave?.call();
         } else if (state is VocabularyFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: Colors.red,
-            ),
+            SnackBar(content: Text(state.message), backgroundColor: Colors.red),
           );
         }
       },
@@ -420,7 +417,10 @@ class _TranslationResultBottomSheetState
                           ),
                           Text(
                             '${definitions.length} senses',
-                            style: const TextStyle(color: textMuted, fontSize: 11),
+                            style: const TextStyle(
+                              color: textMuted,
+                              fontSize: 11,
+                            ),
                           ),
                         ],
                       ),
@@ -618,7 +618,11 @@ class _TranslationResultBottomSheetState
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: const [
-                          Icon(Icons.sd_card_rounded, color: textMuted, size: 12),
+                          Icon(
+                            Icons.sd_card_rounded,
+                            color: textMuted,
+                            size: 12,
+                          ),
                           SizedBox(width: 6),
                           Text(
                             'Saved on this device first, syncs when online',
