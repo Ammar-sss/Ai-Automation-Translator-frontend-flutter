@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smart_translator/core/models/language_target.dart';
+import 'package:smart_translator/features/translation/domain/repositories/translate_repository.dart';
+import '../controllers/translate_cubit.dart';
 
 import '../../../user/presentation/widgets/profile_drawer.dart';
-import '../../data/models/ai_response.dart';
 import '../widgets/translation_result_bottom_sheet.dart';
 
 class TranslatePage extends StatefulWidget {
@@ -15,14 +18,17 @@ class _TranslatePage extends State<TranslatePage> {
   final TextEditingController _inputController = TextEditingController();
   bool _isOnline = true; // Toggle between Online and Offline modes
   bool _showOfflineBanner = true;
-  String _sourceLanguage = 'English';
-  String _targetLanguage = 'Spanish';
+
+  LanguageTarget _sourceLanguage = LanguageTarget.english;
+  LanguageTarget _targetLanguage = LanguageTarget.arabic;
 
   @override
   void dispose() {
     _inputController.dispose();
     super.dispose();
   }
+
+
 
   void _swapLanguages() {
     setState(() {
@@ -43,7 +49,28 @@ class _TranslatePage extends State<TranslatePage> {
     const textMuted = Color(0xFFAB8981);
     const textSlate = Color(0xFFE4BEB5);
 
-    return Scaffold(
+    return BlocProvider(
+      create: (context) => TranslateCubit(context.read<TranslateRepository>()),
+      child: BlocConsumer<TranslateCubit, TranslateState>(
+        listener: (context, state) {
+          if (state is TranslateSuccess) {
+            TranslationResultBottomSheet.show(
+              context,
+              aiResponse: state.result,
+            );
+          } else if (state is TranslateFailure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
+        builder: (context, state) {
+          final isLoading = state is TranslateLoading;
+
+          return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
         backgroundColor: backgroundColor,
@@ -309,34 +336,12 @@ class _TranslatePage extends State<TranslatePage> {
                   children: [
                     // Language Selectors Row
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF282935),
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: Row(
-                            children: [
-                              Text(
-                                _sourceLanguage,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              const Icon(
-                                Icons.keyboard_arrow_down_rounded,
-                                color: textMuted,
-                                size: 18,
-                              ),
-                            ],
+                        Expanded(
+                          child: _LangDropdown(
+                            value: _sourceLanguage,
+                            onChanged: (l) =>
+                                setState(() => _sourceLanguage = l),
                           ),
                         ),
                         IconButton(
@@ -354,32 +359,11 @@ class _TranslatePage extends State<TranslatePage> {
                             ),
                           ),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF282935),
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: Row(
-                            children: [
-                              Text(
-                                _targetLanguage,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              const Icon(
-                                Icons.keyboard_arrow_down_rounded,
-                                color: textMuted,
-                                size: 18,
-                              ),
-                            ],
+                        Expanded(
+                          child: _LangDropdown(
+                            value: _targetLanguage,
+                            onChanged: (l) =>
+                                setState(() => _targetLanguage = l),
                           ),
                         ),
                       ],
@@ -479,29 +463,32 @@ class _TranslatePage extends State<TranslatePage> {
                               ],
                             ),
                             child: IconButton(
-                              icon: const Icon(
-                                Icons.arrow_forward_rounded,
-                                color: Colors.white,
-                                size: 24,
-                              ),
-                              onPressed: () {
-                                final text = _inputController.text.trim();
-                                TranslationResultBottomSheet.show(
-                                  context,
-                                  aiResponse: AiResponse(
-                                    termWord: text.isNotEmpty
-                                        ? text
-                                        : 'Serendipity',
-                                    exampleSentence:
-                                        '"Finding this quaint bookstore in the gentle rain was pure serendipity."',
-                                    termDefinitions: {
-                                      'The occurrence and development of events by chance in a happy, delightful, or beneficial way.',
+                              icon: isLoading
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.arrow_forward_rounded,
+                                      color: Colors.white,
+                                      size: 24,
+                                    ),
+                              onPressed: isLoading
+                                  ? null
+                                  : () {
+                                      final text = _inputController.text.trim();
+                                      if (text.isNotEmpty) {
+                                        context.read<TranslateCubit>().translate(
+                                              text,
+                                              _sourceLanguage,
+                                              _targetLanguage,
+                                            );
+                                      }
                                     },
-                                    exampleDefinition:
-                                        '"Encontrar esta pintoresca librería bajo la suave lluvia fue pura serendipia."',
-                                  ),
-                                );
-                              },
                             ),
                           ),
                         ],
@@ -541,14 +528,34 @@ class _TranslatePage extends State<TranslatePage> {
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                               ),
-                              onPressed: () {},
-                              icon: const Icon(
-                                Icons.wifi_off_rounded,
-                                size: 16,
-                              ),
-                              label: const Text(
-                                'Translate',
-                                style: TextStyle(
+                              onPressed: isLoading
+                                  ? null
+                                  : () {
+                                      final text = _inputController.text.trim();
+                                      if (text.isNotEmpty) {
+                                        context.read<TranslateCubit>().translate(
+                                              text,
+                                              _sourceLanguage,
+                                              _targetLanguage,
+                                            );
+                                      }
+                                    },
+                              icon: isLoading
+                                  ? const SizedBox(
+                                      width: 14,
+                                      height: 14,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: offlineOrange,
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.wifi_off_rounded,
+                                      size: 16,
+                                    ),
+                              label: Text(
+                                isLoading ? 'Translating...' : 'Translate',
+                                style: const TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -861,6 +868,9 @@ class _TranslatePage extends State<TranslatePage> {
         ),
       ),
     );
+        },
+      ),
+    );
   }
 }
 
@@ -970,6 +980,42 @@ class _CachedTermCard extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _LangDropdown extends StatelessWidget {
+  const _LangDropdown({required this.value, required this.onChanged});
+
+  final LanguageTarget value;
+  final ValueChanged<LanguageTarget> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF282935),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<LanguageTarget>(
+          isExpanded: true,
+          value: value,
+          dropdownColor: const Color(0xFF282935),
+          icon: const Icon(Icons.keyboard_arrow_down_rounded,
+              color: Color(0xFFAB8981)),
+          style: const TextStyle(
+              color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+          items: [
+            for (final l in LanguageTarget.values)
+              DropdownMenuItem(value: l, child: Text(l.name)),
+          ],
+          onChanged: (l) {
+            if (l != null) onChanged(l);
+          },
+        ),
       ),
     );
   }
