@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smart_translator/core/models/language_target.dart';
+import 'package:smart_translator/features/translation/domain/repositories/translate_repository.dart';
+import '../controllers/translate_cubit.dart';
 
 import '../../../user/presentation/widgets/profile_drawer.dart';
-import '../../data/models/ai_response.dart';
 import '../widgets/translation_result_bottom_sheet.dart';
 
 class TranslatePage extends StatefulWidget {
@@ -15,8 +18,9 @@ class _TranslatePage extends State<TranslatePage> {
   final TextEditingController _inputController = TextEditingController();
   bool _isOnline = true; // Toggle between Online and Offline modes
   bool _showOfflineBanner = true;
-  String _sourceLanguage = 'English';
-  String _targetLanguage = 'Spanish';
+
+  LanguageTarget _sourceLanguage = LanguageTarget.english;
+  LanguageTarget _targetLanguage = LanguageTarget.arabic;
 
   @override
   void dispose() {
@@ -43,225 +47,92 @@ class _TranslatePage extends State<TranslatePage> {
     const textMuted = Color(0xFFAB8981);
     const textSlate = Color(0xFFE4BEB5);
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: AppBar(
-        backgroundColor: backgroundColor,
-        elevation: 0,
-        titleSpacing: 16,
-        title: Row(
-          children: [
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: const Color(0xFF282935),
-                borderRadius: BorderRadius.circular(8),
+    return BlocProvider(
+      create: (context) => TranslateCubit(context.read<TranslateRepository>()),
+      child: BlocConsumer<TranslateCubit, TranslateState>(
+        listener: (context, state) {
+          if (state is TranslateSuccess) {
+            TranslationResultBottomSheet.show(
+              context,
+              aiResponse: state.result,
+            );
+          } else if (state is TranslateFailure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
               ),
-              child: const Center(
-                child: Icon(
-                  Icons.translate_rounded,
-                  color: primaryOrange,
-                  size: 18,
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  'AI translator',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  'HOME',
-                  style: TextStyle(
-                    color: textMuted,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.8,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          // Toggleable Online / Offline Status Chip
-          GestureDetector(
-            onTap: () => setState(() => _isOnline = !_isOnline),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: const Color(0xFF282935),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: _isOnline
-                      ? successGreen.withValues(alpha: 0.5)
-                      : offlineOrange.withValues(alpha: 0.5),
-                ),
-              ),
-              child: Row(
+            );
+          }
+        },
+        builder: (context, state) {
+          final isLoading = state is TranslateLoading;
+
+          return Scaffold(
+            backgroundColor: backgroundColor,
+            appBar: AppBar(
+              backgroundColor: backgroundColor,
+              elevation: 0,
+              titleSpacing: 16,
+              title: Row(
                 children: [
                   Container(
-                    width: 6,
-                    height: 6,
+                    width: 32,
+                    height: 32,
                     decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: _isOnline ? successGreen : offlineOrange,
+                      color: const Color(0xFF282935),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    _isOnline ? 'Online' : 'Offline',
-                    style: TextStyle(
-                      color: _isOnline ? successGreen : offlineOrange,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: GestureDetector(
-              onTap: () => ProfileDrawer.open(context),
-              child: Container(
-                width: 32,
-                height: 32,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFFFB5A1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.person,
-                  color: Color(0xFF601300),
-                  size: 18,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Offline Alert Banner (Only shown in offline mode when not dismissed)
-              if (!_isOnline && _showOfflineBanner) ...[
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF33200A),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFF664014)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.wifi_off_rounded,
-                        color: Color(0xFFFFB020),
+                    child: const Center(
+                      child: Icon(
+                        Icons.translate_rounded,
+                        color: primaryOrange,
                         size: 18,
                       ),
-                      const SizedBox(width: 10),
-                      const Expanded(
-                        child: Text(
-                          'Offline, translating needs a connection',
-                          style: TextStyle(
-                            color: Color(0xFFFFB020),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text(
+                        'AI translator',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      GestureDetector(
-                        onTap: () => setState(() => _showOfflineBanner = false),
-                        child: const Icon(
-                          Icons.close_rounded,
-                          color: Color(0xFFFFB020),
-                          size: 16,
+                      Text(
+                        'HOME',
+                        style: TextStyle(
+                          color: textMuted,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.8,
                         ),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 16),
-              ],
-
-              // User Greeting Row
-              Row(
-                children: [
-                  Container(
-                    width: 38,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: primaryOrange, width: 1.5),
-                    ),
-                    child: const CircleAvatar(
-                      backgroundColor: Color(0xFF282935),
-                      child: Text(
-                        'L',
-                        style: TextStyle(
-                          color: primaryOrange,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (_isOnline)
-                          const Text(
-                            'WELCOME BACK',
-                            style: TextStyle(
-                              color: textMuted,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.8,
-                            ),
-                          ),
-                        const Text(
-                          'Hello, Linh',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        if (!_isOnline)
-                          const Text(
-                            'Offline Mode Active',
-                            style: TextStyle(color: textMuted, fontSize: 11),
-                          ),
-                      ],
-                    ),
-                  ),
-                  Container(
+                ],
+              ),
+              actions: [
+                // Toggleable Online / Offline Status Chip
+                GestureDetector(
+                  onTap: () => setState(() => _isOnline = !_isOnline),
+                  child: Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
+                      horizontal: 10,
+                      vertical: 5,
                     ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF282935),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: _isOnline
+                            ? successGreen.withValues(alpha: 0.5)
+                            : offlineOrange.withValues(alpha: 0.5),
+                      ),
                     ),
                     child: Row(
                       children: [
@@ -278,106 +149,180 @@ class _TranslatePage extends State<TranslatePage> {
                           _isOnline ? 'Online' : 'Offline',
                           style: TextStyle(
                             color: _isOnline ? successGreen : offlineOrange,
-                            fontSize: 10,
+                            fontSize: 11,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              // Main Translator Input Card (Switches UI according to Online / Offline mode)
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: containerColor,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: cardBorderColor),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.4),
-                      blurRadius: 18,
-                      offset: const Offset(0, 6),
+                ),
+                const SizedBox(width: 8),
+                Padding(
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: GestureDetector(
+                    onTap: () => ProfileDrawer.open(context),
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFFFB5A1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.person,
+                        color: Color(0xFF601300),
+                        size: 18,
+                      ),
                     ),
-                  ],
+                  ),
+                ),
+              ],
+            ),
+            body: SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Language Selectors Row
+                    // Offline Alert Banner (Only shown in offline mode when not dismissed)
+                    if (!_isOnline && _showOfflineBanner) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF33200A),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFF664014)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.wifi_off_rounded,
+                              color: Color(0xFFFFB020),
+                              size: 18,
+                            ),
+                            const SizedBox(width: 10),
+                            const Expanded(
+                              child: Text(
+                                'Offline, translating needs a connection',
+                                style: TextStyle(
+                                  color: Color(0xFFFFB020),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () =>
+                                  setState(() => _showOfflineBanner = false),
+                              child: const Icon(
+                                Icons.close_rounded,
+                                color: Color(0xFFFFB020),
+                                size: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
+                    // User Greeting Row
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 8,
-                          ),
+                          width: 38,
+                          height: 38,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF282935),
-                            borderRadius: BorderRadius.circular(14),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: primaryOrange,
+                              width: 1.5,
+                            ),
                           ),
-                          child: Row(
+                          child: const CircleAvatar(
+                            backgroundColor: Color(0xFF282935),
+                            child: Text(
+                              'L',
+                              style: TextStyle(
+                                color: primaryOrange,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                _sourceLanguage,
-                                style: const TextStyle(
+                              if (_isOnline)
+                                const Text(
+                                  'WELCOME BACK',
+                                  style: TextStyle(
+                                    color: textMuted,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.8,
+                                  ),
+                                ),
+                              const Text(
+                                'Hello, Linh',
+                                style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 13,
+                                  fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              const SizedBox(width: 4),
-                              const Icon(
-                                Icons.keyboard_arrow_down_rounded,
-                                color: textMuted,
-                                size: 18,
-                              ),
+                              if (!_isOnline)
+                                const Text(
+                                  'Offline Mode Active',
+                                  style: TextStyle(
+                                    color: textMuted,
+                                    fontSize: 11,
+                                  ),
+                                ),
                             ],
                           ),
                         ),
-                        IconButton(
-                          onPressed: _swapLanguages,
-                          icon: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF282935),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.swap_horiz_rounded,
-                              color: primaryOrange,
-                              size: 18,
-                            ),
-                          ),
-                        ),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 8,
+                            horizontal: 8,
+                            vertical: 4,
                           ),
                           decoration: BoxDecoration(
                             color: const Color(0xFF282935),
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(
                             children: [
-                              Text(
-                                _targetLanguage,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
+                              Container(
+                                width: 6,
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: _isOnline
+                                      ? successGreen
+                                      : offlineOrange,
                                 ),
                               ),
                               const SizedBox(width: 4),
-                              const Icon(
-                                Icons.keyboard_arrow_down_rounded,
-                                color: textMuted,
-                                size: 18,
+                              Text(
+                                _isOnline ? 'Online' : 'Offline',
+                                style: TextStyle(
+                                  color: _isOnline
+                                      ? successGreen
+                                      : offlineOrange,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ],
                           ),
@@ -386,479 +331,589 @@ class _TranslatePage extends State<TranslatePage> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Text Input Field
-                    TextFormField(
-                      controller: _inputController,
-                      maxLines: 4,
-                      onChanged: (_) => setState(() {}),
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
-                      decoration: InputDecoration(
-                        hintText: _isOnline
-                            ? 'Type word or phrase to translate...'
-                            : 'Type word or phrase...',
-                        hintStyle: const TextStyle(
-                          color: textMuted,
-                          fontSize: 15,
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.zero,
+                    // Main Translator Input Card (Switches UI according to Online / Offline mode)
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: containerColor,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: cardBorderColor),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.4),
+                            blurRadius: 18,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Language Selectors Row
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _LangDropdown(
+                                  value: _sourceLanguage,
+                                  onChanged: (l) =>
+                                      setState(() => _sourceLanguage = l),
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: _swapLanguages,
+                                icon: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF282935),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.swap_horiz_rounded,
+                                    color: primaryOrange,
+                                    size: 18,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: _LangDropdown(
+                                  value: _targetLanguage,
+                                  onChanged: (l) =>
+                                      setState(() => _targetLanguage = l),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Text Input Field
+                          TextFormField(
+                            controller: _inputController,
+                            maxLines: 4,
+                            onChanged: (_) => setState(() {}),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: _isOnline
+                                  ? 'Type word or phrase to translate...'
+                                  : 'Type word or phrase...',
+                              hintStyle: const TextStyle(
+                                color: textMuted,
+                                fontSize: 15,
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          if (!_isOnline) ...[
+                            // Offline Cached Info Row
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: const [
+                                    Icon(
+                                      Icons.check_circle_outline_rounded,
+                                      color: successGreen,
+                                      size: 14,
+                                    ),
+                                    SizedBox(width: 6),
+                                    Text(
+                                      'Cached dictionary available',
+                                      style: TextStyle(
+                                        color: offlineOrange,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Text(
+                                  '${_inputController.text.length} / 250',
+                                  style: const TextStyle(
+                                    color: textMuted,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+
+                          // Bottom Action Row
+                          if (_isOnline)
+                            // ONLINE MODE: Mic icon, Paste icon + Large Floating Orange Submit Button (→)
+                            Row(
+                              children: [
+                                IconButton(
+                                  onPressed: () {},
+                                  icon: const Icon(
+                                    Icons.mic_none_rounded,
+                                    color: Colors.white70,
+                                    size: 22,
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: () {},
+                                  icon: const Icon(
+                                    Icons.content_paste_rounded,
+                                    color: Colors.white70,
+                                    size: 20,
+                                  ),
+                                ),
+                                const Spacer(),
+                                // Large Orange Submit Button (→)
+                                Container(
+                                  width: 52,
+                                  height: 52,
+                                  decoration: BoxDecoration(
+                                    color: primaryOrange,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: primaryOrange.withValues(
+                                          alpha: 0.5,
+                                        ),
+                                        blurRadius: 16,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: IconButton(
+                                    icon: isLoading
+                                        ? const SizedBox(
+                                            width: 20,
+                                            height: 20,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: Colors.white,
+                                            ),
+                                          )
+                                        : const Icon(
+                                            Icons.arrow_forward_rounded,
+                                            color: Colors.white,
+                                            size: 24,
+                                          ),
+                                    onPressed: isLoading
+                                        ? null
+                                        : () {
+                                            final text = _inputController.text
+                                                .trim();
+                                            if (text.isNotEmpty) {
+                                              context
+                                                  .read<TranslateCubit>()
+                                                  .translate(
+                                                    text,
+                                                    _sourceLanguage,
+                                                    _targetLanguage,
+                                                  );
+                                            }
+                                          },
+                                  ),
+                                ),
+                              ],
+                            )
+                          else
+                            // OFFLINE MODE: Actions bar
+                            Row(
+                              children: [
+                                IconButton(
+                                  onPressed: () {},
+                                  icon: const Icon(
+                                    Icons.content_paste_rounded,
+                                    color: textMuted,
+                                    size: 20,
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    _inputController.clear();
+                                    setState(() {});
+                                  },
+                                  icon: const Icon(
+                                    Icons.backspace_outlined,
+                                    color: textMuted,
+                                    size: 20,
+                                  ),
+                                ),
+                                const Spacer(),
+                                SizedBox(
+                                  height: 40,
+                                  child: ElevatedButton.icon(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF52281E),
+                                      foregroundColor: offlineOrange,
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                    ),
+                                    onPressed: isLoading
+                                        ? null
+                                        : () {
+                                            final text = _inputController.text
+                                                .trim();
+                                            if (text.isNotEmpty) {
+                                              context
+                                                  .read<TranslateCubit>()
+                                                  .translate(
+                                                    text,
+                                                    _sourceLanguage,
+                                                    _targetLanguage,
+                                                  );
+                                            }
+                                          },
+                                    icon: isLoading
+                                        ? const SizedBox(
+                                            width: 14,
+                                            height: 14,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: offlineOrange,
+                                            ),
+                                          )
+                                        : const Icon(
+                                            Icons.wifi_off_rounded,
+                                            size: 16,
+                                          ),
+                                    label: Text(
+                                      isLoading
+                                          ? 'Translating...'
+                                          : 'Translate',
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 24),
 
-                    if (!_isOnline) ...[
-                      // Offline Cached Info Row
+                    if (_isOnline) ...[
+                      // ONLINE MODE: Recent Pill Chips Section
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
+                        children: const [
                           Row(
-                            children: const [
+                            children: [
                               Icon(
-                                Icons.check_circle_outline_rounded,
-                                color: successGreen,
-                                size: 14,
+                                Icons.history_rounded,
+                                color: textMuted,
+                                size: 18,
                               ),
                               SizedBox(width: 6),
                               Text(
-                                'Cached dictionary available',
+                                'RECENT',
                                 style: TextStyle(
-                                  color: offlineOrange,
+                                  color: textMuted,
                                   fontSize: 11,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.8,
                                 ),
                               ),
                             ],
                           ),
                           Text(
-                            '${_inputController.text.length} / 250',
-                            style: const TextStyle(
+                            'Clear',
+                            style: TextStyle(
                               color: textMuted,
-                              fontSize: 11,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
-                    ],
+                      const SizedBox(height: 12),
 
-                    // Bottom Action Row
-                    if (_isOnline)
-                      // ONLINE MODE: Mic icon, Paste icon + Large Floating Orange Submit Button (→)
+                      // Horizontal Recent Chips with Phonetics
+                      SizedBox(
+                        height: 40,
+                        child: ListView(
+                          scrollDirection: Axis.horizontal,
+                          children: const [
+                            _RecentChip(
+                              term: 'Ephemeral',
+                              phonetics: '/ɪˈfem.ər.əl/',
+                            ),
+                            SizedBox(width: 8),
+                            _RecentChip(
+                              term: 'Ikigai',
+                              phonetics: '/i.ki.ɡai/',
+                            ),
+                            SizedBox(width: 8),
+                            _RecentChip(
+                              term: 'Petrichor',
+                              phonetics: '/pe.tri.kor/',
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // ONLINE MODE: 2-Column Metrics Cards (Daily Streak 14 days + Mastered 128 words)
                       Row(
                         children: [
-                          IconButton(
-                            onPressed: () {},
-                            icon: const Icon(
-                              Icons.mic_none_rounded,
-                              color: Colors.white70,
-                              size: 22,
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () {},
-                            icon: const Icon(
-                              Icons.content_paste_rounded,
-                              color: Colors.white70,
-                              size: 20,
-                            ),
-                          ),
-                          const Spacer(),
-                          // Large Orange Submit Button (→)
-                          Container(
-                            width: 52,
-                            height: 52,
-                            decoration: BoxDecoration(
-                              color: primaryOrange,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: primaryOrange.withValues(alpha: 0.5),
-                                  blurRadius: 16,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: IconButton(
-                              icon: const Icon(
-                                Icons.arrow_forward_rounded,
-                                color: Colors.white,
-                                size: 24,
+                          // Daily Streak Card
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: containerColor,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: cardBorderColor),
                               ),
-                              onPressed: () {
-                                final text = _inputController.text.trim();
-                                TranslationResultBottomSheet.show(
-                                  context,
-                                  aiResponse: AiResponse(
-                                    termWord: text.isNotEmpty
-                                        ? text
-                                        : 'Serendipity',
-                                    exampleSentence:
-                                        '"Finding this quaint bookstore in the gentle rain was pure serendipity."',
-                                    termDefinitions: {
-                                      'The occurrence and development of events by chance in a happy, delightful, or beneficial way.',
-                                    },
-                                    exampleDefinition:
-                                        '"Encontrar esta pintoresca librería bajo la suave lluvia fue pura serendipia."',
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: const [
+                                      Text(
+                                        'DAILY STREAK',
+                                        style: TextStyle(
+                                          color: textMuted,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                          letterSpacing: 0.8,
+                                        ),
+                                      ),
+                                      Icon(
+                                        Icons.local_fire_department_rounded,
+                                        color: Color(0xFFFFB020),
+                                        size: 18,
+                                      ),
+                                    ],
                                   ),
-                                );
-                              },
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.baseline,
+                                    textBaseline: TextBaseline.alphabetic,
+                                    children: const [
+                                      Text(
+                                        '14',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 28,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        'days',
+                                        style: TextStyle(
+                                          color: textSlate,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+
+                          // Mastered Card
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: containerColor,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: cardBorderColor),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: const [
+                                      Text(
+                                        'MASTERED',
+                                        style: TextStyle(
+                                          color: textMuted,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                          letterSpacing: 0.8,
+                                        ),
+                                      ),
+                                      Icon(
+                                        Icons.check_circle_rounded,
+                                        color: successGreen,
+                                        size: 18,
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.baseline,
+                                    textBaseline: TextBaseline.alphabetic,
+                                    children: const [
+                                      Text(
+                                        '128',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 28,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        'words',
+                                        style: TextStyle(
+                                          color: textSlate,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],
-                      )
-                    else
-                      // OFFLINE MODE: Actions bar
+                      ),
+                    ] else ...[
+                      // OFFLINE MODE: Recent Cached Section
                       Row(
-                        children: [
-                          IconButton(
-                            onPressed: () {},
-                            icon: const Icon(
-                              Icons.content_paste_rounded,
-                              color: textMuted,
-                              size: 20,
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              _inputController.clear();
-                              setState(() {});
-                            },
-                            icon: const Icon(
-                              Icons.backspace_outlined,
-                              color: textMuted,
-                              size: 20,
-                            ),
-                          ),
-                          const Spacer(),
-                          SizedBox(
-                            height: 40,
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF52281E),
-                                foregroundColor: offlineOrange,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: const [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.history_rounded,
+                                color: Color(0xFFFFB020),
+                                size: 18,
                               ),
-                              onPressed: () {},
-                              icon: const Icon(
-                                Icons.wifi_off_rounded,
-                                size: 16,
-                              ),
-                              label: const Text(
-                                'Translate',
+                              SizedBox(width: 6),
+                              Text(
+                                'Recent Cached',
                                 style: TextStyle(
-                                  fontSize: 13,
+                                  color: Colors.white,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
+                            ],
+                          ),
+                          Text(
+                            'LOCAL DB',
+                            style: TextStyle(
+                              color: textMuted,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.8,
                             ),
                           ),
                         ],
                       ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
+                      const SizedBox(height: 12),
 
-              if (_isOnline) ...[
-                // ONLINE MODE: Recent Pill Chips Section
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [
-                    Row(
-                      children: [
-                        Icon(Icons.history_rounded, color: textMuted, size: 18),
-                        SizedBox(width: 6),
-                        Text(
-                          'RECENT',
-                          style: TextStyle(
-                            color: textMuted,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.8,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Text(
-                      'Clear',
-                      style: TextStyle(
-                        color: textMuted,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                // Horizontal Recent Chips with Phonetics
-                SizedBox(
-                  height: 40,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: const [
-                      _RecentChip(
-                        term: 'Ephemeral',
-                        phonetics: '/ɪˈfem.ər.əl/',
-                      ),
-                      SizedBox(width: 8),
-                      _RecentChip(term: 'Ikigai', phonetics: '/i.ki.ɡai/'),
-                      SizedBox(width: 8),
-                      _RecentChip(term: 'Petrichor', phonetics: '/pe.tri.kor/'),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // ONLINE MODE: 2-Column Metrics Cards (Daily Streak 14 days + Mastered 128 words)
-                Row(
-                  children: [
-                    // Daily Streak Card
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: containerColor,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: cardBorderColor),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: const [
-                                Text(
-                                  'DAILY STREAK',
-                                  style: TextStyle(
-                                    color: textMuted,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 0.8,
-                                  ),
-                                ),
-                                Icon(
-                                  Icons.local_fire_department_rounded,
-                                  color: Color(0xFFFFB020),
-                                  size: 18,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.baseline,
-                              textBaseline: TextBaseline.alphabetic,
-                              children: const [
-                                Text(
-                                  '14',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(width: 4),
-                                Text(
-                                  'days',
-                                  style: TextStyle(
-                                    color: textSlate,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-
-                    // Mastered Card
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: containerColor,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: cardBorderColor),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: const [
-                                Text(
-                                  'MASTERED',
-                                  style: TextStyle(
-                                    color: textMuted,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 0.8,
-                                  ),
-                                ),
-                                Icon(
-                                  Icons.check_circle_rounded,
-                                  color: successGreen,
-                                  size: 18,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.baseline,
-                              textBaseline: TextBaseline.alphabetic,
-                              children: const [
-                                Text(
-                                  '128',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(width: 4),
-                                Text(
-                                  'words',
-                                  style: TextStyle(
-                                    color: textSlate,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ] else ...[
-                // OFFLINE MODE: Recent Cached Section
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.history_rounded,
-                          color: Color(0xFFFFB020),
-                          size: 18,
-                        ),
-                        SizedBox(width: 6),
-                        Text(
-                          'Recent Cached',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Text(
-                      'LOCAL DB',
-                      style: TextStyle(
-                        color: textMuted,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.8,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                // Horizontal Recent Cached Terms List
-                SizedBox(
-                  height: 88,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: const [
-                      _CachedTermCard(
-                        langPair: 'EN → ES',
-                        term: 'Ephemeral',
-                        translation: 'Efímero',
-                      ),
-                      SizedBox(width: 10),
-                      _CachedTermCard(
-                        langPair: 'JA → EN',
-                        term: 'Ikigai',
-                        translation: 'Life Purpose',
-                      ),
-                      SizedBox(width: 10),
-                      _CachedTermCard(
-                        langPair: 'EN → ES',
-                        term: 'Petrichor',
-                        translation: 'Petricor',
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // Offline Pack Status Card
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: containerColor,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: cardBorderColor),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF282935),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: const Icon(
-                          Icons.done_all_rounded,
-                          color: offlineOrange,
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      // Horizontal Recent Cached Terms List
+                      SizedBox(
+                        height: 88,
+                        child: ListView(
+                          scrollDirection: Axis.horizontal,
                           children: const [
-                            Text(
-                              'Spanish Offline Pack',
+                            _CachedTermCard(
+                              langPair: 'EN → ES',
+                              term: 'Ephemeral',
+                              translation: 'Efímero',
+                            ),
+                            SizedBox(width: 10),
+                            _CachedTermCard(
+                              langPair: 'JA → EN',
+                              term: 'Ikigai',
+                              translation: 'Life Purpose',
+                            ),
+                            SizedBox(width: 10),
+                            _CachedTermCard(
+                              langPair: 'EN → ES',
+                              term: 'Petrichor',
+                              translation: 'Petricor',
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Offline Pack Status Card
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: containerColor,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: cardBorderColor),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF282935),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: const Icon(
+                                Icons.done_all_rounded,
+                                color: offlineOrange,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: const [
+                                  Text(
+                                    'Spanish Offline Pack',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(height: 2),
+                                  Text(
+                                    '42 MB • Fully installed',
+                                    style: TextStyle(
+                                      color: textMuted,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Text(
+                              'Ready',
                               style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
+                                color: successGreen,
+                                fontSize: 12,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            SizedBox(height: 2),
-                            Text(
-                              '42 MB • Fully installed',
-                              style: TextStyle(color: textMuted, fontSize: 12),
-                            ),
                           ],
                         ),
                       ),
-                      const Text(
-                        'Ready',
-                        style: TextStyle(
-                          color: successGreen,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
                     ],
-                  ),
+                    const SizedBox(height: 16),
+                  ],
                 ),
-              ],
-              const SizedBox(height: 16),
-            ],
-          ),
-        ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -970,6 +1025,47 @@ class _CachedTermCard extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _LangDropdown extends StatelessWidget {
+  const _LangDropdown({required this.value, required this.onChanged});
+
+  final LanguageTarget value;
+  final ValueChanged<LanguageTarget> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF282935),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<LanguageTarget>(
+          isExpanded: true,
+          value: value,
+          dropdownColor: const Color(0xFF282935),
+          icon: const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: Color(0xFFAB8981),
+          ),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+          ),
+          items: [
+            for (final l in LanguageTarget.values)
+              DropdownMenuItem(value: l, child: Text(l.name)),
+          ],
+          onChanged: (l) {
+            if (l != null) onChanged(l);
+          },
+        ),
       ),
     );
   }
