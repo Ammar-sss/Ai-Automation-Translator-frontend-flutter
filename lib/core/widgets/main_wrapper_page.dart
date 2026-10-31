@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:smart_translator/features/practice/presentation/pages/practice_page.dart';
+
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/translation/presentation/pages/translate_page.dart';
-import '../../features/vocabulary/presentation/pages/vocabulary_page.dart';
 import '../../features/user/presentation/widgets/profile_drawer.dart';
+import '../../features/vocabulary/presentation/pages/vocabulary_page.dart';
 
 class MainWrapperPage extends StatefulWidget {
   const MainWrapperPage({super.key});
@@ -12,12 +14,19 @@ class MainWrapperPage extends StatefulWidget {
 }
 
 class _MainWrapperPageState extends State<MainWrapperPage> {
-  int _index = 0;
+  // Page indexes, kept in one place to avoid mismatches
+  static const int _homeIndex = 0;
+  static const int _vocabIndex = 1;
+  static const int _translateIndex = 2;
+  static const int _practiceIndex = 3;
+
+  int _index = _homeIndex;
 
   final List<Widget> _pages = const [
-    HomePage(), // Home is now the Translation page!
-    VocabularyPage(), // Vocab
-    TranslatePage(), // Practice / Extra Translate view
+    HomePage(),       // 0
+    VocabularyPage(), // 1
+    TranslatePage(),  // 2
+    PracticePage(),   // 3
   ];
 
   @override
@@ -47,12 +56,8 @@ class _MainWrapperPageState extends State<MainWrapperPage> {
           ],
         ),
         child: IconButton(
-          icon: const Icon(Icons.mic_rounded, color: Colors.white, size: 26),
-          onPressed: () {
-            setState(() {
-              _index = 0; // Go to Translate Home
-            });
-          },
+          icon: const Icon(Icons.translate, color: Colors.white, size: 26),
+          onPressed: () => setState(() => _index = _translateIndex),
         ),
       ),
       bottomNavigationBar: BottomAppBar(
@@ -69,32 +74,30 @@ class _MainWrapperPageState extends State<MainWrapperPage> {
                 icon: Icons.home_outlined,
                 activeIcon: Icons.home_rounded,
                 label: 'Home',
-                isSelected: _index == 0,
-                onTap: () => setState(() => _index = 0),
+                isSelected: _index == _homeIndex,
+                onTap: () => setState(() => _index = _homeIndex),
               ),
               _NavItem(
                 icon: Icons.menu_book_outlined,
                 activeIcon: Icons.menu_book_rounded,
                 label: 'Vocab',
-                isSelected: _index == 1,
-                onTap: () => setState(() => _index = 1),
+                isSelected: _index == _vocabIndex,
+                onTap: () => setState(() => _index = _vocabIndex),
               ),
               const SizedBox(width: 48), // Space for central FAB
               _NavItem(
                 icon: Icons.flag_outlined,
                 activeIcon: Icons.flag_rounded,
                 label: 'Practice',
-                isSelected: _index == 2,
-                onTap: () => setState(() => _index = 2),
+                isSelected: _index == _practiceIndex,
+                onTap: () => setState(() => _index = _practiceIndex),
               ),
               _NavItem(
                 icon: Icons.person_outline_rounded,
                 activeIcon: Icons.person_rounded,
                 label: 'Profile',
                 isSelected: false,
-                onTap: () {
-                  ProfileDrawer.open(context);
-                },
+                onTap: () => ProfileDrawer.open(context),
               ),
             ],
           ),

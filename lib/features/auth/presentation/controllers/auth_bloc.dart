@@ -114,8 +114,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         return;
       }
 
-      final user = await _userRepository.getProfile();
       final roles = await _tokenStorage.readRoles();
+
+      User user;
+      try{
+        user = await _userRepository.getProfile();
+      } catch(_) {
+        user = const User();
+      }
       emit(AuthAuthenticated(user: user, roles: roles));
     } catch (_) {
       try {

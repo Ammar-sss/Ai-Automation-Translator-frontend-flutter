@@ -15,6 +15,7 @@ import 'app.dart';
 import 'core/network/api_client.dart';
 import 'core/router/app_router.dart';
 import 'features/auth/presentation/controllers/auth_bloc.dart';
+import 'features/user/presentation/controllers/user_cubit.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -61,18 +62,19 @@ Future<void> main() async {
       providers: [
         RepositoryProvider<AuthRepository>.value(value: authRepository),
         RepositoryProvider<UserRepository>.value(value: userRepository),
-        RepositoryProvider<TranslateRepository>.value(
-          value: translateRepository,
-        ),
-        RepositoryProvider<VocabularyRepository>.value(
-          value: vocabularyRepository,
-        ),
+        RepositoryProvider<TranslateRepository>.value(value: translateRepository),
+        RepositoryProvider<VocabularyRepository>.value(value: vocabularyRepository),
         RepositoryProvider.value(value: tokenStorage),
         RepositoryProvider.value(value: apiClient),
         RepositoryProvider.value(value: appDatabase),
       ],
-      child: BlocProvider.value(
-        value: authBloc,
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: authBloc),
+          BlocProvider(
+            create: (context) => UserCubit(userRepository)..loadProfile(),
+          ),
+        ],
         child: SmartTranslatorApp(router: router),
       ),
     ),

@@ -1,7 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:smart_translator/features/translation/data/models/ai_response.dart';
-import 'package:smart_translator/features/translation/presentation/widgets/translation_result_bottom_sheet.dart';
-import 'package:smart_translator/features/user/presentation/widgets/profile_drawer.dart';
+import '../../../user/presentation/widgets/profile_drawer.dart';
+
+// ---------------------------------------------------------------------------
+// Design tokens (same palette as MainWrapperPage)
+// ---------------------------------------------------------------------------
+class _C {
+  static const bg = Color(0xFF11131D);
+  static const card = Color(0xFF191B26);
+  static const cardAlt = Color(0xFF1F2230);
+  static const border = Color(0xFF2A2D3B);
+  static const orange = Color(0xFFFF5A2C);
+  static const green = Color(0xFF3DDC84);
+  static const textPrimary = Colors.white;
+  static const textSecondary = Color(0xFFA9ABB8);
+  static const textMuted = Color(0xFF7C7F8F);
+}
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -11,850 +24,78 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final TextEditingController _inputController = TextEditingController();
-  bool _isOnline = true; // Toggle between Online and Offline modes
-  bool _showOfflineBanner = true;
-  String _sourceLanguage = 'English';
-  String _targetLanguage = 'Spanish';
+  final TextEditingController _controller = TextEditingController();
+  bool _wordSaved = false;
+
+  // Placeholder data: replace with your real state / repositories.
+  static const _recent = <_RecentItem>[
+    _RecentItem('Ephemeral', 'Efímero', 'Spanish', '10m ago'),
+    _RecentItem('Petrichor', 'Petricor', 'Spanish', '2h ago'),
+    _RecentItem('Ikigai', 'Razón de ser', 'Spanish', 'Yesterday'),
+  ];
 
   @override
   void dispose() {
-    _inputController.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
-  void _swapLanguages() {
-    setState(() {
-      final temp = _sourceLanguage;
-      _sourceLanguage = _targetLanguage;
-      _targetLanguage = temp;
-    });
+  void _translate() {
+    final text = _controller.text.trim();
+    if (text.isEmpty) return;
+    // TODO: call your translation use case / bloc here.
+    FocusScope.of(context).unfocus();
   }
 
   @override
   Widget build(BuildContext context) {
-    const backgroundColor = Color(0xFF11131D);
-    const containerColor = Color(0xFF1E1F2A);
-    const cardBorderColor = Color(0xFF282935);
-    const primaryOrange = Color(0xFFFF5A2C);
-    const successGreen = Color(0xFF4AE183);
-    const offlineOrange = Color(0xFFFF8A65);
-    const textMuted = Color(0xFFAB8981);
-    const textSlate = Color(0xFFE4BEB5);
-
     return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: AppBar(
-        backgroundColor: backgroundColor,
-        elevation: 0,
-        titleSpacing: 16,
-        title: Row(
-          children: [
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: const Color(0xFF282935),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Center(
-                child: Icon(
-                  Icons.translate_rounded,
-                  color: primaryOrange,
-                  size: 18,
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  'AI translator',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  'HOME',
-                  style: TextStyle(
-                    color: textMuted,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.8,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          // Toggleable Online / Offline Status Chip
-          GestureDetector(
-            onTap: () => setState(() => _isOnline = !_isOnline),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: const Color(0xFF282935),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: _isOnline
-                      ? successGreen.withValues(alpha: 0.5)
-                      : offlineOrange.withValues(alpha: 0.5),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: _isOnline ? successGreen : offlineOrange,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    _isOnline ? 'Online' : 'Offline',
-                    style: TextStyle(
-                      color: _isOnline ? successGreen : offlineOrange,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: GestureDetector(
-              onTap: () => ProfileDrawer.open(context),
-              child: Container(
-                width: 32,
-                height: 32,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFFFB5A1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.person,
-                  color: Color(0xFF601300),
-                  size: 18,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+      backgroundColor: _C.bg,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        bottom: false,
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
             children: [
-              // Offline Alert Banner (Only shown in offline mode when not dismissed)
-              if (!_isOnline && _showOfflineBanner) ...[
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF33200A),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFF664014)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.wifi_off_rounded,
-                        color: Color(0xFFFFB020),
-                        size: 18,
-                      ),
-                      const SizedBox(width: 10),
-                      const Expanded(
-                        child: Text(
-                          'Offline, translating needs a connection',
-                          style: TextStyle(
-                            color: Color(0xFFFFB020),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () => setState(() => _showOfflineBanner = false),
-                        child: const Icon(
-                          Icons.close_rounded,
-                          color: Color(0xFFFFB020),
-                          size: 16,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-
-              // User Greeting Row
-              Row(
-                children: [
-                  Container(
-                    width: 38,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: primaryOrange, width: 1.5),
-                    ),
-                    child: const CircleAvatar(
-                      backgroundColor: Color(0xFF282935),
-                      child: Text(
-                        'L',
-                        style: TextStyle(
-                          color: primaryOrange,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (_isOnline)
-                          const Text(
-                            'WELCOME BACK',
-                            style: TextStyle(
-                              color: textMuted,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.8,
-                            ),
-                          ),
-                        const Text(
-                          'Hello, Linh',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        if (!_isOnline)
-                          const Text(
-                            'Offline Mode Active',
-                            style: TextStyle(color: textMuted, fontSize: 11),
-                          ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF282935),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 6,
-                          height: 6,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: _isOnline ? successGreen : offlineOrange,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          _isOnline ? 'Online' : 'Offline',
-                          style: TextStyle(
-                            color: _isOnline ? successGreen : offlineOrange,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+              const _TopBar(),
+              const SizedBox(height: 16),
+              const _Greeting(),
+              const SizedBox(height: 16),
+              _TranslateInputCard(
+                controller: _controller,
+                onSubmit: _translate,
               ),
-              const SizedBox(height: 20),
-
-              // Main Translator Input Card (Switches UI according to Online / Offline mode)
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: containerColor,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: cardBorderColor),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.4),
-                      blurRadius: 18,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Language Selectors Row
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF282935),
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: Row(
-                            children: [
-                              Text(
-                                _sourceLanguage,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              const Icon(
-                                Icons.keyboard_arrow_down_rounded,
-                                color: textMuted,
-                                size: 18,
-                              ),
-                            ],
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: _swapLanguages,
-                          icon: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF282935),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.swap_horiz_rounded,
-                              color: primaryOrange,
-                              size: 18,
-                            ),
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF282935),
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: Row(
-                            children: [
-                              Text(
-                                _targetLanguage,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              const Icon(
-                                Icons.keyboard_arrow_down_rounded,
-                                color: textMuted,
-                                size: 18,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Text Input Field
-                    TextFormField(
-                      controller: _inputController,
-                      maxLines: 4,
-                      onChanged: (_) => setState(() {}),
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
-                      decoration: InputDecoration(
-                        hintText: _isOnline
-                            ? 'Type word or phrase to translate...'
-                            : 'Type word or phrase...',
-                        hintStyle: const TextStyle(
-                          color: textMuted,
-                          fontSize: 15,
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    if (!_isOnline) ...[
-                      // Offline Cached Info Row
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: const [
-                              Icon(
-                                Icons.check_circle_outline_rounded,
-                                color: successGreen,
-                                size: 14,
-                              ),
-                              SizedBox(width: 6),
-                              Text(
-                                'Cached dictionary available',
-                                style: TextStyle(
-                                  color: offlineOrange,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Text(
-                            '${_inputController.text.length} / 250',
-                            style: const TextStyle(
-                              color: textMuted,
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                    ],
-
-                    // Bottom Action Row
-                    if (_isOnline)
-                      // ONLINE MODE: Mic icon, Paste icon + Large Floating Orange Submit Button (→)
-                      Row(
-                        children: [
-                          IconButton(
-                            onPressed: () {},
-                            icon: const Icon(
-                              Icons.mic_none_rounded,
-                              color: Colors.white70,
-                              size: 22,
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () {},
-                            icon: const Icon(
-                              Icons.content_paste_rounded,
-                              color: Colors.white70,
-                              size: 20,
-                            ),
-                          ),
-                          const Spacer(),
-                          // Large Orange Submit Button (→)
-                          Container(
-                            width: 52,
-                            height: 52,
-                            decoration: BoxDecoration(
-                              color: primaryOrange,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: primaryOrange.withValues(alpha: 0.5),
-                                  blurRadius: 16,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: IconButton(
-                              icon: const Icon(
-                                Icons.arrow_forward_rounded,
-                                color: Colors.white,
-                                size: 24,
-                              ),
-                              onPressed: () {
-                                final text = _inputController.text.trim();
-                                TranslationResultBottomSheet.show(
-                                  context,
-                                  aiResponse: AiResponse(
-                                    termWord: text.isNotEmpty
-                                        ? text
-                                        : 'Serendipity',
-                                    exampleSentence:
-                                        '"Finding this quaint bookstore in the gentle rain was pure serendipity."',
-                                    termDefinitions: {
-                                      'The occurrence and development of events by chance in a happy, delightful, or beneficial way.',
-                                    },
-                                    exampleDefinition:
-                                        '"Encontrar esta pintoresca librería bajo la suave lluvia fue pura serendipia."',
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      )
-                    else
-                      // OFFLINE MODE: Actions bar
-                      Row(
-                        children: [
-                          IconButton(
-                            onPressed: () {},
-                            icon: const Icon(
-                              Icons.content_paste_rounded,
-                              color: textMuted,
-                              size: 20,
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              _inputController.clear();
-                              setState(() {});
-                            },
-                            icon: const Icon(
-                              Icons.backspace_outlined,
-                              color: textMuted,
-                              size: 20,
-                            ),
-                          ),
-                          const Spacer(),
-                          SizedBox(
-                            height: 40,
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF52281E),
-                                foregroundColor: offlineOrange,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                              ),
-                              onPressed: () {},
-                              icon: const Icon(
-                                Icons.wifi_off_rounded,
-                                size: 16,
-                              ),
-                              label: const Text(
-                                'Translate',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                  ],
-                ),
+              const SizedBox(height: 16),
+              _DailyFocusCard(
+                learned: 12,
+                goal: 20,
+                onContinue: () {
+                  // TODO: navigate to the practice session.
+                },
+              ),
+              const SizedBox(height: 16),
+              _WordOfTheDayCard(
+                saved: _wordSaved,
+                onSpeak: () {
+                  // TODO: text-to-speech for the word.
+                },
+                onSave: () => setState(() => _wordSaved = !_wordSaved),
               ),
               const SizedBox(height: 24),
-
-              if (_isOnline) ...[
-                // ONLINE MODE: Recent Pill Chips Section
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [
-                    Row(
-                      children: [
-                        Icon(Icons.history_rounded, color: textMuted, size: 18),
-                        SizedBox(width: 6),
-                        Text(
-                          'RECENT',
-                          style: TextStyle(
-                            color: textMuted,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.8,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Text(
-                      'Clear',
-                      style: TextStyle(
-                        color: textMuted,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                // Horizontal Recent Chips with Phonetics
-                SizedBox(
-                  height: 40,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: const [
-                      _RecentChip(
-                        term: 'Ephemeral',
-                        phonetics: '/ɪˈfem.ər.əl/',
-                      ),
-                      SizedBox(width: 8),
-                      _RecentChip(term: 'Ikigai', phonetics: '/i.ki.ɡai/'),
-                      SizedBox(width: 8),
-                      _RecentChip(term: 'Petrichor', phonetics: '/pe.tri.kor/'),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // ONLINE MODE: 2-Column Metrics Cards (Daily Streak 14 days + Mastered 128 words)
-                Row(
-                  children: [
-                    // Daily Streak Card
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: containerColor,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: cardBorderColor),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: const [
-                                Text(
-                                  'DAILY STREAK',
-                                  style: TextStyle(
-                                    color: textMuted,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 0.8,
-                                  ),
-                                ),
-                                Icon(
-                                  Icons.local_fire_department_rounded,
-                                  color: Color(0xFFFFB020),
-                                  size: 18,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.baseline,
-                              textBaseline: TextBaseline.alphabetic,
-                              children: const [
-                                Text(
-                                  '14',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(width: 4),
-                                Text(
-                                  'days',
-                                  style: TextStyle(
-                                    color: textSlate,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-
-                    // Mastered Card
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: containerColor,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: cardBorderColor),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: const [
-                                Text(
-                                  'MASTERED',
-                                  style: TextStyle(
-                                    color: textMuted,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 0.8,
-                                  ),
-                                ),
-                                Icon(
-                                  Icons.check_circle_rounded,
-                                  color: successGreen,
-                                  size: 18,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.baseline,
-                              textBaseline: TextBaseline.alphabetic,
-                              children: const [
-                                Text(
-                                  '128',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(width: 4),
-                                Text(
-                                  'words',
-                                  style: TextStyle(
-                                    color: textSlate,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ] else ...[
-                // OFFLINE MODE: Recent Cached Section
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.history_rounded,
-                          color: Color(0xFFFFB020),
-                          size: 18,
-                        ),
-                        SizedBox(width: 6),
-                        Text(
-                          'Recent Cached',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Text(
-                      'LOCAL DB',
-                      style: TextStyle(
-                        color: textMuted,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.8,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                // Horizontal Recent Cached Terms List
-                SizedBox(
-                  height: 88,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: const [
-                      _CachedTermCard(
-                        langPair: 'EN → ES',
-                        term: 'Ephemeral',
-                        translation: 'Efímero',
-                      ),
-                      SizedBox(width: 10),
-                      _CachedTermCard(
-                        langPair: 'JA → EN',
-                        term: 'Ikigai',
-                        translation: 'Life Purpose',
-                      ),
-                      SizedBox(width: 10),
-                      _CachedTermCard(
-                        langPair: 'EN → ES',
-                        term: 'Petrichor',
-                        translation: 'Petricor',
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // Offline Pack Status Card
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: containerColor,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: cardBorderColor),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF282935),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: const Icon(
-                          Icons.done_all_rounded,
-                          color: offlineOrange,
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text(
-                              'Spanish Offline Pack',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(height: 2),
-                            Text(
-                              '42 MB • Fully installed',
-                              style: TextStyle(color: textMuted, fontSize: 12),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Text(
-                        'Ready',
-                        style: TextStyle(
-                          color: successGreen,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              _SectionHeader(
+                title: 'Recent Translations',
+                actionLabel: 'View all',
+                onAction: () {
+                  // TODO: open the full history.
+                },
+              ),
+              const SizedBox(height: 10),
+              for (final item in _recent) ...[
+                _RecentTile(item: item),
+                const SizedBox(height: 8),
               ],
-              const SizedBox(height: 16),
             ],
           ),
         ),
@@ -863,36 +104,105 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class _RecentChip extends StatelessWidget {
-  const _RecentChip({required this.term, required this.phonetics});
+// ---------------------------------------------------------------------------
+// Top bar
+// ---------------------------------------------------------------------------
+class _TopBar extends StatelessWidget {
+  const _TopBar();
 
-  final String term;
-  final String phonetics;
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color: _C.orange,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: const Icon(Icons.translate, color: Colors.white, size: 20),
+        ),
+        const SizedBox(width: 10),
+        const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'AI translator',
+              style: TextStyle(
+                color: _C.textPrimary,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            Text(
+              'HOME',
+              style: TextStyle(
+                color: _C.textMuted,
+                fontSize: 9,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.8,
+              ),
+            ),
+          ],
+        ),
+        const Spacer(),
+        const _StatusChip(label: 'Online', color: _C.green),
+        const SizedBox(width: 8),
+        InkWell(
+          borderRadius: BorderRadius.circular(18),
+          onTap: () => ProfileDrawer.open(context),
+          child: Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: _C.cardAlt,
+              shape: BoxShape.circle,
+              border: Border.all(color: _C.border),
+            ),
+            child: const Icon(
+              Icons.person_outline_rounded,
+              color: _C.textSecondary,
+              size: 18,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StatusChip extends StatelessWidget {
+  const _StatusChip({required this.label, required this.color});
+
+  final String label;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1F2A),
+        color: _C.cardAlt,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF282935)),
+        border: Border.all(color: _C.border),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            term,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
-            ),
+          Container(
+            width: 7,
+            height: 7,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
           const SizedBox(width: 6),
           Text(
-            phonetics,
-            style: const TextStyle(color: Color(0xFFAB8981), fontSize: 11),
+            label,
+            style: const TextStyle(
+              color: _C.textSecondary,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),
@@ -900,76 +210,681 @@ class _RecentChip extends StatelessWidget {
   }
 }
 
-class _CachedTermCard extends StatelessWidget {
-  const _CachedTermCard({
-    required this.langPair,
-    required this.term,
-    required this.translation,
-  });
-
-  final String langPair;
-  final String term;
-  final String translation;
+// ---------------------------------------------------------------------------
+// Greeting row
+// ---------------------------------------------------------------------------
+class _Greeting extends StatelessWidget {
+  const _Greeting();
 
   @override
   Widget build(BuildContext context) {
-    const containerColor = Color(0xFF1E1F2A);
-    const cardBorderColor = Color(0xFF282935);
-    const textMuted = Color(0xFFAB8981);
-
-    return Container(
-      width: 130,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: containerColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: cardBorderColor),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                langPair,
-                style: const TextStyle(
-                  color: Color(0xFF4AE183),
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
+    return Row(
+      children: [
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            const CircleAvatar(
+              radius: 22,
+              backgroundColor: _C.cardAlt,
+              // TODO: swap for NetworkImage / user avatar.
+              child: Icon(Icons.person, color: _C.textSecondary),
+            ),
+            Positioned(
+              right: -1,
+              bottom: -1,
+              child: Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: _C.green,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: _C.bg, width: 2),
                 ),
               ),
-              const Icon(
-                Icons.check_circle_rounded,
-                color: Color(0xFF4AE183),
-                size: 14,
-              ),
-            ],
-          ),
-          Column(
+            ),
+          ],
+        ),
+        const SizedBox(width: 12),
+        const Expanded(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                term,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
+                'Hello, Linh',
+                style: TextStyle(
+                  color: _C.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
+              SizedBox(height: 2),
               Text(
-                translation,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: textMuted, fontSize: 11),
+                'Wednesday, 24 Oct',
+                style: TextStyle(color: _C.textMuted, fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: _C.cardAlt,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: _C.border),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.local_fire_department_rounded,
+                  color: _C.orange, size: 16),
+              SizedBox(width: 4),
+              Text(
+                '7 Days',
+                style: TextStyle(
+                  color: _C.textPrimary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Translate input card
+// ---------------------------------------------------------------------------
+class _TranslateInputCard extends StatelessWidget {
+  const _TranslateInputCard({
+    required this.controller,
+    required this.onSubmit,
+  });
+
+  final TextEditingController controller;
+  final VoidCallback onSubmit;
+
+  @override
+  Widget build(BuildContext context) {
+    return _Card(
+      padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              const _LangPill(code: 'EN'),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 6),
+                child: Icon(Icons.swap_horiz_rounded,
+                    color: _C.textMuted, size: 16),
+              ),
+              const _LangPill(code: 'ES'),
+              const Spacer(),
+              const Icon(Icons.auto_awesome, color: _C.orange, size: 13),
+              const SizedBox(width: 4),
+              const Text(
+                'Auto-Detect',
+                style: TextStyle(
+                  color: _C.textSecondary,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: controller,
+                  onSubmitted: (_) => onSubmit(),
+                  textInputAction: TextInputAction.done,
+                  cursorColor: _C.orange,
+                  style: const TextStyle(
+                    color: _C.textPrimary,
+                    fontSize: 14,
+                  ),
+                  decoration: const InputDecoration(
+                    isDense: true,
+                    border: InputBorder.none,
+                    hintText: 'Type a word or phrase to translate',
+                    hintStyle: TextStyle(color: _C.textMuted, fontSize: 14),
+                    contentPadding: EdgeInsets.symmetric(vertical: 10),
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: () {
+                  // TODO: start speech-to-text.
+                },
+                icon: const Icon(Icons.mic_rounded,
+                    color: _C.orange, size: 20),
+                visualDensity: VisualDensity.compact,
+              ),
+              const SizedBox(width: 4),
+              Material(
+                color: _C.orange,
+                shape: const CircleBorder(),
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: onSubmit,
+                  child: const SizedBox(
+                    width: 38,
+                    height: 38,
+                    child: Icon(Icons.arrow_forward_rounded,
+                        color: Colors.white, size: 20),
+                  ),
+                ),
               ),
             ],
           ),
         ],
       ),
+    );
+  }
+}
+
+class _LangPill extends StatelessWidget {
+  const _LangPill({required this.code});
+
+  final String code;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: _C.cardAlt,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: _C.border),
+      ),
+      child: Text(
+        code,
+        style: const TextStyle(
+          color: _C.textPrimary,
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Daily focus card
+// ---------------------------------------------------------------------------
+class _DailyFocusCard extends StatelessWidget {
+  const _DailyFocusCard({
+    required this.learned,
+    required this.goal,
+    required this.onContinue,
+  });
+
+  final int learned;
+  final int goal;
+  final VoidCallback onContinue;
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = (learned / goal).clamp(0.0, 1.0);
+    final percent = (progress * 100).round();
+
+    return _Card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'DAILY HABIT',
+            style: TextStyle(
+              color: _C.orange,
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.8,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              const Expanded(
+                child: Text(
+                  "Today's Focus",
+                  style: TextStyle(
+                    color: _C.textPrimary,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              Text(
+                '$learned',
+                style: const TextStyle(
+                  color: _C.textPrimary,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              Text(
+                ' / $goal words',
+                style: const TextStyle(
+                  color: _C.textMuted,
+                  fontSize: 12,
+                  height: 1.9,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 6,
+              backgroundColor: _C.cardAlt,
+              valueColor: const AlwaysStoppedAnimation(_C.orange),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '$percent% completed',
+                style: const TextStyle(
+                  color: _C.orange,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                '${goal - learned} left for milestone',
+                style: const TextStyle(color: _C.textMuted, fontSize: 10),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              const Icon(Icons.check_circle_outline_rounded,
+                  color: _C.green, size: 16),
+              const SizedBox(width: 6),
+              const Expanded(
+                child: Text(
+                  'Spaced repetition active',
+                  style: TextStyle(
+                    color: _C.textSecondary,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              TextButton.icon(
+                onPressed: onContinue,
+                style: TextButton.styleFrom(
+                  backgroundColor: _C.cardAlt,
+                  foregroundColor: _C.textPrimary,
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    side: const BorderSide(color: _C.border),
+                  ),
+                ),
+                iconAlignment: IconAlignment.end,
+                icon: const Icon(Icons.play_arrow_rounded, size: 16),
+                label: const Text(
+                  'Continue',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Word of the day
+// ---------------------------------------------------------------------------
+class _WordOfTheDayCard extends StatelessWidget {
+  const _WordOfTheDayCard({
+    required this.saved,
+    required this.onSpeak,
+    required this.onSave,
+  });
+
+  final bool saved;
+  final VoidCallback onSpeak;
+  final VoidCallback onSave;
+
+  @override
+  Widget build(BuildContext context) {
+    return _Card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const _Tag(
+                label: 'WORD OF THE DAY',
+                background: Color(0x33FF5A2C),
+                foreground: _C.orange,
+              ),
+              const SizedBox(width: 8),
+              const _Tag(
+                label: 'NOUN',
+                background: _C.cardAlt,
+                foreground: _C.textSecondary,
+              ),
+              const Spacer(),
+              InkWell(
+                customBorder: const CircleBorder(),
+                onTap: onSpeak,
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: const BoxDecoration(
+                    color: Color(0x33FF5A2C),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.volume_up_rounded,
+                      color: _C.orange, size: 18),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              const Text(
+                'Serendipity',
+                style: TextStyle(
+                  color: _C.textPrimary,
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Flexible(
+                child: Text(
+                  '/ˌser.ənˈdɪp.ə.ti/',
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: _C.textMuted,
+                    fontSize: 12,
+                    fontFamily: 'monospace',
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'The occurrence and development of events by chance in a happy or beneficial way.',
+            style: TextStyle(
+              color: _C.textSecondary,
+              fontSize: 13,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: _C.bg,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: _C.border),
+            ),
+            child: const Text(
+              '"Finding this charming bookshop tucked in the alley was pure serendipity."',
+              style: TextStyle(
+                color: _C.textSecondary,
+                fontSize: 12,
+                fontStyle: FontStyle.italic,
+                height: 1.4,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              const Icon(Icons.workspace_premium_outlined,
+                  color: _C.orange, size: 15),
+              const SizedBox(width: 6),
+              const Expanded(
+                child: Text(
+                  'Advanced vocabulary (C1)',
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: _C.textSecondary,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              TextButton.icon(
+                onPressed: onSave,
+                style: TextButton.styleFrom(
+                  backgroundColor: _C.cardAlt,
+                  foregroundColor: saved ? _C.orange : _C.textPrimary,
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    side: const BorderSide(color: _C.border),
+                  ),
+                ),
+                icon: Icon(
+                  saved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+                  size: 15,
+                ),
+                label: Text(
+                  saved ? 'Saved' : 'Save to Vocab',
+                  style: const TextStyle(
+                      fontSize: 11, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Tag extends StatelessWidget {
+  const _Tag({
+    required this.label,
+    required this.background,
+    required this.foreground,
+  });
+
+  final String label;
+  final Color background;
+  final Color foreground;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: foreground,
+          fontSize: 9,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.6,
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Recent translations
+// ---------------------------------------------------------------------------
+class _RecentItem {
+  const _RecentItem(this.source, this.translated, this.language, this.when);
+
+  final String source;
+  final String translated;
+  final String language;
+  final String when;
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({
+    required this.title,
+    required this.actionLabel,
+    required this.onAction,
+  });
+
+  final String title;
+  final String actionLabel;
+  final VoidCallback onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            color: _C.textPrimary,
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        GestureDetector(
+          onTap: onAction,
+          behavior: HitTestBehavior.opaque,
+          child: Text(
+            actionLabel,
+            style: const TextStyle(
+              color: _C.orange,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _RecentTile extends StatelessWidget {
+  const _RecentTile({required this.item});
+
+  final _RecentItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: _C.card,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () {
+          // TODO: open translation detail.
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: _C.border),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: _C.cardAlt,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.translate,
+                    color: _C.textSecondary, size: 17),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.source,
+                      style: const TextStyle(
+                        color: _C.textPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${item.translated} • ${item.language}',
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: _C.textMuted,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                item.when,
+                style: const TextStyle(color: _C.textMuted, fontSize: 10),
+              ),
+              const SizedBox(width: 4),
+              const Icon(Icons.chevron_right_rounded,
+                  color: _C.textMuted, size: 18),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Shared card container
+// ---------------------------------------------------------------------------
+class _Card extends StatelessWidget {
+  const _Card({
+    required this.child,
+    this.padding = const EdgeInsets.all(14),
+  });
+
+  final Widget child;
+  final EdgeInsets padding;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: padding,
+      decoration: BoxDecoration(
+        color: _C.card,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _C.border),
+      ),
+      child: child,
     );
   }
 }
