@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:smart_translator/core/network/token_storage.dart';
+import 'package:smart_translator/core/router/route_name.dart';
 import 'package:smart_translator/features/onboarding/presentation/widgets/onboarding_page_indicator.dart';
 import 'package:smart_translator/features/onboarding/presentation/widgets/onboarding_slide.dart';
 
@@ -36,12 +40,17 @@ class _OnboardingPageState extends State<OnboardingPage> {
     ),
   ];
 
-  void _onNextPressed() {
+  void _onNextPressed() async {
     if (_currentIndex < _slides.length - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 350),
         curve: Curves.easeInOutCubic,
       );
+    } else {
+      final tokenStorage = context.read<TokenStorage>();
+      final router = GoRouter.of(context);
+      await tokenStorage.setOnboardingSeen();
+      router.go(RouteName.login);
     }
   }
 
@@ -87,7 +96,12 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   Row(
                     children: [
                       TextButton(
-                        onPressed: () {},
+                        onPressed: () async {
+                          final tokenStorage = context.read<TokenStorage>();
+                          final router = GoRouter.of(context);
+                          await tokenStorage.setOnboardingSeen();
+                          router.go(RouteName.login);
+                        },
                         child: const Text(
                           'Skip',
                           style: TextStyle(

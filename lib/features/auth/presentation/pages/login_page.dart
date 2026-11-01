@@ -55,7 +55,9 @@ class _LoginPageState extends State<LoginPage> {
             color: Colors.white,
             size: 20,
           ),
-          onPressed: context.canPop() ? () => context.pop() : null,
+          onPressed: () => context.canPop()
+              ? context.pop()
+              : context.go(RouteName.onboarding),
         ),
         title: const Text(
           'Login',

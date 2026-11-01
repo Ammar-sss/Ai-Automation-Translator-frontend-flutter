@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smart_translator/core/network/connectivity_cubit.dart';
 import '../../../user/presentation/widgets/profile_drawer.dart';
 
 // ---------------------------------------------------------------------------
@@ -67,6 +69,7 @@ class _TopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isOnline = context.watch<ConnectivityCubit>().state;
     return Row(
       children: [
         Container(
@@ -102,7 +105,10 @@ class _TopBar extends StatelessWidget {
           ],
         ),
         const Spacer(),
-        const _StatusChip(label: 'Online', color: _C.green),
+        _StatusChip(
+          label: isOnline ? 'Online' : "offline",
+          color: isOnline ? _C.green : Colors.yellow,
+        ),
         const SizedBox(width: 8),
         InkWell(
           borderRadius: BorderRadius.circular(18),

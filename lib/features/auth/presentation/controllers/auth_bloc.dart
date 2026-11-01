@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_translator/core/models/user.dart';
-import 'package:smart_translator/features/user/domain/repositories/user_repository.dart';
 
 import '../../../../core/errors/api_exception.dart';
 import '../../../../core/network/token_storage.dart';
@@ -12,11 +11,8 @@ part 'auth_event.dart';
 part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  AuthBloc({
-    required this._authRepository,
-    required this._userRepository,
-    required this._tokenStorage,
-  }) : super(const AuthInitial()) {
+  AuthBloc({required this._authRepository, required this._tokenStorage})
+    : super(const AuthInitial()) {
     on<AuthLoginRequested>(_onLoginRequested);
     on<AuthRegisterRequested>(_onRegisterRequested);
     on<AuthLogoutRequested>(_onLogoutRequested);
@@ -25,7 +21,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   final AuthRepository _authRepository;
-  final UserRepository _userRepository;
   final TokenStorage _tokenStorage;
 
   Future<void> _onLoginRequested(
@@ -48,12 +43,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         tokenType: loginResponse.tokenType,
       );
 
-      emit(
-        AuthAuthenticated(
-          user: loginResponse.user ?? const User(),
-          roles: loginResponse.roles ?? [],
-        ),
-      );
+      final user = loginResponse.user ?? const User();
+      if (loginResponse.user != null) {
+        await _tokenStorage.saveUser(user);
+      }
+
+      emit(AuthAuthenticated(user: user, roles: loginResponse.roles ?? []));
     } on ApiException catch (e) {
       emit(AuthFailure(e.message));
     } catch (_) {
@@ -115,14 +110,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
 
       final roles = await _tokenStorage.readRoles();
+      final cachedUser = await _tokenStorage.readUser() ?? const User();
 
-      User user;
-      try {
-        user = await _userRepository.getProfile();
-      } catch (_) {
-        user = const User();
-      }
-      emit(AuthAuthenticated(user: user, roles: roles));
+      // Instantly authenticate using cached token and user details
+      emit(AuthAuthenticated(user: cachedUser, roles: roles));
     } catch (_) {
       try {
         await _tokenStorage.clear();
@@ -149,7 +140,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           .firstWhere((state) => state is! AuthInitial && state is! AuthLoading)
           .timeout(const Duration(seconds: 5));
     } catch (_) {
-      add(const AuthSessionExpiredRequested());
+      final token = await _tokenStorage.readAccessToken();
+      if (token == null || token.isEmpty) {
+        add(const AuthSessionExpiredRequested());
+      }
     }
   }
 }

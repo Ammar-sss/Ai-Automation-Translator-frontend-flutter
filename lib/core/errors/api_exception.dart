@@ -19,5 +19,8 @@ ApiException mapDioError(DioException e) {
   if (data is Map<String, dynamic> && data['message'] is String) {
     message = data['message'] as String;
   }
+  if (e.type == DioExceptionType.connectionError) {
+    return const ApiException(message: 'No internet connection');
+  }
   return ApiException(statusCode: statusCode, message: message);
 }

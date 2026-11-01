@@ -5,6 +5,7 @@ import 'package:smart_translator/core/network/token_storage.dart';
 
 import '../config/env.dart';
 import 'auth_interceptor.dart';
+import 'connectivity_interceptor.dart';
 
 /// Builds and holds the configured dio instance.
 class ApiClient {
@@ -28,6 +29,7 @@ class ApiClient {
         headers: {'Content-Type': 'application/json'},
       ),
     );
+    d.interceptors.insert(0, ConnectivityInterceptor());
 
     // Order matters: auth first (attach token), logger second.
     d.interceptors.add(
