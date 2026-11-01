@@ -13,6 +13,7 @@ import 'package:smart_translator/features/vocabulary/domain/repositories/vocabul
 
 import 'app.dart';
 import 'core/network/api_client.dart';
+import 'core/network/connectivity_cubit.dart';
 import 'core/router/app_router.dart';
 import 'features/auth/presentation/controllers/auth_bloc.dart';
 import 'features/user/presentation/controllers/user_cubit.dart';
@@ -49,7 +50,6 @@ Future<void> main() async {
       VocabularyRepositoryImpl.create(apiClient.dio, appDatabase);
 
   authBloc = AuthBloc(
-    userRepository: userRepository,
     authRepository: authRepository,
     tokenStorage: tokenStorage,
   );
@@ -63,7 +63,11 @@ Future<void> main() async {
   );
 
   if (authBloc.state is AuthAuthenticated) {
-    await Future.wait([userCubit.loadProfile(), vocabularyCubit.load()]);
+    try {
+      await Future.wait([userCubit.loadProfile(), vocabularyCubit.load()]);
+    } catch (_) {
+      // Ignore network errors during offline startup so runApp proceeds
+    }
   }
 
   final router = createRouter(authBloc, hasSeenOnboarding: hasSeenOnboarding);
@@ -88,6 +92,7 @@ Future<void> main() async {
           BlocProvider.value(value: authBloc),
           BlocProvider.value(value: userCubit),
           BlocProvider.value(value: vocabularyCubit),
+          BlocProvider(create: (_) => ConnectivityCubit()),
         ],
         child: SmartTranslatorApp(router: router),
       ),

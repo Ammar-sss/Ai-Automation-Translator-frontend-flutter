@@ -1,4 +1,5 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:smart_translator/core/models/user.dart';
 
 import '../config/app_constants.dart';
 
@@ -8,6 +9,9 @@ class TokenStorage {
 
   final FlutterSecureStorage _storage;
   static const _keyOnboardingSeen = 'has_seen_onboarding';
+  static const _keyUserId = 'cached_user_id';
+  static const _keyUsername = 'cached_username';
+  static const _keyEmail = 'cached_email';
 
   Future<void> saveTokens({
     required String accessToken,
@@ -42,6 +46,35 @@ class TokenStorage {
     }
   }
 
+  Future<void> saveUser(User user) async {
+    if (user.id != null) {
+      await _storage.write(key: _keyUserId, value: user.id.toString());
+    }
+    if (user.username != null) {
+      await _storage.write(key: _keyUsername, value: user.username);
+    }
+    if (user.email != null) {
+      await _storage.write(key: _keyEmail, value: user.email);
+    }
+  }
+
+  Future<User?> readUser() async {
+    final rawId = await _storage.read(key: _keyUserId);
+    final username = await _storage.read(key: _keyUsername);
+    final email = await _storage.read(key: _keyEmail);
+
+    if (rawId == null && username == null && email == null) {
+      return null;
+    }
+
+    return User(
+      id: rawId != null ? int.tryParse(rawId) : null,
+      username: username,
+      email: email,
+      enabled: true,
+    );
+  }
+
   Future<String?> readAccessToken() =>
       _storage.read(key: AppConstants.keyAccessToken);
 
@@ -69,5 +102,8 @@ class TokenStorage {
     await _storage.delete(key: AppConstants.keyExpiresIn);
     await _storage.delete(key: AppConstants.keyRefreshExpiresIn);
     await _storage.delete(key: AppConstants.keyRoles);
+    await _storage.delete(key: _keyUserId);
+    await _storage.delete(key: _keyUsername);
+    await _storage.delete(key: _keyEmail);
   }
 }
