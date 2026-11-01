@@ -16,6 +16,7 @@ import 'core/network/api_client.dart';
 import 'core/router/app_router.dart';
 import 'features/auth/presentation/controllers/auth_bloc.dart';
 import 'features/user/presentation/controllers/user_cubit.dart';
+import 'features/vocabulary/presentation/controllers/vocabulary_cubit.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -55,6 +56,16 @@ Future<void> main() async {
 
   await authBloc.restoreSession();
 
+  final userCubit = UserCubit(userRepository, authStream: authBloc.stream);
+  final vocabularyCubit = VocabularyCubit(
+    vocabularyRepository,
+    authStream: authBloc.stream,
+  );
+
+  if (authBloc.state is AuthAuthenticated) {
+    await Future.wait([userCubit.loadProfile(), vocabularyCubit.load()]);
+  }
+
   final router = createRouter(authBloc, hasSeenOnboarding: hasSeenOnboarding);
 
   runApp(
@@ -75,9 +86,8 @@ Future<void> main() async {
       child: MultiBlocProvider(
         providers: [
           BlocProvider.value(value: authBloc),
-          BlocProvider(
-            create: (context) => UserCubit(userRepository)..loadProfile(),
-          ),
+          BlocProvider.value(value: userCubit),
+          BlocProvider.value(value: vocabularyCubit),
         ],
         child: SmartTranslatorApp(router: router),
       ),

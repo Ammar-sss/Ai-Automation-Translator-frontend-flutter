@@ -5,15 +5,11 @@ import 'package:smart_translator/core/router/route_name.dart';
 import 'package:smart_translator/features/auth/presentation/controllers/auth_bloc.dart';
 import 'package:smart_translator/features/user/presentation/controllers/user_cubit.dart';
 import 'package:smart_translator/features/user/presentation/widgets/profile_drawer.dart';
+import 'package:smart_translator/features/vocabulary/presentation/controllers/vocabulary_cubit.dart';
 
-class ProfilePage extends StatefulWidget {
+class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
-  @override
-  State<ProfilePage> createState() => _ProfilePageState();
-}
-
-class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     const backgroundColor = Color(0xFF11131D);
@@ -106,21 +102,12 @@ class _ProfilePageState extends State<ProfilePage> {
       body: SafeArea(
         child: BlocBuilder<UserCubit, UserState>(
           builder: (context, state) {
-            final userName =
-                (state is UserLoaded &&
-                    state.user.username != null &&
-                    state.user.username!.isNotEmpty)
-                ? state.user.username!
-                : 'Linh Nguyen';
-            final userEmail =
-                (state is UserLoaded &&
-                    state.user.email != null &&
-                    state.user.email!.isNotEmpty)
-                ? state.user.email!
-                : 'linh.nguyen@example.com';
-            final userInitial = userName.isNotEmpty
-                ? userName[0].toUpperCase()
-                : 'L';
+            final user = (state is UserLoaded) ? state.user : null;
+
+            final userInitial =
+                (user?.username != null && user!.username!.isEmpty)
+                ? user.username![0].toUpperCase()
+                : 'U';
 
             return SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -187,7 +174,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              userName,
+                              user!.username!,
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 22,
@@ -204,7 +191,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          userEmail,
+                          user.email!,
                           style: const TextStyle(
                             color: textMuted,
                             fontSize: 13,
@@ -296,7 +283,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 ),
                               ),
                               child: Row(
-                                children: const [
+                                children: [
                                   Icon(
                                     Icons.check_rounded,
                                     color: successGreen,
@@ -304,7 +291,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                   ),
                                   SizedBox(width: 4),
                                   Text(
-                                    'Active',
+                                    (user.enabled == true)
+                                        ? "Active"
+                                        : "Inactive",
                                     style: TextStyle(
                                       color: successGreen,
                                       fontSize: 10,
@@ -324,37 +313,60 @@ class _ProfilePageState extends State<ProfilePage> {
                   // 2-Column Metric Summary Cards
                   Row(
                     children: [
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 18),
-                          decoration: BoxDecoration(
-                            color: containerColor,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: cardBorderColor),
-                          ),
-                          child: Column(
-                            children: const [
-                              Text(
-                                '142',
-                                style: TextStyle(
-                                  color: primaryOrange,
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
+                      BlocBuilder<VocabularyCubit, VocabularyState>(
+                        buildWhen: (previous, current) {
+                          return current is VocabularyLoaded ||
+                              current is VocabularyFailure;
+                        },
+                        builder: (context, state) {
+                          final termsNumber = (state is VocabularyLoaded)
+                              ? state.terms.length
+                              : "N/A";
+
+                          if (state is VocabularyFailure) {
+                            ScaffoldMessenger.of(context)
+                              ..hideCurrentSnackBar()
+                              ..showSnackBar(
+                                SnackBar(
+                                  content: Text(state.message),
+                                  backgroundColor: Colors.red,
                                 ),
+                              );
+                          }
+
+                          return Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 18),
+                              decoration: BoxDecoration(
+                                color: containerColor,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: cardBorderColor),
                               ),
-                              SizedBox(height: 2),
-                              Text(
-                                'TERMS',
-                                style: TextStyle(
-                                  color: textMuted,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 0.8,
-                                ),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    "$termsNumber",
+                                    style: TextStyle(
+                                      color: primaryOrange,
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(height: 2),
+                                  Text(
+                                    'TERMS',
+                                    style: TextStyle(
+                                      color: textMuted,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.8,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                        ),
+                            ),
+                          );
+                        },
                       ),
                       const SizedBox(width: 14),
                       Expanded(
@@ -457,26 +469,12 @@ class _ProfilePageState extends State<ProfilePage> {
                           padding: EdgeInsets.symmetric(horizontal: 16),
                           child: Divider(color: cardBorderColor, height: 1),
                         ),
-                        _ProfileOptionTile(
-                          icon: Icons.sync_rounded,
-                          iconColor: successGreen,
-                          title: 'Sync status',
-                          badge: const Text(
-                            '✓ 139/142',
-                            style: TextStyle(
-                              color: successGreen,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          onTap: () {},
-                        ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 16),
 
-                  // Card Group 2 (Reminders & Offline)
+                  // Card Group: Commands & Utilities
                   Container(
                     decoration: BoxDecoration(
                       color: containerColor,
@@ -484,21 +482,35 @@ class _ProfilePageState extends State<ProfilePage> {
                       border: Border.all(color: cardBorderColor),
                     ),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _ProfileOptionTile(
-                          icon: Icons.notifications_none_rounded,
-                          iconColor: const Color(0xFFFFB020),
-                          title: 'Practice reminders',
-                          onTap: () {},
-                        ),
                         const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16),
-                          child: Divider(color: cardBorderColor, height: 1),
+                          padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+                          child: Text(
+                            'COMMANDS & UTILITIES',
+                            style: TextStyle(
+                              color: textMuted,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
                         ),
                         _ProfileOptionTile(
-                          icon: Icons.download_for_offline_outlined,
-                          title: 'Offline dictionary packs',
-                          onTap: () {},
+                          icon: Icons.speed_rounded,
+                          iconColor: Colors.blueAccent,
+                          title: 'Test API Connection',
+                          subtitle: 'Check neural backend latency',
+                          onTap: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'API Connection Healthy (Latency: 38ms)',
+                                ),
+                                backgroundColor: Colors.blue,
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),

@@ -47,22 +47,33 @@ class AuthInterceptor extends Interceptor {
     final options = err.requestOptions;
     final isRetry = options.extra['isRetry'] == true;
     final isPublic = ApiEndpoints.isPublicPost(options.method, options.path);
+    final statusCode = err.response?.statusCode;
 
-    if (err.response?.statusCode == 401 && !isRetry && !isPublic) {
-      try {
-        final newToken = await _refresh();
-        if (newToken != null && newToken.isNotEmpty) {
-          options.headers[AppConstants.authorizationHeader] =
-              '${AppConstants.bearerPrefix}$newToken';
-          options.extra['isRetry'] = true; // never refresh more than once
-          final response = await _dio.fetch(options);
-          handler.resolve(response);
-          return;
-        }
-      } catch (_) {
-        // refresh failed
+    if (!isPublic) {
+      // 403 Forbidden: Account disabled, deactivated, or access forbidden
+      if (statusCode == 403) {
+        onSessionExpired?.call();
+        handler.next(err);
+        return;
       }
-      onSessionExpired?.call();
+
+      // 401 Unauthorized: Try refresh once, else session expired
+      if (statusCode == 401 && !isRetry) {
+        try {
+          final newToken = await _refresh();
+          if (newToken != null && newToken.isNotEmpty) {
+            options.headers[AppConstants.authorizationHeader] =
+                '${AppConstants.bearerPrefix}$newToken';
+            options.extra['isRetry'] = true; // never refresh more than once
+            final response = await _dio.fetch(options);
+            handler.resolve(response);
+            return;
+          }
+        } catch (_) {
+          // refresh failed
+        }
+        onSessionExpired?.call();
+      }
     }
     handler.next(err);
   }

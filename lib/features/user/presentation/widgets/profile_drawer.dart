@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smart_translator/core/router/route_name.dart';
 import 'package:smart_translator/features/auth/presentation/controllers/auth_bloc.dart';
-import 'package:smart_translator/features/user/domain/repositories/user_repository.dart';
 import 'package:smart_translator/features/user/presentation/controllers/user_cubit.dart';
 
 class ProfileDrawer extends StatelessWidget {
@@ -16,14 +15,8 @@ class ProfileDrawer extends StatelessWidget {
       barrierLabel: 'ProfileDrawer',
       barrierColor: Colors.black.withValues(alpha: 0.6),
       transitionDuration: const Duration(milliseconds: 250),
-      pageBuilder: (context, anim1, anim2) => BlocProvider(
-        create: (context) =>
-            UserCubit(context.read<UserRepository>())..loadProfile(),
-        child: const Align(
-          alignment: Alignment.centerRight,
-          child: ProfileDrawer(),
-        ),
-      ),
+      pageBuilder: (context, anim1, anim2) =>
+          const Align(alignment: Alignment.centerRight, child: ProfileDrawer()),
       transitionBuilder: (context, anim1, anim2, child) {
         return SlideTransition(
           position: Tween<Offset>(
