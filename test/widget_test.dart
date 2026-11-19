@@ -15,16 +15,22 @@ void main() {
     final storageService = SecureStorageService();
     final dioClient = DioClient(storage: storageService);
     final authApiService = AuthApiService(dioClient.dio);
-    final authRemoteDataSource = AuthRemoteDataSourceImpl(apiService: authApiService, storageService: storageService);
-    final authRepository = AuthRepositoryImpl(authRemoteDataSource: authRemoteDataSource);
-    final authBloc = AuthBloc(authRepository: authRepository, storageService: storageService);
+    final authRemoteDataSource = AuthRemoteDataSourceImpl(
+      apiService: authApiService,
+      storageService: storageService,
+    );
+    final authRepository = AuthRepositoryImpl(
+      authRemoteDataSource: authRemoteDataSource,
+    );
+    final authBloc = AuthBloc(
+      authRepository: authRepository,
+      storageService: storageService,
+    );
     final appRouter = AppRouter(authBloc: authBloc);
 
     await tester.pumpWidget(
       MultiBlocProvider(
-        providers: [
-          BlocProvider.value(value: authBloc)
-        ],
+        providers: [BlocProvider.value(value: authBloc)],
         child: MyApp(router: appRouter.router),
       ),
     );
