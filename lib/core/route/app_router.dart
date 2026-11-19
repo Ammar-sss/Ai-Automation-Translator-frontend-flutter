@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smart_translator_test/core/route/app_routes.dart';
 import 'package:smart_translator_test/core/widgets/main_shell.dart';

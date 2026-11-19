@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:smart_translator_test/features/user/presentation/widgets/icon_badge.dart';
 
 class SettingSwitch extends StatelessWidget {

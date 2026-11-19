@@ -46,6 +46,8 @@ dependencies:
   flutter_slidable: ^3.1.2
   flutter_displaymode: ^0.7.0
   shared_preferences: ^2.5.6
+  material_ui: ^1.11.1
+  cupertino_ui: ^1.1.7
 
 dev_dependencies:
   flutter_test:

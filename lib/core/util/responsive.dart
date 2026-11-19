@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Extension on BuildContext for clean, unified responsive layout throughout the app.
 extension ResponsiveContext on BuildContext {

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:smart_translator_test/features/vocabulary/data/models/term.dart';
 
 class VocabularyDetail extends StatelessWidget {

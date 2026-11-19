@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:smart_translator_test/core/util/responsive.dart';
 
 class Home extends StatelessWidget {

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_translator_test/features/setting/presentation/pages/refresh_rate_service.dart';
 import 'package:smart_translator_test/features/user/presentation/widgets/setting_group.dart';
