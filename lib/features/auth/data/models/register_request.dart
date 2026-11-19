@@ -1,4 +1,3 @@
-
 import 'package:json_annotation/json_annotation.dart';
 
 part 'register_request.g.dart';
@@ -11,6 +10,7 @@ class RegisterRequest {
 
   new({required this.username, required this.email, required this.password});
 
-  factory RegisterRequest.fromJson(Map<String, dynamic> json) => _$RegisterRequestFromJson(json);
+  factory RegisterRequest.fromJson(Map<String, dynamic> json) =>
+      _$RegisterRequestFromJson(json);
   Map<String, dynamic> toJson() => _$RegisterRequestToJson(this);
 }

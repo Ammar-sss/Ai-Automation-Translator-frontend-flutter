@@ -10,11 +10,14 @@ part 'user_remote_data_source.g.dart';
 
 @RestApi()
 abstract class UserRemoteDataSource {
-  factory UserRemoteDataSource(Dio dio , {String baseUrl}) = _UserRemoteDataSource;
+  factory UserRemoteDataSource(Dio dio, {String baseUrl}) =
+      _UserRemoteDataSource;
 
   @GET(ApiEndpoint.profile)
   Future<ApiResponse<User>> getProfile();
 
   @PUT(ApiEndpoint.profile)
-  Future<ApiResponse<User>> updateProfile(@Body() UpdateUserProfile updateUserProfile);
+  Future<ApiResponse<User>> updateProfile(
+    @Body() UpdateUserProfile updateUserProfile,
+  );
 }

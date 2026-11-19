@@ -16,18 +16,19 @@ class DioClient {
     NetworkCubit? networkCubit,
     void Function()? onUnauthenticated,
     Dio? customDio,
-  }) : dio = customDio ??
-            Dio(
-              BaseOptions(
-                baseUrl: Env.baseUrl,
-                connectTimeout: Env.connectTimeout,
-                receiveTimeout: Env.receiveTimeout,
-                headers: {
-                  "Content-Type": "application/json",
-                  "Accept": "application/json",
-                },
-              ),
-            ) {
+  }) : dio =
+           customDio ??
+           Dio(
+             BaseOptions(
+               baseUrl: Env.baseUrl,
+               connectTimeout: Env.connectTimeout,
+               receiveTimeout: Env.receiveTimeout,
+               headers: {
+                 "Content-Type": "application/json",
+                 "Accept": "application/json",
+               },
+             ),
+           ) {
     if (networkCubit != null) {
       dio.interceptors.add(NetworkInterceptor(networkCubit: networkCubit));
     }

@@ -1,4 +1,3 @@
-
 import 'package:dio/dio.dart';
 import 'package:retrofit/error_logger.dart';
 import 'package:retrofit/http.dart';
@@ -11,7 +10,8 @@ part 'vocabulary_remote_datasource.g.dart';
 
 @RestApi()
 abstract class VocabularyRemoteDatasource {
-  factory VocabularyRemoteDatasource(Dio dio, {String baseUrl}) = _VocabularyRemoteDatasource;
+  factory VocabularyRemoteDatasource(Dio dio, {String baseUrl}) =
+      _VocabularyRemoteDatasource;
 
   @POST(ApiEndpoint.confirmTermSave)
   Future<ApiResponse<Term>> confirmTermSave(@Body() AiResponse aiResponse);

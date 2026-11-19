@@ -16,7 +16,7 @@ class VocabularyPage extends StatelessWidget {
       body: SafeArea(
         child: BlocConsumer<VocabularyCubit, VocabularyState>(
           listenWhen: (previous, current) =>
-          current is VocabularyFailure || current is TermSavedSuccess,
+              current is VocabularyFailure || current is TermSavedSuccess,
           listener: (context, state) {
             if (state is VocabularyFailure) {
               ScaffoldMessenger.of(context)
@@ -37,7 +37,7 @@ class VocabularyPage extends StatelessWidget {
             }
           },
           buildWhen: (previous, current) =>
-          current is VocabularyLoading ||
+              current is VocabularyLoading ||
               current is VocabularyLoaded ||
               current is VocabularyFailure ||
               current is VocabularyInitial,
@@ -60,18 +60,17 @@ class VocabularyPage extends StatelessWidget {
                           child: CircularProgressIndicator(),
                         ),
                         VocabularyLoaded(terms: final terms) =>
-                        terms.isEmpty
-                            ? const _Message(
-                          key: ValueKey('empty'),
-                          icon: Icons.menu_book_outlined,
-                          title: 'No words saved yet',
-                          subtitle:
-                          'Translate a word and save it to build your list.',
-                        )
-                            : _TermList(
-                          key: const ValueKey('list'),
-                          terms: terms,
-                        ),
+                          terms.isEmpty
+                              ? const _Message(
+                                  key: ValueKey('empty'),
+                                  icon: Icons.menu_book_outlined,
+                                  title: 'No words saved yet',
+                                  subtitle: 'Translate a word and save it to build your list.',
+                                )
+                              : _TermList(
+                                  key: const ValueKey('list'),
+                                  terms: terms,
+                                ),
                         VocabularyFailure(message: final message) => _Message(
                           key: const ValueKey('error'),
                           icon: Icons.error_outline_rounded,
@@ -181,9 +180,9 @@ class _TermTile extends StatelessWidget {
         children: [
           SlidableAction(
             onPressed: (_) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Edit ${term.termWord}')),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('Edit ${term.termWord}')));
             },
             backgroundColor: scheme.primaryContainer,
             foregroundColor: scheme.onPrimaryContainer,
@@ -301,7 +300,10 @@ class _Message extends StatelessWidget {
             ),
             if (actionLabel != null) ...[
               const SizedBox(height: 16),
-              FilledButton.tonal(onPressed: onAction, child: Text(actionLabel!)),
+              FilledButton.tonal(
+                onPressed: onAction,
+                child: Text(actionLabel!),
+              ),
             ],
           ],
         ),

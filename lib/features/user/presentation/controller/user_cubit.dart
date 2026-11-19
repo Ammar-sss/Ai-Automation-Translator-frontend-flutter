@@ -14,7 +14,9 @@ class UserCubit extends Cubit<UserState> {
   Future<void> getProfile({bool forceRefresh = false}) async {
     emit(UserLoading());
     try {
-      final response = await userRepository.getProfile(forceRefresh: forceRefresh);
+      final response = await userRepository.getProfile(
+        forceRefresh: forceRefresh,
+      );
       if (response.data != null) {
         emit(UserLoaded(user: response.data!));
       } else {

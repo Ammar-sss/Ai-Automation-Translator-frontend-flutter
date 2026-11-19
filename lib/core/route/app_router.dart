@@ -113,8 +113,7 @@ class AppRouter {
             routes: [
               GoRoute(
                 path: AppRoutes.translate,
-                builder: (context, state) =>
-                    const TranslatePage(),
+                builder: (context, state) => const TranslatePage(),
               ),
             ],
           ),
@@ -123,7 +122,7 @@ class AppRouter {
             routes: [
               GoRoute(
                 path: AppRoutes.vocabulary,
-                builder: (context, state) => const VocabularyPage()
+                builder: (context, state) => const VocabularyPage(),
               ),
             ],
           ),

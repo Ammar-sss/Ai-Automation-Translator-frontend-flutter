@@ -11,7 +11,8 @@ class LanguageBar extends StatelessWidget {
   final ValueChanged<TranslationLanguage?> onTargetChanged;
   final VoidCallback onSwap;
 
-  const LanguageBar({super.key,
+  const LanguageBar({
+    super.key,
     required this.source,
     required this.target,
     required this.onSourceChanged,

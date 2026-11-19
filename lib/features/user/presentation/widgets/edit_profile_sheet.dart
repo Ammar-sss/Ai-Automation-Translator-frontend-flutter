@@ -9,8 +9,9 @@ class EditProfileSheet extends StatefulWidget {
 }
 
 class _EditProfileSheetState extends State<EditProfileSheet> {
-  late final TextEditingController _name =
-  TextEditingController(text: widget.name);
+  late final TextEditingController _name = TextEditingController(
+    text: widget.name,
+  );
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -25,7 +26,11 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
     Navigator.pop(context, true);
   }
 
-  InputDecoration _decoration(BuildContext context, String label, IconData icon) {
+  InputDecoration _decoration(
+    BuildContext context,
+    String label,
+    IconData icon,
+  ) {
     final scheme = Theme.of(context).colorScheme;
     final border = OutlineInputBorder(
       borderRadius: BorderRadius.circular(16),
@@ -67,9 +72,13 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
             TextFormField(
               controller: _name,
               textInputAction: TextInputAction.next,
-              decoration: _decoration(context, 'Full name', Icons.person_outline),
+              decoration: _decoration(
+                context,
+                'Full name',
+                Icons.person_outline,
+              ),
               validator: (v) =>
-              (v == null || v.trim().isEmpty) ? 'Enter your name' : null,
+                  (v == null || v.trim().isEmpty) ? 'Enter your name' : null,
             ),
             const SizedBox(height: 14),
             FilledButton(

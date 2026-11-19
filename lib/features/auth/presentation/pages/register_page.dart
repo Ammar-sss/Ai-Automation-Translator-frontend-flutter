@@ -13,10 +13,7 @@ class RegisterPage extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back,
-            size: context.sp(22, min: 20, max: 26),
-          ),
+          icon: Icon(Icons.arrow_back, size: context.sp(22, min: 20, max: 26)),
           onPressed: () => context.go(AppRoutes.login),
         ),
       ),
@@ -56,7 +53,9 @@ class RegisterPage extends StatelessWidget {
                       hintText: "Enter your full name",
                       prefixIcon: const Icon(Icons.person_outline),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(context.defaultRadius),
+                        borderRadius: BorderRadius.circular(
+                          context.defaultRadius,
+                        ),
                       ),
                     ),
                   ),
@@ -67,7 +66,9 @@ class RegisterPage extends StatelessWidget {
                       hintText: "Enter your email",
                       prefixIcon: const Icon(Icons.email_outlined),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(context.defaultRadius),
+                        borderRadius: BorderRadius.circular(
+                          context.defaultRadius,
+                        ),
                       ),
                     ),
                   ),
@@ -80,7 +81,9 @@ class RegisterPage extends StatelessWidget {
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: const Icon(Icons.visibility_off_outlined),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(context.defaultRadius),
+                        borderRadius: BorderRadius.circular(
+                          context.defaultRadius,
+                        ),
                       ),
                     ),
                   ),
@@ -93,7 +96,9 @@ class RegisterPage extends StatelessWidget {
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: const Icon(Icons.visibility_off_outlined),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(context.defaultRadius),
+                        borderRadius: BorderRadius.circular(
+                          context.defaultRadius,
+                        ),
                       ),
                     ),
                   ),
@@ -107,7 +112,9 @@ class RegisterPage extends StatelessWidget {
                         vertical: context.hp(1.8).clamp(14.0, 20.0),
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(context.defaultRadius),
+                        borderRadius: BorderRadius.circular(
+                          context.defaultRadius,
+                        ),
                       ),
                     ),
                     child: Text(
@@ -124,7 +131,9 @@ class RegisterPage extends StatelessWidget {
                     children: [
                       Text(
                         "Already have an account?",
-                        style: TextStyle(fontSize: context.sp(14, min: 12, max: 16)),
+                        style: TextStyle(
+                          fontSize: context.sp(14, min: 12, max: 16),
+                        ),
                       ),
                       TextButton(
                         onPressed: () {

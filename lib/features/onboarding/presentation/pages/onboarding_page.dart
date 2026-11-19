@@ -90,7 +90,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
                           width: iconBoxSize,
                           height: iconBoxSize,
                           decoration: BoxDecoration(
-                            color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                            color: Theme.of(context).primaryColor
+                                .withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
@@ -165,11 +166,15 @@ class _OnboardingPageState extends State<OnboardingPage> {
                         vertical: context.hp(1.6).clamp(12.0, 18.0),
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(context.defaultRadius),
+                        borderRadius: BorderRadius.circular(
+                          context.defaultRadius,
+                        ),
                       ),
                     ),
                     child: Text(
-                      _currentPage == _items.length - 1 ? "Get Started" : "Next",
+                      _currentPage == _items.length - 1
+                          ? "Get Started"
+                          : "Next",
                       style: TextStyle(
                         fontSize: context.sp(15, min: 14, max: 17),
                       ),

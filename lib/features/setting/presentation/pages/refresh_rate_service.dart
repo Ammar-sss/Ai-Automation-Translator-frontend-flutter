@@ -11,11 +11,10 @@ enum RefreshRate {
   final String label;
   const RefreshRate(this.label);
 
-  static RefreshRate fromLabel(String label) =>
-      RefreshRate.values.firstWhere(
-        (r) => r.label == label,
-        orElse: () => RefreshRate.hz120,
-      );
+  static RefreshRate fromLabel(String label) => RefreshRate.values.firstWhere(
+    (r) => r.label == label,
+    orElse: () => RefreshRate.hz120,
+  );
 }
 
 /// Detects whether the device can run above 60 Hz and applies the user's choice.

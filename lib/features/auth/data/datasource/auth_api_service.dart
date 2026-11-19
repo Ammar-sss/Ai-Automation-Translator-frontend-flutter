@@ -22,7 +22,9 @@ abstract class AuthApiService {
   Future<ApiResponse<User>> register(@Body() RegisterRequest registerRequest);
 
   @POST(ApiEndpoint.refresh)
-  Future<ApiResponse<LoginResponse>> refreshToken(@Body() RefreshTokenRequest request);
+  Future<ApiResponse<LoginResponse>> refreshToken(
+    @Body() RefreshTokenRequest request,
+  );
 
   @POST(ApiEndpoint.logout)
   Future<ApiResponse<void>> logout(@Body() RefreshTokenRequest request);

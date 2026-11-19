@@ -15,36 +15,41 @@ abstract class AuthRemoteDataSource {
 }
 
 class AuthRemoteDataSourceImpl extends AuthRemoteDataSource {
-
   final AuthApiService _apiService;
   final SecureStorageService _storageService;
 
   new({required this._apiService, required this._storageService});
 
   @override
-  Future<LoginResponse> login(LoginRequest loginRequest) async{
+  Future<LoginResponse> login(LoginRequest loginRequest) async {
     final apiResponse = await _apiService.login(loginRequest);
     final loginResponse = apiResponse.data!;
-    await _storageService.saveToken(loginResponse.token, loginResponse.refreshToken);
+    await _storageService.saveToken(
+      loginResponse.token,
+      loginResponse.refreshToken,
+    );
     return loginResponse;
   }
 
   @override
-  Future<void> logout(RefreshTokenRequest request) async{
+  Future<void> logout(RefreshTokenRequest request) async {
     await _apiService.logout(request);
     await _storageService.clearToken();
   }
 
   @override
-  Future<LoginResponse> refreshToken(RefreshTokenRequest request) async{
+  Future<LoginResponse> refreshToken(RefreshTokenRequest request) async {
     final apiResponse = await _apiService.refreshToken(request);
     final loginResponse = apiResponse.data!;
-    await _storageService.saveToken(loginResponse.token, loginResponse.refreshToken);
+    await _storageService.saveToken(
+      loginResponse.token,
+      loginResponse.refreshToken,
+    );
     return loginResponse;
   }
 
   @override
-  Future<User> register(RegisterRequest registerRequest) async{
+  Future<User> register(RegisterRequest registerRequest) async {
     final apiResponse = await _apiService.register(registerRequest);
     return apiResponse.data!;
   }

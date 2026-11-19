@@ -8,7 +8,8 @@ class SettingSwitch extends StatelessWidget {
   final bool value;
   final ValueChanged<bool> onChanged;
 
-  const SettingSwitch({super.key,
+  const SettingSwitch({
+    super.key,
     required this.icon,
     required this.title,
     required this.subtitle,

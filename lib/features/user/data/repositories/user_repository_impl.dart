@@ -12,7 +12,10 @@ class UserRepositoryImpl implements UserRepository {
   final UserRemoteDataSource userRemoteDataSource;
   final SecureStorageService secureStorageService;
 
-  UserRepositoryImpl({required this.userRemoteDataSource, required this.secureStorageService});
+  UserRepositoryImpl({
+    required this.userRemoteDataSource,
+    required this.secureStorageService,
+  });
 
   @override
   Future<ApiResponse<User>> getProfile({bool forceRefresh = false}) async {
@@ -34,7 +37,9 @@ class UserRepositoryImpl implements UserRepository {
     try {
       final response = await userRemoteDataSource.getProfile();
       if (response.data != null) {
-        await secureStorageService.saveUserJson(jsonEncode(response.data!.toJson()));
+        await secureStorageService.saveUserJson(
+          jsonEncode(response.data!.toJson()),
+        );
       }
       return response;
     } catch (e) {
@@ -49,22 +54,33 @@ class UserRepositoryImpl implements UserRepository {
           data: user,
         );
       }
-      throw ApiErrorHandler.handle(e, fallback: 'Failed to load profile. Please try again.');
+      throw ApiErrorHandler.handle(
+        e,
+        fallback: 'Failed to load profile. Please try again.',
+      );
     }
   }
 
   @override
-  Future<ApiResponse<User>> updateProfile(UpdateUserProfile updateUserProfile) async {
+  Future<ApiResponse<User>> updateProfile(
+    UpdateUserProfile updateUserProfile,
+  ) async {
     try {
-      final response = await userRemoteDataSource.updateProfile(updateUserProfile);
+      final response = await userRemoteDataSource.updateProfile(
+        updateUserProfile,
+      );
       if (response.data != null) {
         // Update local cache on successful profile update
         await secureStorageService.saveUserJson(
-            jsonEncode(response.data!.toJson()));
+          jsonEncode(response.data!.toJson()),
+        );
       }
       return response;
     } catch (e) {
-      throw ApiErrorHandler.handle(e, fallback: 'Failed to update profile. Please try again.');
+      throw ApiErrorHandler.handle(
+        e,
+        fallback: 'Failed to update profile. Please try again.',
+      );
     }
   }
 }

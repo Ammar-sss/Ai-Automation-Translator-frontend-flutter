@@ -3,7 +3,7 @@ class Env {
 
   static final String baseUrl = String.fromEnvironment(
     "BASE_URL",
-    defaultValue: "https://ai-automation-translater-backend.onrender.com"
+    defaultValue: "https://ai-automation-translater-backend.onrender.com",
   );
 
   static final Duration connectTimeout = Duration(seconds: 40);
@@ -11,7 +11,7 @@ class Env {
 
   static final environment = String.fromEnvironment(
     "ENV",
-    defaultValue: "development"
+    defaultValue: "development",
   );
 
   static bool get isProduction => environment == "production";

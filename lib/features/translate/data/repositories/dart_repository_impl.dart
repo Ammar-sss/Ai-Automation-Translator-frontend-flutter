@@ -11,11 +11,16 @@ class TranslateRepositoryImpl implements TranslateRepository {
   TranslateRepositoryImpl({required this._translateRemoteDataSource});
 
   @override
-  Future<ApiResponse<AiResponse>> translate(TranslateRequest translateRequest) async {
+  Future<ApiResponse<AiResponse>> translate(
+    TranslateRequest translateRequest,
+  ) async {
     try {
       return await _translateRemoteDataSource.translate(translateRequest);
     } catch (e) {
-      throw ApiErrorHandler.handle(e, fallback: 'Translation failed. Please try again.');
+      throw ApiErrorHandler.handle(
+        e,
+        fallback: 'Translation failed. Please try again.',
+      );
     }
   }
 }

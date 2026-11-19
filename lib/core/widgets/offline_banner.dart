@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../network/network_cubit.dart';
 
 class OfflineBanner extends StatelessWidget {
@@ -14,7 +15,7 @@ class OfflineBanner extends StatelessWidget {
         BlocBuilder<NetworkCubit, NetworkState>(
           // Rebuild only when we flip between offline and online.
           buildWhen: (previous, current) =>
-          (previous is NetworkDisconnected) !=
+              (previous is NetworkDisconnected) !=
               (current is NetworkDisconnected),
           builder: (context, state) {
             final offline = state is NetworkDisconnected;
@@ -22,7 +23,9 @@ class OfflineBanner extends StatelessWidget {
               duration: const Duration(milliseconds: 250),
               curve: Curves.easeOutCubic,
               alignment: Alignment.topCenter,
-              child: offline ? const _Banner() : const SizedBox(width: double.infinity),
+              child: offline
+                  ? const _Banner()
+                  : const SizedBox(width: double.infinity),
             );
           },
         ),

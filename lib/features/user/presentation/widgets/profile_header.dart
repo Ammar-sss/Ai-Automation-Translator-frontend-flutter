@@ -6,7 +6,13 @@ class ProfileHeader extends StatelessWidget {
   final bool isEnabled;
   final VoidCallback onEdit;
 
-  const ProfileHeader({super.key, required this.username, required this.email, required this.isEnabled, required this.onEdit});
+  const ProfileHeader({
+    super.key,
+    required this.username,
+    required this.email,
+    required this.isEnabled,
+    required this.onEdit,
+  });
 
   @override
   Widget build(BuildContext context) {

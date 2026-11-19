@@ -10,8 +10,11 @@ part 'translate_remote_data_source.g.dart';
 
 @RestApi()
 abstract class TranslateRemoteDataSource {
-  factory TranslateRemoteDataSource(Dio dio, {String baseUrl}) = _TranslateRemoteDataSource;
+  factory TranslateRemoteDataSource(Dio dio, {String baseUrl}) =
+      _TranslateRemoteDataSource;
 
   @POST(ApiEndpoint.translate)
-  Future<ApiResponse<AiResponse>> translate(@Body() TranslateRequest translateRequest);
+  Future<ApiResponse<AiResponse>> translate(
+    @Body() TranslateRequest translateRequest,
+  );
 }

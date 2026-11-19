@@ -2,11 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'server_health_service.dart';
 
 part 'server_health_state.dart';
 
-class ServerHealthCubit extends Cubit<ServerHealthState> with WidgetsBindingObserver{
+class ServerHealthCubit extends Cubit<ServerHealthState>
+    with WidgetsBindingObserver {
   final ServerHealthService _service;
   Timer? _timer;
 
@@ -14,22 +16,21 @@ class ServerHealthCubit extends Cubit<ServerHealthState> with WidgetsBindingObse
   static const _sleepingInterval = Duration(seconds: 30);
   static const _awakeInterval = Duration(seconds: 120);
 
-  ServerHealthCubit({required this._service})
-      : super(ServerSleeping()) {
+  ServerHealthCubit({required this._service}) : super(ServerSleeping()) {
     WidgetsBinding.instance.addObserver(this);
     _startHealthTimer();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if(state == AppLifecycleState.resumed){
+    if (state == AppLifecycleState.resumed) {
       _startHealthTimer();
-    } else if(state == AppLifecycleState.paused){
+    } else if (state == AppLifecycleState.paused) {
       _stopHealthTimer();
     }
   }
 
-  void _startHealthTimer(){
+  void _startHealthTimer() {
     _timer?.cancel();
     final interval = state is ServerAwake ? _awakeInterval : _sleepingInterval;
     _timer = Timer.periodic(interval, (_) {
@@ -37,7 +38,7 @@ class ServerHealthCubit extends Cubit<ServerHealthState> with WidgetsBindingObse
     });
   }
 
-  void _stopHealthTimer(){
+  void _stopHealthTimer() {
     _timer?.cancel();
   }
 

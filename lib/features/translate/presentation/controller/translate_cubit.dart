@@ -9,7 +9,8 @@ part 'translate_state.dart';
 class TranslateCubit extends Cubit<TranslateState> {
   final TranslateRepository translateRepository;
 
-  TranslateCubit({required this.translateRepository}) : super(TranslateInitial());
+  TranslateCubit({required this.translateRepository})
+    : super(TranslateInitial());
 
   Future<void> translate(TranslateRequest translateRequest) async {
     emit(TranslateLoading());

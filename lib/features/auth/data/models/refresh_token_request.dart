@@ -8,6 +8,7 @@ class RefreshTokenRequest {
 
   new({required this.refreshToken});
 
-  factory RefreshTokenRequest.fromJson(Map<String, dynamic> json) => _$RefreshTokenRequestFromJson(json);
+  factory RefreshTokenRequest.fromJson(Map<String, dynamic> json) =>
+      _$RefreshTokenRequestFromJson(json);
   Map<String, dynamic> toJson() => _$RefreshTokenRequestToJson(this);
 }

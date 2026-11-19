@@ -1,8 +1,6 @@
-
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 enum TranslationLanguage {
-
   @JsonValue("ARABIC")
   arabic("ARABIC"),
 

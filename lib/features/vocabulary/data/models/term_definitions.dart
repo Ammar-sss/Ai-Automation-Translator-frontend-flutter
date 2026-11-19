@@ -1,4 +1,3 @@
-
 import 'package:json_annotation/json_annotation.dart';
 
 part 'term_definitions.g.dart';
@@ -10,6 +9,7 @@ class TermDefinition {
 
   new({required this.id, required this.definition});
 
-  factory TermDefinition.fromJson(Map<String, dynamic> json) => _$TermDefinitionFromJson(json);
+  factory TermDefinition.fromJson(Map<String, dynamic> json) =>
+      _$TermDefinitionFromJson(json);
   Map<String, dynamic> toJson() => _$TermDefinitionToJson(this);
 }

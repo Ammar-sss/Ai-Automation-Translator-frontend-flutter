@@ -21,7 +21,6 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-
   @override
   void initState() {
     super.initState();
@@ -212,7 +211,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               title: 'Dark theme',
                               subtitle: 'Switch between light and dark',
                               value: isDark,
-                              onChanged: (v) => context.read<ThemeCubit>().toggleTheme(v),
+                              onChanged: (v) =>
+                                  context.read<ThemeCubit>().toggleTheme(v),
                             );
                           },
                         ),

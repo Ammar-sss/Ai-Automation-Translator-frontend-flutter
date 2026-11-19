@@ -19,7 +19,8 @@ class AuthInterceptor extends QueuedInterceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    final isAuthEndpoint = options.path.contains(ApiEndpoint.login) ||
+    final isAuthEndpoint =
+        options.path.contains(ApiEndpoint.login) ||
         options.path.contains(ApiEndpoint.register);
 
     if (!isAuthEndpoint) {

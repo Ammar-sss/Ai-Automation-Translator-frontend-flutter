@@ -4,11 +4,14 @@ class SecureStorageService {
   final FlutterSecureStorage _storage;
 
   SecureStorageService({FlutterSecureStorage? storage})
-    :_storage = storage ??
-      const FlutterSecureStorage(
-        aOptions: AndroidOptions(resetOnError: true),
-        iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock)
-      );
+    : _storage =
+          storage ??
+          const FlutterSecureStorage(
+            aOptions: AndroidOptions(resetOnError: true),
+            iOptions: IOSOptions(
+              accessibility: KeychainAccessibility.first_unlock,
+            ),
+          );
 
   static final String _keyAccessToken = "access_token";
   static final String _keyRefreshToken = "refresh_token";
@@ -24,11 +27,11 @@ class SecureStorageService {
     ]);
   }
 
-  Future<String?> getAccessToken() async{
+  Future<String?> getAccessToken() async {
     return await _storage.read(key: _keyAccessToken);
   }
 
-  Future<String?> getRefreshToken() async{
+  Future<String?> getRefreshToken() async {
     return await _storage.read(key: _keyRefreshToken);
   }
 
@@ -37,7 +40,7 @@ class SecureStorageService {
     return token != null && token.isNotEmpty;
   }
 
-  Future<void> clearToken() async{
+  Future<void> clearToken() async {
     await Future.wait([
       _storage.delete(key: _keyRefreshToken),
       _storage.delete(key: _keyAccessToken),

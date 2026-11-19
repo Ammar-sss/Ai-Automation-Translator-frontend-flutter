@@ -15,7 +15,10 @@ class VocabularyRepositoryImpl implements VocabularyRepository {
     try {
       return await _vocabularyRemoteDatasource.confirmTermSave(aiResponse);
     } catch (e) {
-      throw ApiErrorHandler.handle(e, fallback: 'Failed to save the term. Please try again.');
+      throw ApiErrorHandler.handle(
+        e,
+        fallback: 'Failed to save the term. Please try again.',
+      );
     }
   }
 
@@ -24,7 +27,10 @@ class VocabularyRepositoryImpl implements VocabularyRepository {
     try {
       return await _vocabularyRemoteDatasource.deleteTermById(id);
     } catch (e) {
-      throw ApiErrorHandler.handle(e, fallback: 'Failed to delete the term. Please try again.');
+      throw ApiErrorHandler.handle(
+        e,
+        fallback: 'Failed to delete the term. Please try again.',
+      );
     }
   }
 
@@ -33,7 +39,10 @@ class VocabularyRepositoryImpl implements VocabularyRepository {
     try {
       return await _vocabularyRemoteDatasource.getAllTerms();
     } catch (e) {
-      throw ApiErrorHandler.handle(e, fallback: 'Failed to retrieve all terms. Please try again.');
+      throw ApiErrorHandler.handle(
+        e,
+        fallback: 'Failed to retrieve all terms. Please try again.',
+      );
     }
   }
 
@@ -42,7 +51,10 @@ class VocabularyRepositoryImpl implements VocabularyRepository {
     try {
       return await _vocabularyRemoteDatasource.getTermById(id);
     } catch (e) {
-      throw ApiErrorHandler.handle(e, fallback: 'Failed to retrieve term by id. Please try again.');
+      throw ApiErrorHandler.handle(
+        e,
+        fallback: 'Failed to retrieve term by id. Please try again.',
+      );
     }
   }
 }

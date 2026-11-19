@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../network/network_cubit.dart';
 import '../network/server_health_cubit.dart';
 
@@ -12,7 +13,7 @@ class ServerStatusIndicator extends StatelessWidget {
 
     return BlocBuilder<NetworkCubit, NetworkState>(
       buildWhen: (previous, current) =>
-      (previous is NetworkDisconnected) != (current is NetworkDisconnected),
+          (previous is NetworkDisconnected) != (current is NetworkDisconnected),
       builder: (context, networkState) {
         if (networkState is NetworkDisconnected) {
           return _StatusPill(
@@ -91,15 +92,15 @@ class _StatusPill extends StatelessWidget {
                   height: 10,
                   child: isLoading
                       ? CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: dotColor,
-                  )
+                          strokeWidth: 2,
+                          color: dotColor,
+                        )
                       : DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: dotColor,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
+                          decoration: BoxDecoration(
+                            color: dotColor,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
                 ),
                 const SizedBox(width: 8),
                 AnimatedSwitcher(

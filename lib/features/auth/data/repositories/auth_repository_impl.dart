@@ -17,7 +17,10 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       return await authRemoteDataSource.login(loginRequest);
     } catch (e) {
-      throw ApiErrorHandler.handle(e, fallback: 'Login failed. Please check your credentials.');
+      throw ApiErrorHandler.handle(
+        e,
+        fallback: 'Login failed. Please check your credentials.',
+      );
     }
   }
 
@@ -26,7 +29,10 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       return await authRemoteDataSource.register(registerRequest);
     } catch (e) {
-      throw ApiErrorHandler.handle(e, fallback: 'Registration failed. Please try again.');
+      throw ApiErrorHandler.handle(
+        e,
+        fallback: 'Registration failed. Please try again.',
+      );
     }
   }
 
@@ -35,7 +41,10 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       return await authRemoteDataSource.refreshToken(request);
     } catch (e) {
-      throw ApiErrorHandler.handle(e, fallback: 'Session expired. Please log in again.');
+      throw ApiErrorHandler.handle(
+        e,
+        fallback: 'Session expired. Please log in again.',
+      );
     }
   }
 

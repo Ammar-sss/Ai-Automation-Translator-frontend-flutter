@@ -46,9 +46,11 @@ class _MainShellState extends State<MainShell> {
     });
   }
 
-  void _openProfile() => _closeDrawerThen(() => context.push(AppRoutes.profile));
+  void _openProfile() =>
+      _closeDrawerThen(() => context.push(AppRoutes.profile));
 
-  void _openSettings() => _closeDrawerThen(() => context.push(AppRoutes.setting));
+  void _openSettings() =>
+      _closeDrawerThen(() => context.push(AppRoutes.setting));
 
   void _confirmLogout() {
     _closeDrawerThen(() {
@@ -257,7 +259,10 @@ class _AccountDrawer extends StatelessWidget {
                             ],
                           ),
                         ),
-                        Icon(Icons.chevron_right_rounded, color: scheme.outline),
+                        Icon(
+                          Icons.chevron_right_rounded,
+                          color: scheme.outline,
+                        ),
                       ],
                     ),
                   ),

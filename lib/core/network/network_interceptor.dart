@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+
 import 'network_cubit.dart';
 
 class NetworkInterceptor extends Interceptor {

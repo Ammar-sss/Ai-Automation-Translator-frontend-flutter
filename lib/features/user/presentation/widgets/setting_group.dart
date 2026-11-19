@@ -17,9 +17,7 @@ class SettingsGroup extends StatelessWidget {
           padding: const EdgeInsets.only(left: 8, bottom: 8),
           child: Text(
             title,
-            style: Theme.of(context)
-                .textTheme
-                .labelLarge
+            style: Theme.of(context).textTheme.labelLarge
                 ?.copyWith(color: scheme.onSurfaceVariant),
           ),
         ),
@@ -34,11 +32,7 @@ class SettingsGroup extends StatelessWidget {
             children: [
               for (var i = 0; i < children.length; i++) ...[
                 if (i > 0)
-                  Divider(
-                    height: 1,
-                    indent: 68,
-                    color: scheme.outlineVariant,
-                  ),
+                  Divider(height: 1, indent: 68, color: scheme.outlineVariant),
                 children[i],
               ],
             ],

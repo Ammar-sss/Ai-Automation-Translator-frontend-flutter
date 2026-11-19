@@ -1,4 +1,3 @@
-
 import 'package:json_annotation/json_annotation.dart';
 
 part 'example.g.dart';
@@ -10,6 +9,7 @@ class Example {
 
   new({required this.id, required this.exampleSentence});
 
-  factory Example.fromJson(Map<String, dynamic> json) => _$ExampleFromJson(json);
+  factory Example.fromJson(Map<String, dynamic> json) =>
+      _$ExampleFromJson(json);
   Map<String, dynamic> toJson() => _$ExampleToJson(this);
 }

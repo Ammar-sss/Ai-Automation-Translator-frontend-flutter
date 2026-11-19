@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,8 +11,8 @@ class NetworkCubit extends Cubit<NetworkState> {
   late final StreamSubscription<List<ConnectivityResult>> _subscription;
 
   NetworkCubit({Connectivity? connectivity})
-      : _connectivity = connectivity ?? Connectivity(),
-        super(const NetworkInitial()) {
+    : _connectivity = connectivity ?? Connectivity(),
+      super(const NetworkInitial()) {
     _initConnectivity();
   }
 
@@ -25,8 +26,9 @@ class NetworkCubit extends Cubit<NetworkState> {
       emit(const NetworkConnected([ConnectivityResult.mobile]));
     }
 
-    _subscription =
-        _connectivity.onConnectivityChanged.listen(_updateConnectionState);
+    _subscription = _connectivity.onConnectivityChanged.listen(
+      _updateConnectionState,
+    );
   }
 
   void _updateConnectionState(List<ConnectivityResult> results) {

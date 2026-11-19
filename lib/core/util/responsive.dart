@@ -20,13 +20,14 @@ extension ResponsiveContext on BuildContext {
 
   /// Responsive padding
   EdgeInsets get screenPadding => EdgeInsets.symmetric(
-        horizontal: wp(isTablet ? 6 : 4),
-        vertical: hp(isTablet ? 2.5 : 1.5),
-      );
+    horizontal: wp(isTablet ? 6 : 4),
+    vertical: hp(isTablet ? 2.5 : 1.5),
+  );
 
   /// Scales font size cleanly between a min and max bound
   double sp(double size, {double min = 10, double max = 32}) {
-    final scale = screenWidth / 390.0; // standard mobile baseline (iPhone 12/13/14)
+    final scale =
+        screenWidth / 390.0; // standard mobile baseline (iPhone 12/13/14)
     return (size * scale).clamp(min, max);
   }
 

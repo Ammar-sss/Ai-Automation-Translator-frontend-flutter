@@ -17,7 +17,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final SecureStorageService storageService;
 
   AuthBloc({required this.authRepository, required this.storageService})
-      : super(AuthInitial()) {
+    : super(AuthInitial()) {
     on<AuthCheckRequested>(_authCheckRequested);
     on<AuthLoginRequested>(_authLoginRequested);
     on<AuthRegisterRequested>(_authRegisterRequested);
@@ -26,9 +26,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _authCheckRequested(
-      AuthCheckRequested event,
-      Emitter<AuthState> emit,
-      ) async {
+    AuthCheckRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     final hasToken = await storageService.hasAccessToken();
     if (hasToken) {
       emit(AuthAuthenticated(user: null));
@@ -38,9 +38,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _authLoginRequested(
-      AuthLoginRequested event,
-      Emitter<AuthState> emit,
-      ) async {
+    AuthLoginRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(AuthLoading());
     try {
       final response = await authRepository.login(
@@ -57,9 +57,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _authRegisterRequested(
-      AuthRegisterRequested event,
-      Emitter<AuthState> emit,
-      ) async {
+    AuthRegisterRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(AuthLoading());
     try {
       await authRepository.register(
@@ -77,17 +77,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _authLogoutRequested(
-      AuthLogoutRequested event,
-      Emitter<AuthState> emit,
-      ) async {
+    AuthLogoutRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(AuthLogoutLoading());
     try {
       final refreshToken = await storageService.getRefreshToken();
       if (refreshToken != null && refreshToken.isNotEmpty) {
-        await authRepository.logout(RefreshTokenRequest(refreshToken: refreshToken));
+        await authRepository.logout(
+          RefreshTokenRequest(refreshToken: refreshToken),
+        );
       }
     } catch (_) {
-
     } finally {
       await storageService.clearToken();
       emit(AuthUnAuthenticated());
@@ -95,9 +96,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _authRefreshTokenRequested(
-      AuthRefreshTokenRequested event,
-      Emitter<AuthState> emit,
-      ) async {
+    AuthRefreshTokenRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(AuthLoading());
     try {
       final refreshToken = await storageService.getRefreshToken();

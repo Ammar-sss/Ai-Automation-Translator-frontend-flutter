@@ -83,8 +83,9 @@ class ResultCard extends StatelessWidget {
               SizedBox(height: context.hp(2.5)),
               Text(
                 'Example',
-                style:
-                text.labelLarge?.copyWith(color: scheme.onSurfaceVariant),
+                style: text.labelLarge?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
               ),
               SizedBox(height: context.hp(1)),
               Container(
@@ -141,10 +142,10 @@ class ResultCard extends StatelessWidget {
                 ),
                 icon: saving
                     ? SizedBox(
-                  height: context.sp(18),
-                  width: context.sp(18),
-                  child: const CircularProgressIndicator(strokeWidth: 2),
-                )
+                        height: context.sp(18),
+                        width: context.sp(18),
+                        child: const CircularProgressIndicator(strokeWidth: 2),
+                      )
                     : const Icon(Icons.bookmark_add_outlined),
                 label: Text(saving ? 'Saving…' : 'Save to vocabulary'),
               ),

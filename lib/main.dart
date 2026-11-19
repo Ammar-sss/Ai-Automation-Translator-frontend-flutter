@@ -72,7 +72,9 @@ Future<void> main() async {
   final translateRepository = TranslateRepositoryImpl(
     translateRemoteDataSource: translateRemoteDataSource,
   );
-  final translateCubit = TranslateCubit(translateRepository: translateRepository);
+  final translateCubit = TranslateCubit(
+    translateRepository: translateRepository,
+  );
 
   final vocabularyRemoteDataSource = VocabularyRemoteDatasource(dioClient.dio);
   final vocabularyRepository = VocabularyRepositoryImpl(

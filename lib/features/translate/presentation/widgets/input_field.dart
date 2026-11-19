@@ -6,7 +6,11 @@ class InputField extends StatelessWidget {
   final TextEditingController controller;
   final VoidCallback onSubmit;
 
-  const InputField({super.key, required this.controller, required this.onSubmit});
+  const InputField({
+    super.key,
+    required this.controller,
+    required this.onSubmit,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -46,10 +50,10 @@ class InputField extends StatelessWidget {
           builder: (context, value, _) => value.text.isEmpty
               ? const SizedBox.shrink()
               : IconButton(
-            tooltip: 'Clear',
-            icon: const Icon(Icons.close_rounded),
-            onPressed: controller.clear,
-          ),
+                  tooltip: 'Clear',
+                  icon: const Icon(Icons.close_rounded),
+                  onPressed: controller.clear,
+                ),
         ),
       ),
     );

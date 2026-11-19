@@ -1,4 +1,3 @@
-
 import 'package:json_annotation/json_annotation.dart';
 
 part 'ai_response.g.dart';
@@ -17,6 +16,7 @@ class AiResponse {
     required this.exampleDefinition,
   });
 
-  factory AiResponse.fromJson(Map<String, dynamic> json) => _$AiResponseFromJson(json);
+  factory AiResponse.fromJson(Map<String, dynamic> json) =>
+      _$AiResponseFromJson(json);
   Map<String, dynamic> toJson() => _$AiResponseToJson(this);
 }

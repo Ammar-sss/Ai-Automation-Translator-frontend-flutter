@@ -119,7 +119,7 @@ class _TranslatePageState extends State<TranslatePage> {
               Expanded(
                 child: BlocBuilder<TranslateCubit, TranslateState>(
                   buildWhen: (previous, current) =>
-                  previous.runtimeType != current.runtimeType,
+                      previous.runtimeType != current.runtimeType,
                   builder: (context, state) {
                     final isLoading = state is TranslateLoading;
                     return Column(
@@ -137,19 +137,19 @@ class _TranslatePageState extends State<TranslatePage> {
                           ),
                           child: isLoading
                               ? SizedBox(
-                            height: context.sp(20),
-                            width: context.sp(20),
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 2.4,
-                            ),
-                          )
+                                  height: context.sp(20),
+                                  width: context.sp(20),
+                                  child: const CircularProgressIndicator(
+                                    strokeWidth: 2.4,
+                                  ),
+                                )
                               : const Text(
-                            'Translate',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                                  'Translate',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                         ),
                         SizedBox(height: context.hp(2)),
                         Expanded(
@@ -157,11 +157,11 @@ class _TranslatePageState extends State<TranslatePage> {
                             duration: const Duration(milliseconds: 250),
                             child: state is TranslateLoaded
                                 ? ResultCard(
-                              key: ValueKey(state.aiResponse.termWord),
-                              state: state,
-                              isSaving: _isSaving,
-                              onSave: () => _saveToVocabulary(state),
-                            )
+                                    key: ValueKey(state.aiResponse.termWord),
+                                    state: state,
+                                    isSaving: _isSaving,
+                                    onSave: () => _saveToVocabulary(state),
+                                  )
                                 : const EmptyHint(),
                           ),
                         ),
@@ -177,8 +177,11 @@ class _TranslatePageState extends State<TranslatePage> {
     );
   }
 
-  void _showSnack(BuildContext context, String message,
-      {bool isError = false}) {
+  void _showSnack(
+    BuildContext context,
+    String message, {
+    bool isError = false,
+  }) {
     final scheme = Theme.of(context).colorScheme;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
@@ -188,11 +191,14 @@ class _TranslatePageState extends State<TranslatePage> {
           content: Text(
             message,
             style: TextStyle(
-              color: isError ? scheme.onErrorContainer : scheme.onInverseSurface,
+              color: isError
+                  ? scheme.onErrorContainer
+                  : scheme.onInverseSurface,
             ),
           ),
-          backgroundColor:
-          isError ? scheme.errorContainer : scheme.inverseSurface,
+          backgroundColor: isError
+              ? scheme.errorContainer
+              : scheme.inverseSurface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(context.defaultRadius),
           ),
