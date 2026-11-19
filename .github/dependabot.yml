@@ -1,0 +1,28 @@
+version: 2
+updates:
+  # Flutter / Pub dependencies
+  - package-ecosystem: "pub"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    groups:
+      pub-dependencies:
+        patterns:
+          - "*"
+    labels:
+      - "dependencies"
+      - "flutter"
+
+  # GitHub Actions dependencies
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "ci"
+      - "github-actions"
