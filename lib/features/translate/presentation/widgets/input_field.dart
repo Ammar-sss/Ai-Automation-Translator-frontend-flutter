@@ -15,43 +15,70 @@ class InputField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final radius = BorderRadius.circular(context.defaultRadius * 1.5);
+    final text = Theme.of(context).textTheme;
+    final radius = BorderRadius.circular(18);
 
     return TextField(
       controller: controller,
-      minLines: 1,
-      maxLines: 4,
+      minLines: 2,
+      maxLines: 5,
       textInputAction: TextInputAction.search,
       onSubmitted: (_) => onSubmit(),
-      style: TextStyle(fontSize: context.sp(17, min: 16, max: 20)),
+      style: text.bodyLarge?.copyWith(
+        fontSize: context.sp(17, min: 16, max: 20),
+        height: 1.35,
+      ),
       decoration: InputDecoration(
-        hintText: 'Type a word or phrase',
+        hintText: 'Enter text, word, or sentence…',
+        hintStyle: text.bodyLarge?.copyWith(
+          color: scheme.onSurfaceVariant.withValues(alpha: 0.7),
+          fontSize: context.sp(16, min: 15, max: 18),
+        ),
         filled: true,
         fillColor: scheme.surfaceContainerLow,
         contentPadding: EdgeInsets.symmetric(
           horizontal: context.wp(4),
           vertical: context.hp(1.8),
         ),
+        prefixIcon: Padding(
+          padding: const EdgeInsets.only(left: 14, right: 10, top: 12),
+          child: Align(
+            alignment: Alignment.topCenter,
+            widthFactor: 1.0,
+            child: Icon(
+              Icons.edit_note_rounded,
+              color: scheme.primary,
+              size: 24,
+            ),
+          ),
+        ),
         border: OutlineInputBorder(
           borderRadius: radius,
-          borderSide: BorderSide(color: scheme.outlineVariant),
+          borderSide: BorderSide(
+            color: scheme.outlineVariant.withValues(alpha: 0.5),
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: radius,
-          borderSide: BorderSide(color: scheme.outlineVariant),
+          borderSide: BorderSide(
+            color: scheme.outlineVariant.withValues(alpha: 0.5),
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: radius,
-          borderSide: BorderSide(color: scheme.primary, width: 1.6),
+          borderSide: BorderSide(color: scheme.primary, width: 1.8),
         ),
-        // Clear button only shows when there is text; rebuilds just this icon.
         suffixIcon: ValueListenableBuilder<TextEditingValue>(
           valueListenable: controller,
           builder: (context, value, _) => value.text.isEmpty
               ? const SizedBox.shrink()
               : IconButton(
-                  tooltip: 'Clear',
-                  icon: const Icon(Icons.close_rounded),
+                  tooltip: 'Clear input',
+                  icon: Icon(
+                    Icons.cancel_rounded,
+                    color: scheme.onSurfaceVariant,
+                    size: 20,
+                  ),
                   onPressed: controller.clear,
                 ),
         ),

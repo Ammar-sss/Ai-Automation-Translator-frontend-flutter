@@ -33,35 +33,22 @@ class FolderInputDialogState extends State<FolderInputDialog> {
 
   void _submit() {
     final text = _controller.text.trim();
-    if (text.isNotEmpty) {
-      Navigator.pop(context, text);
-    }
+    if (text.isNotEmpty) Navigator.pop(context, text);
   }
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-
     return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      title: Row(
-        children: [
-          Icon(Icons.create_new_folder_outlined, color: scheme.primary),
-          const SizedBox(width: 10),
-          Text(
-            widget.title,
-            style: const TextStyle(fontWeight: FontWeight.w700),
-          ),
-        ],
-      ),
+      title: Text(widget.title),
       content: TextField(
         controller: _controller,
         autofocus: true,
+        maxLength: 40,
         textCapitalization: TextCapitalization.words,
-        decoration: InputDecoration(
+        textInputAction: TextInputAction.done,
+        decoration: const InputDecoration(
           hintText: 'Folder name',
-          prefixIcon: const Icon(Icons.folder_open_rounded),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+          counterText: '',
         ),
         onSubmitted: (_) => _submit(),
       ),
@@ -70,7 +57,14 @@ class FolderInputDialogState extends State<FolderInputDialog> {
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
-        FilledButton(onPressed: _submit, child: Text(widget.actionLabel)),
+        // Disabled until there is something to save.
+        ValueListenableBuilder<TextEditingValue>(
+          valueListenable: _controller,
+          builder: (_, value, _) => FilledButton(
+            onPressed: value.text.trim().isEmpty ? null : _submit,
+            child: Text(widget.actionLabel),
+          ),
+        ),
       ],
     );
   }

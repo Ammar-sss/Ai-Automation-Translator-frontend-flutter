@@ -164,6 +164,12 @@ class AppDatabase extends _$AppDatabase {
       int termId;
       if (existing != null) {
         termId = existing.id;
+        // If the new term has an ID (>0), persist the updated data into SQLite.
+        if (term.id > 0) {
+          await (update(terms)..where((t) => t.id.equals(termId))).write(
+            TermsCompanion(termData: Value(jsonEncode(term.toJson()))),
+          );
+        }
       } else {
         // Insert new term
         termId = await into(terms).insert(
@@ -240,27 +246,50 @@ class AppDatabase extends _$AppDatabase {
     return rows.map((row) => row.readTable(folders)).toList();
   }
 
+  /// Updates the stored [models.Term] data in the local database.
+  /// Used when a locally saved term is successfully synced with the cloud.
+  Future<void> updateTerm(models.Term term) async {
+    final cleanWord = term.termWord.trim().toLowerCase();
+    await (update(terms)..where((t) => t.termWord.equals(cleanWord))).write(
+      TermsCompanion(termData: Value(jsonEncode(term.toJson()))),
+    );
+  }
+
   /// Removes a term from a specific folder (but keeps the term in the DB).
   /// If the term has no more folders, it is deleted entirely.
   Future<void> removeTermFromFolder({
     required int termId,
     required int folderId,
+    String? termWord,
   }) async {
     await transaction(() async {
+      int effectiveTermId = termId;
+      if (termWord != null && termWord.isNotEmpty) {
+        final row =
+            await (select(terms)..where(
+                  (t) => t.termWord.equals(termWord.trim().toLowerCase()),
+                ))
+                .getSingleOrNull();
+        if (row != null) {
+          effectiveTermId = row.id;
+        }
+      }
+
       // Remove the link
       await (delete(termFolders)..where(
-            (t) => t.termId.equals(termId) & t.folderId.equals(folderId),
+            (t) =>
+                t.termId.equals(effectiveTermId) & t.folderId.equals(folderId),
           ))
           .go();
 
       // Check if the term still belongs to any folder
       final remaining = await (select(
         termFolders,
-      )..where((t) => t.termId.equals(termId))).get();
+      )..where((t) => t.termId.equals(effectiveTermId))).get();
 
       // If orphaned, delete the term entirely
       if (remaining.isEmpty) {
-        await (delete(terms)..where((t) => t.id.equals(termId))).go();
+        await (delete(terms)..where((t) => t.id.equals(effectiveTermId))).go();
       }
     });
   }
@@ -271,6 +300,25 @@ class AppDatabase extends _$AppDatabase {
       await (delete(termFolders)..where((t) => t.termId.equals(termId))).go();
       await (delete(terms)..where((t) => t.id.equals(termId))).go();
     });
+  }
+
+  /// Resets a term's cloud sync ID to 0 when deleted from synced vocabulary,
+  /// keeping it in local folders as an unsaved/local term.
+  Future<void> resetTermCloudStatus(int termId) async {
+    final allRows = await select(terms).get();
+    for (final row in allRows) {
+      try {
+        final jsonMap = jsonDecode(row.termData) as Map<String, dynamic>;
+        final jsonId = (jsonMap['id'] as num?)?.toInt() ?? 0;
+        if (jsonId == termId) {
+          jsonMap['id'] = 0;
+          final updatedJson = jsonEncode(jsonMap);
+          await (update(terms)..where((t) => t.id.equals(row.id))).write(
+            TermsCompanion(termData: Value(updatedJson)),
+          );
+        }
+      } catch (_) {}
+    }
   }
 
   /// Searches for terms by keyword (partial match).

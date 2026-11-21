@@ -40,6 +40,8 @@ class LanguageBar extends StatelessWidget {
             style: IconButton.styleFrom(
               backgroundColor: scheme.primaryContainer,
               foregroundColor: scheme.onPrimaryContainer,
+              shape: const CircleBorder(),
+              padding: const EdgeInsets.all(12),
             ),
             icon: const Icon(Icons.swap_horiz_rounded),
           ),

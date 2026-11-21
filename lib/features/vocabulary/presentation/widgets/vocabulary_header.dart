@@ -1,87 +1,33 @@
 import 'package:material_ui/material_ui.dart';
 
+/// Small summary line under the large "Vocabulary" title.
+/// (The title itself is now a SliverAppBar.large in the page.)
 class VocabularyHeader extends StatelessWidget {
   final int? folderCount;
   final int? totalTermsCount;
-  final VoidCallback onRefresh;
 
   const VocabularyHeader({
     super.key,
     required this.folderCount,
     required this.totalTermsCount,
-    required this.onRefresh,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Vocabulary',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              if (folderCount != null && totalTermsCount != null) ...[
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    _StatBadge(
-                      label:
-                          '$folderCount ${folderCount == 1 ? 'folder' : 'folders'}',
-                    ),
-                    const SizedBox(width: 8),
-                    _StatBadge(
-                      label:
-                          '$totalTermsCount ${totalTermsCount == 1 ? 'word' : 'words'}',
-                    ),
-                  ],
-                ),
-              ],
-            ],
-          ),
-        ),
-        IconButton.filledTonal(
-          tooltip: 'Refresh',
-          style: IconButton.styleFrom(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
-          ),
-          onPressed: onRefresh,
-          icon: const Icon(Icons.refresh_rounded),
-        ),
-      ],
-    );
-  }
-}
-
-class _StatBadge extends StatelessWidget {
-  final String label;
-
-  const _StatBadge({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
+    if (folderCount == null || totalTermsCount == null) {
+      return const SizedBox.shrink();
+    }
     final scheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerHighest.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(10),
-      ),
+    final folders = '$folderCount ${folderCount == 1 ? 'folder' : 'folders'}';
+    final words = '$totalTermsCount ${totalTermsCount == 1 ? 'word' : 'words'}';
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
       child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
+        '$folders · $words',
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
           color: scheme.onSurfaceVariant,
+          fontWeight: FontWeight.w500,
         ),
       ),
     );

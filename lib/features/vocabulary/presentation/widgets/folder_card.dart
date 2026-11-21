@@ -3,6 +3,7 @@ import 'package:smart_translator_test/features/vocabulary/presentation/controlle
 
 import 'folder_popup_menu.dart';
 
+/// A compact folder row: icon, name, term count, overflow menu.
 class FolderCard extends StatelessWidget {
   final FolderInfo info;
   final VoidCallback onTap;
@@ -20,107 +21,56 @@ class FolderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final radius = BorderRadius.circular(20);
+    final text = Theme.of(context).textTheme;
 
     return Material(
       color: scheme.surfaceContainerLow,
-      shape: RoundedRectangleBorder(
-        borderRadius: radius,
-        side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.6)),
-      ),
+      borderRadius: BorderRadius.circular(16),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        onLongPress: () => _showContextMenu(context),
         child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          padding: const EdgeInsets.only(left: 14, right: 4),
+          child: Row(
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: scheme.primaryContainer.withValues(alpha: 0.6),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Icon(
-                      Icons.folder_rounded,
-                      color: scheme.primary,
-                      size: 24,
-                    ),
-                  ),
-                  const Spacer(),
-                  FolderPopupMenu(onRename: onRename, onDelete: onDelete),
-                ],
-              ),
-              const Spacer(),
-              Text(
-                info.folder.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.2,
-                ),
-              ),
-              const SizedBox(height: 6),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
-                  color: scheme.secondaryContainer.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(8),
+                  color: scheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(
-                  info.termCount == 1 ? '1 term' : '${info.termCount} terms',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: scheme.onSecondaryContainer,
-                  ),
+                child: Icon(
+                  Icons.folder_rounded,
+                  color: scheme.onPrimaryContainer,
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showContextMenu(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.edit_outlined),
-                title: const Text('Rename'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  onRename();
-                },
-              ),
-              ListTile(
-                leading: Icon(
-                  Icons.delete_outline_rounded,
-                  color: scheme.error,
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      info.folder.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: text.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      info.termCount == 1
+                          ? '1 term'
+                          : '${info.termCount} terms',
+                      style: text.bodySmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                 ),
-                title: Text('Delete', style: TextStyle(color: scheme.error)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  onDelete();
-                },
               ),
+              FolderPopupMenu(onRename: onRename, onDelete: onDelete),
             ],
           ),
         ),
