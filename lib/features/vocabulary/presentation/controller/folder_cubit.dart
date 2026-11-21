@@ -21,13 +21,10 @@ class FolderCubit extends Cubit<FolderState> {
       emit(FolderLoading());
     }
     try {
-      final folders = await _db.getAllFolders();
-      // For each folder, get the term count
-      final folderInfos = <FolderInfo>[];
-      for (final folder in folders) {
-        final terms = await _db.getTermsByFolderId(folder.id);
-        folderInfos.add(FolderInfo(folder: folder, termCount: terms.length));
-      }
+      final folderData = await _db.getAllFoldersWithTermCount();
+      final folderInfos = folderData
+          .map((d) => FolderInfo(folder: d.folder, termCount: d.termCount))
+          .toList();
       emit(FoldersLoaded(folders: folderInfos));
     } catch (e) {
       if (state is! FoldersLoaded) {

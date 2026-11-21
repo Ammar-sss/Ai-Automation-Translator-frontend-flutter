@@ -51,6 +51,8 @@ class TermFolders extends Table {
 
 @DriftDatabase(tables: [Folders, Terms, TermFolders])
 class AppDatabase extends _$AppDatabase {
+  AppDatabase({QueryExecutor? executor}) : super(executor ?? _openConnection());
+
   AppDatabase._() : super(_openConnection());
 
   /// Singleton instance
@@ -63,6 +65,12 @@ class AppDatabase extends _$AppDatabase {
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) async {
       await m.createAll();
+    },
+    beforeOpen: (details) async {
+      // Ensure folder_id on junction table is indexed to prevent full table scans
+      await customStatement(
+        'CREATE INDEX IF NOT EXISTS idx_term_folders_folder_id ON term_folders (folder_id);',
+      );
     },
   );
 
@@ -85,6 +93,30 @@ class AppDatabase extends _$AppDatabase {
   /// Returns all folders ordered by name.
   Future<List<Folder>> getAllFolders() {
     return (select(folders)..orderBy([(t) => OrderingTerm.asc(t.name)])).get();
+  }
+
+  /// Returns all folders with their term count in a SINGLE SQL query.
+  /// Eliminates the N+1 query and avoids decoding any JSON blobs for counting.
+  Future<List<({Folder folder, int termCount})>>
+  getAllFoldersWithTermCount() async {
+    final countExp = termFolders.termId.count();
+    final query =
+        select(folders).join([
+            leftOuterJoin(
+              termFolders,
+              termFolders.folderId.equalsExp(folders.id),
+            ),
+          ])
+          ..groupBy([folders.id, folders.name, folders.createdAt])
+          ..orderBy([OrderingTerm.asc(folders.name)])
+          ..addColumns([countExp]);
+
+    final rows = await query.get();
+    return rows.map((row) {
+      final folder = row.readTable(folders);
+      final count = row.read(countExp) ?? 0;
+      return (folder: folder, termCount: count);
+    }).toList();
   }
 
   /// Renames a folder.
@@ -260,6 +292,42 @@ class AppDatabase extends _$AppDatabase {
       final jsonMap = jsonDecode(row.termData) as Map<String, dynamic>;
       return models.Term.fromJson(jsonMap);
     }).toList();
+  }
+
+  /// Returns the most recently saved terms, limited to [limit].
+  /// Directly limits and sorts in SQLite so only [limit] JSON blobs are decoded.
+  Future<List<models.Term>> getRecentTerms({int limit = 5}) async {
+    final query = select(terms)
+      ..orderBy([(t) => OrderingTerm.desc(t.id)])
+      ..limit(limit);
+
+    final rows = await query.get();
+    return rows.map((row) {
+      final jsonMap = jsonDecode(row.termData) as Map<String, dynamic>;
+      return models.Term.fromJson(jsonMap);
+    }).toList();
+  }
+
+  /// Returns total count of saved terms directly via SQLite COUNT(*).
+  /// Fast O(1) query without loading or decoding any JSON blobs.
+  Future<int> getTermsCount() async {
+    final countExp = terms.id.count();
+    final query = selectOnly(terms)..addColumns([countExp]);
+    final result = await query.getSingle();
+    return result.read(countExp) ?? 0;
+  }
+
+  /// Returns the word of the day using a stable index based on day of month.
+  /// Queries only a single row directly from SQLite without loading all terms.
+  Future<models.Term?> getWordOfTheDay() async {
+    final count = await getTermsCount();
+    if (count == 0) return null;
+    final dayOffset = DateTime.now().day % count;
+    final query = select(terms)..limit(1, offset: dayOffset);
+    final row = await query.getSingleOrNull();
+    if (row == null) return null;
+    final jsonMap = jsonDecode(row.termData) as Map<String, dynamic>;
+    return models.Term.fromJson(jsonMap);
   }
 
   /// Watches all terms in a folder reactively (stream).

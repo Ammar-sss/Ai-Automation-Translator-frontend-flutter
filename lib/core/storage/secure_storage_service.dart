@@ -20,7 +20,13 @@ class SecureStorageService {
   static final String _keyFontFamily = "font_family";
   static final String _keyUserJson = "user_json";
 
+  // In-memory cache to avoid repeated asynchronous platform-channel/KeyStore reads
+  String? _cachedAccessToken;
+  String? _cachedRefreshToken;
+
   Future<void> saveToken(String accessToken, String refreshToken) async {
+    _cachedAccessToken = accessToken;
+    _cachedRefreshToken = refreshToken;
     await Future.wait([
       _storage.write(key: _keyAccessToken, value: accessToken),
       _storage.write(key: _keyRefreshToken, value: refreshToken),
@@ -28,19 +34,27 @@ class SecureStorageService {
   }
 
   Future<String?> getAccessToken() async {
-    return await _storage.read(key: _keyAccessToken);
+    if (_cachedAccessToken != null) return _cachedAccessToken;
+    _cachedAccessToken = await _storage.read(key: _keyAccessToken);
+    return _cachedAccessToken;
   }
 
   Future<String?> getRefreshToken() async {
-    return await _storage.read(key: _keyRefreshToken);
+    if (_cachedRefreshToken != null) return _cachedRefreshToken;
+    _cachedRefreshToken = await _storage.read(key: _keyRefreshToken);
+    return _cachedRefreshToken;
   }
 
   Future<bool> hasAccessToken() async {
-    final token = await _storage.read(key: _keyAccessToken);
+    if (_cachedAccessToken != null && _cachedAccessToken!.isNotEmpty)
+      return true;
+    final token = await getAccessToken();
     return token != null && token.isNotEmpty;
   }
 
   Future<void> clearToken() async {
+    _cachedAccessToken = null;
+    _cachedRefreshToken = null;
     await Future.wait([
       _storage.delete(key: _keyRefreshToken),
       _storage.delete(key: _keyAccessToken),

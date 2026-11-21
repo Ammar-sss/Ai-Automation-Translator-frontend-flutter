@@ -81,7 +81,8 @@ void main() {
     userRemoteDataSource: userRemoteDataSource,
     secureStorageService: storageService,
   );
-  final userCubit = UserCubit(userRepository: userRepository)..getProfile();
+  // Profile is fetched reactively upon authentication inside MainShell rather than eagerly at startup
+  final userCubit = UserCubit(userRepository: userRepository);
 
   final appRouter = AppRouter(authBloc: authBloc);
 
