@@ -1,6 +1,9 @@
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:dio/dio.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:smart_translator_test/app_snackbar.dart';
+import 'package:smart_translator_test/core/network/elevenlabs_service.dart';
 
 import '../../../../core/util/responsive.dart';
 import '../controller/translate_cubit.dart';
@@ -9,13 +12,18 @@ class ResultCard extends StatelessWidget {
   final TranslateLoaded state;
   final ValueNotifier<bool> isSaving;
   final VoidCallback onSave;
+  final String targetLanguageCode;
 
-  const ResultCard({
+  ResultCard({
     super.key,
     required this.state,
     required this.isSaving,
     required this.onSave,
+    required this.targetLanguageCode,
   });
+
+  final ElevenLabsService _elevenLabsService = ElevenLabsService(Dio());
+  final AudioPlayer _audioPlayer = AudioPlayer();
 
   void _copyResult(BuildContext context) {
     final res = state.aiResponse;
@@ -32,6 +40,27 @@ class ResultCard extends StatelessWidget {
     }
     Clipboard.setData(ClipboardData(text: buffer.toString()));
     showAppSnackBar(context, 'Translation copied to clipboard');
+  }
+
+  Future<void> _pronounceResult(BuildContext context) async {
+    final res = state.aiResponse;
+    showAppSnackBar(context, 'Synthesizing speech for "${res.termWord}"...');
+    try {
+      final audioBytes = await _elevenLabsService.textToSpeech(
+        res.termWord,
+        languageCode: targetLanguageCode,
+      );
+      if (!context.mounted) return;
+      if (audioBytes != null) {
+        await _audioPlayer.stop();
+        await _audioPlayer.play(BytesSource(audioBytes));
+      } else {
+        showAppSnackBar(context, 'Failed to generate speech.');
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      showAppSnackBar(context, 'Error playing audio: $e');
+    }
   }
 
   @override
@@ -70,10 +99,21 @@ class ResultCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                IconButton.filledTonal(
-                  onPressed: () => _copyResult(context),
-                  tooltip: 'Copy translation',
-                  icon: const Icon(Icons.copy_rounded, size: 20),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton.filledTonal(
+                      onPressed: () => _pronounceResult(context),
+                      tooltip: 'Pronounce translation',
+                      icon: const Icon(Icons.volume_up_rounded, size: 20),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton.filledTonal(
+                      onPressed: () => _copyResult(context),
+                      tooltip: 'Copy translation',
+                      icon: const Icon(Icons.copy_rounded, size: 20),
+                    ),
+                  ],
                 ),
               ],
             ),

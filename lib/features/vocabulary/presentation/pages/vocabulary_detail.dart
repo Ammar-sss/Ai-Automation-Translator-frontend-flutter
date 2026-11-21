@@ -1,11 +1,17 @@
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:dio/dio.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:smart_translator_test/app_snackbar.dart';
+import 'package:smart_translator_test/core/network/elevenlabs_service.dart';
 import 'package:smart_translator_test/features/vocabulary/data/models/term.dart';
 
 class VocabularyDetail extends StatelessWidget {
   final Term term;
-  const VocabularyDetail({super.key, required this.term});
+  VocabularyDetail({super.key, required this.term});
+
+  final ElevenLabsService _elevenLabsService = ElevenLabsService(Dio());
+  final AudioPlayer _audioPlayer = AudioPlayer();
 
   /// Opens the detail as a bottom sheet.
   static Future<void> show(BuildContext context, Term term) {
@@ -26,6 +32,23 @@ class VocabularyDetail extends StatelessWidget {
   void _copyWord(BuildContext context) {
     Clipboard.setData(ClipboardData(text: term.termWord));
     showAppSnackBar(context, '"${term.termWord}" copied to clipboard');
+  }
+
+  Future<void> _pronounceWord(BuildContext context) async {
+    showAppSnackBar(context, 'Synthesizing speech for "${term.termWord}"...');
+    try {
+      final audioBytes = await _elevenLabsService.textToSpeech(term.termWord);
+      if (!context.mounted) return;
+      if (audioBytes != null) {
+        await _audioPlayer.stop();
+        await _audioPlayer.play(BytesSource(audioBytes));
+      } else {
+        showAppSnackBar(context, 'Failed to generate speech.');
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      showAppSnackBar(context, 'Error playing audio: $e');
+    }
   }
 
   @override
@@ -66,10 +89,21 @@ class VocabularyDetail extends StatelessWidget {
                       ),
                     ),
                   ),
-                  IconButton.filledTonal(
-                    onPressed: () => _copyWord(context),
-                    tooltip: 'Copy word',
-                    icon: const Icon(Icons.copy_rounded, size: 20),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton.filledTonal(
+                        onPressed: () => _pronounceWord(context),
+                        tooltip: 'Pronounce word',
+                        icon: const Icon(Icons.volume_up_rounded, size: 20),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton.filledTonal(
+                        onPressed: () => _copyWord(context),
+                        tooltip: 'Copy word',
+                        icon: const Icon(Icons.copy_rounded, size: 20),
+                      ),
+                    ],
                   ),
                 ],
               ),

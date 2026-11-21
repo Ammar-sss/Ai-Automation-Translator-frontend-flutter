@@ -35,6 +35,30 @@ class _TranslatePageState extends State<TranslatePage> {
   /// Debounce guard: prevents duplicate submits within 500ms.
   Timer? _debounceTimer;
 
+  String _languageCode(TranslationLanguage lang) {
+    switch (lang) {
+      case TranslationLanguage.english:
+        return 'en';
+      case TranslationLanguage.arabic:
+        return 'ar';
+      case TranslationLanguage.french:
+        return 'fr';
+      case TranslationLanguage.germany:
+        return 'de';
+      case TranslationLanguage.italy:
+        return 'it';
+      case TranslationLanguage.spanish:
+        return 'es';
+      case TranslationLanguage.russian:
+        return 'ru';
+      case TranslationLanguage.kurdishSorani:
+      case TranslationLanguage.kurdishKurmanji:
+        return 'ar'; // fallback for Kurdish
+      case TranslationLanguage.dutch:
+        return 'nl';
+    }
+  }
+
   /// Only the save button listens to this, so saving never rebuilds the page.
   final ValueNotifier<bool> _isSaving = ValueNotifier(false);
 
@@ -205,6 +229,9 @@ class _TranslatePageState extends State<TranslatePage> {
                                     state: state,
                                     isSaving: _isSaving,
                                     onSave: () => _saveToVocabulary(state),
+                                    targetLanguageCode: _languageCode(
+                                      targetLang,
+                                    ),
                                   )
                                 : EmptyHint(
                                     onSelectPrompt: (prompt) {

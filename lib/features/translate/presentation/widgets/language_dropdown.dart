@@ -54,16 +54,18 @@ class LanguageDropdown extends StatelessWidget {
                 value: lang,
                 child: Row(
                   children: [
-                    Text(
-                      _label(lang),
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontWeight: lang == selectedValue
-                            ? FontWeight.w700
-                            : FontWeight.w500,
-                        color: lang == selectedValue
-                            ? scheme.primary
-                            : scheme.onSurface,
+                    Expanded(
+                      child: Text(
+                        _label(lang),
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontWeight: lang == selectedValue
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                          color: lang == selectedValue
+                              ? scheme.primary
+                              : scheme.onSurface,
+                        ),
                       ),
                     ),
                   ],
