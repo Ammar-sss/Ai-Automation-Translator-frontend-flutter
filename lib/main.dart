@@ -20,18 +20,11 @@ import 'package:smart_translator_test/features/user/data/repositories/user_repos
 import 'package:smart_translator_test/features/user/presentation/controller/user_cubit.dart';
 import 'package:smart_translator_test/features/vocabulary/data/datasource/vocabulary_remote_datasource.dart';
 import 'package:smart_translator_test/features/vocabulary/data/repositories/vocabulary_repository_impl.dart';
+import 'package:smart_translator_test/features/vocabulary/presentation/controller/folder_cubit.dart';
 import 'package:smart_translator_test/features/vocabulary/presentation/controller/vocabulary_cubit.dart';
 
-import 'features/setting/presentation/pages/refresh_rate_service.dart';
-
-Future<void> main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Detect 60/120 Hz support and apply the saved choice.
-  // A failure here must never stop the app from starting.
-  try {
-    await RefreshRateService.init();
-  } catch (_) {}
 
   final storageService = SecureStorageService();
   final networkCubit = NetworkCubit();
@@ -81,6 +74,7 @@ Future<void> main() async {
     vocabularyRemoteDatasource: vocabularyRemoteDataSource,
   );
   final vocabularyCubit = VocabularyCubit(vocabularyRepository);
+  final folderCubit = FolderCubit()..loadFolders();
 
   final userRemoteDataSource = UserRemoteDataSource(dioClient.dio);
   final userRepository = UserRepositoryImpl(
@@ -100,6 +94,7 @@ Future<void> main() async {
         BlocProvider.value(value: themeCubit),
         BlocProvider.value(value: translateCubit),
         BlocProvider.value(value: vocabularyCubit),
+        BlocProvider.value(value: folderCubit),
         BlocProvider.value(value: userCubit),
       ],
       child: MyApp(router: appRouter.router),

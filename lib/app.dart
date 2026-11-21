@@ -65,9 +65,8 @@ class MyApp extends StatelessWidget {
           theme: _lightTheme,
           darkTheme: _darkTheme,
           themeMode: state.themeMode,
-          // Fast & smooth cross-fade when switching light/dark.
-          themeAnimationDuration: const Duration(milliseconds: 150),
-          themeAnimationCurve: Curves.easeOut,
+          // Bypasses multi-frame color interpolation for an instant, lag-free theme switch.
+          themeAnimationDuration: Duration.zero,
           routerConfig: router,
         );
       },

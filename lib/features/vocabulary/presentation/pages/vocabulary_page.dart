@@ -1,12 +1,92 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:smart_translator_test/features/vocabulary/data/models/term.dart';
-import 'package:smart_translator_test/features/vocabulary/presentation/controller/vocabulary_cubit.dart';
-import 'package:smart_translator_test/features/vocabulary/presentation/pages/vocabulary_detail.dart';
+import 'package:smart_translator_test/core/storage/app_database.dart';
+import 'package:smart_translator_test/features/vocabulary/presentation/controller/folder_cubit.dart';
+import 'package:smart_translator_test/features/vocabulary/presentation/pages/folder_terms_page.dart';
 
 class VocabularyPage extends StatelessWidget {
   const VocabularyPage({super.key});
+
+  // ---------------------------------------------------------------------------
+  // Dialogs
+  // ---------------------------------------------------------------------------
+
+  Future<void> _showCreateFolderDialog(BuildContext context) async {
+    final name = await showDialog<String>(
+      context: context,
+      builder: (_) =>
+          const _FolderInputDialog(title: 'New Folder', actionLabel: 'Create'),
+    );
+
+    if (name != null && name.trim().isNotEmpty && context.mounted) {
+      context.read<FolderCubit>().createFolder(name.trim());
+    }
+  }
+
+  Future<void> _showRenameFolderDialog(
+    BuildContext context,
+    Folder folder,
+  ) async {
+    final newName = await showDialog<String>(
+      context: context,
+      builder: (_) => _FolderInputDialog(
+        title: 'Rename Folder',
+        initialValue: folder.name,
+        actionLabel: 'Rename',
+      ),
+    );
+
+    if (newName != null && newName.trim().isNotEmpty && context.mounted) {
+      context.read<FolderCubit>().renameFolder(folder.id, newName.trim());
+    }
+  }
+
+  Future<void> _confirmDeleteFolder(BuildContext context, Folder folder) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Folder?'),
+        content: Text(
+          'Are you sure you want to delete "${folder.name}"?\n\n'
+          'Terms will not be deleted if they belong to other folders.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+              foregroundColor: Theme.of(ctx).colorScheme.onError,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      context.read<FolderCubit>().deleteFolder(folder.id);
+    }
+  }
+
+  void _openFolder(BuildContext context, Folder folder) {
+    context.read<FolderCubit>().loadTermsInFolder(folder.id);
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => FolderTermsPage(folder: folder)),
+    ).then((_) {
+      if (context.mounted) {
+        context.read<FolderCubit>().loadFolders();
+      }
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Build
+  // ---------------------------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
@@ -14,11 +94,10 @@ class VocabularyPage extends StatelessWidget {
 
     return Scaffold(
       body: SafeArea(
-        child: BlocConsumer<VocabularyCubit, VocabularyState>(
-          listenWhen: (previous, current) =>
-              current is VocabularyFailure || current is TermSavedSuccess,
+        child: BlocConsumer<FolderCubit, FolderState>(
+          listenWhen: (_, current) => current is FolderFailure,
           listener: (context, state) {
-            if (state is VocabularyFailure) {
+            if (state is FolderFailure) {
               ScaffoldMessenger.of(context)
                 ..hideCurrentSnackBar()
                 ..showSnackBar(
@@ -36,58 +115,75 @@ class VocabularyPage extends StatelessWidget {
                 );
             }
           },
-          buildWhen: (previous, current) =>
-              current is VocabularyLoading ||
-              current is VocabularyLoaded ||
-              current is VocabularyFailure ||
-              current is VocabularyInitial,
+          buildWhen: (_, current) =>
+              current is FolderLoading ||
+              current is FoldersLoaded ||
+              current is FolderFailure ||
+              current is FolderInitial,
           builder: (context, state) {
-            final count = state is VocabularyLoaded ? state.terms.length : null;
+            final folders = state is FoldersLoaded ? state.folders : null;
+            final folderCount = folders?.length;
+            final totalTermsCount = folders?.fold<int>(
+              0,
+              (sum, item) => sum + item.termCount,
+            );
 
             return Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _Header(count: count),
+                  _Header(
+                    folderCount: folderCount,
+                    totalTermsCount: totalTermsCount,
+                    onRefresh: () => context.read<FolderCubit>().loadFolders(),
+                  ),
                   const SizedBox(height: 16),
                   Expanded(
                     child: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 250),
                       child: switch (state) {
-                        VocabularyLoading() => const Center(
+                        FolderLoading() => const Center(
                           key: ValueKey('loading'),
                           child: CircularProgressIndicator(),
                         ),
-                        VocabularyLoaded(terms: final terms) =>
-                          terms.isEmpty
-                              ? const _Message(
-                                  key: ValueKey('empty'),
-                                  icon: Icons.menu_book_outlined,
-                                  title: 'No words saved yet',
-                                  subtitle: 'Translate a word and save it to build your list.',
+                        FoldersLoaded(folders: final folders) =>
+                          folders.isEmpty
+                              ? _EmptyMessage(
+                                  key: const ValueKey('empty'),
+                                  icon: Icons.folder_outlined,
+                                  title: 'No folders yet',
+                                  subtitle: 'Create a folder to organize your vocabulary.',
+                                  actionLabel: 'Create folder',
+                                  onAction: () =>
+                                      _showCreateFolderDialog(context),
                                 )
-                              : _TermList(
-                                  key: const ValueKey('list'),
-                                  terms: terms,
+                              : _FolderGrid(
+                                  key: const ValueKey('grid'),
+                                  folders: folders,
+                                  onTap: (f) => _openFolder(context, f),
+                                  onRename: (f) =>
+                                      _showRenameFolderDialog(context, f),
+                                  onDelete: (f) =>
+                                      _confirmDeleteFolder(context, f),
                                 ),
-                        VocabularyFailure(message: final message) => _Message(
+                        FolderFailure(message: final message) => _EmptyMessage(
                           key: const ValueKey('error'),
                           icon: Icons.error_outline_rounded,
-                          title: 'Couldn’t load vocabulary',
+                          title: 'Something went wrong',
                           subtitle: message,
                           actionLabel: 'Try again',
                           onAction: () =>
-                              context.read<VocabularyCubit>().getAllTerms(),
+                              context.read<FolderCubit>().loadFolders(),
                         ),
-                        _ => _Message(
+                        _ => _EmptyMessage(
                           key: const ValueKey('initial'),
-                          icon: Icons.menu_book_outlined,
-                          title: 'Your vocabulary',
-                          subtitle: 'Load your saved words.',
-                          actionLabel: 'Load words',
+                          icon: Icons.folder_outlined,
+                          title: 'Your vocabulary folders',
+                          subtitle: 'Create folders to organize your words.',
+                          actionLabel: 'Load folders',
                           onAction: () =>
-                              context.read<VocabularyCubit>().getAllTerms(),
+                              context.read<FolderCubit>().loadFolders(),
                         ),
                       },
                     ),
@@ -98,19 +194,107 @@ class VocabularyPage extends StatelessWidget {
           },
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showCreateFolderDialog(context),
+        tooltip: 'New folder',
+        child: const Icon(Icons.create_new_folder_outlined),
+      ),
     );
   }
 }
 
 // ---------------------------------------------------------------------------
+// Folder Input Dialog (Stateful to safely manage controller lifecycle)
+// ---------------------------------------------------------------------------
+
+class _FolderInputDialog extends StatefulWidget {
+  final String title;
+  final String? initialValue;
+  final String actionLabel;
+
+  const _FolderInputDialog({
+    required this.title,
+    this.initialValue,
+    required this.actionLabel,
+  });
+
+  @override
+  State<_FolderInputDialog> createState() => _FolderInputDialogState();
+}
+
+class _FolderInputDialogState extends State<_FolderInputDialog> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialValue);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final text = _controller.text.trim();
+    if (text.isNotEmpty) {
+      Navigator.pop(context, text);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(widget.title),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        textCapitalization: TextCapitalization.words,
+        decoration: const InputDecoration(
+          hintText: 'Folder name',
+          border: OutlineInputBorder(),
+        ),
+        onSubmitted: (_) => _submit(),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(onPressed: _submit, child: Text(widget.actionLabel)),
+      ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Header
+// ---------------------------------------------------------------------------
 
 class _Header extends StatelessWidget {
-  final int? count;
-  const _Header({required this.count});
+  final int? folderCount;
+  final int? totalTermsCount;
+  final VoidCallback onRefresh;
+
+  const _Header({
+    required this.folderCount,
+    required this.totalTermsCount,
+    required this.onRefresh,
+  });
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+
+    String subtitle = '';
+    if (folderCount != null) {
+      final fText = folderCount == 1 ? '1 folder' : '$folderCount folders';
+      final tText = totalTermsCount == 1 ? '1 word' : '$totalTermsCount words';
+      subtitle = '$fText • $tText';
+    }
+
     return Row(
       children: [
         Expanded(
@@ -121,9 +305,9 @@ class _Header extends StatelessWidget {
                 'Vocabulary',
                 style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700),
               ),
-              if (count != null)
+              if (subtitle.isNotEmpty)
                 Text(
-                  count == 1 ? '1 word' : '$count words',
+                  subtitle,
                   style: TextStyle(color: scheme.onSurfaceVariant),
                 ),
             ],
@@ -131,7 +315,7 @@ class _Header extends StatelessWidget {
         ),
         IconButton.filledTonal(
           tooltip: 'Refresh',
-          onPressed: () => context.read<VocabularyCubit>().getAllTerms(),
+          onPressed: onRefresh,
           icon: const Icon(Icons.refresh_rounded),
         ),
       ],
@@ -140,134 +324,191 @@ class _Header extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
+// Folder Grid
+// ---------------------------------------------------------------------------
 
-class _TermList extends StatelessWidget {
-  final List<Term> terms;
-  const _TermList({super.key, required this.terms});
+class _FolderGrid extends StatelessWidget {
+  final List<FolderInfo> folders;
+  final ValueChanged<Folder> onTap;
+  final ValueChanged<Folder> onRename;
+  final ValueChanged<Folder> onDelete;
+
+  const _FolderGrid({
+    super.key,
+    required this.folders,
+    required this.onTap,
+    required this.onRename,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return ListView.separated(
+    return GridView.builder(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.only(bottom: 24),
-      itemCount: terms.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 10),
+      padding: const EdgeInsets.only(bottom: 80),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        childAspectRatio: 1.3,
+      ),
+      itemCount: folders.length,
       itemBuilder: (context, index) {
-        final term = terms[index];
-        return _TermTile(key: ValueKey(term.id), term: term);
+        final info = folders[index];
+        return _FolderCard(
+          info: info,
+          onTap: () => onTap(info.folder),
+          onRename: () => onRename(info.folder),
+          onDelete: () => onDelete(info.folder),
+        );
       },
     );
   }
 }
 
-class _TermTile extends StatelessWidget {
-  final Term term;
-  const _TermTile({super.key, required this.term});
+class _FolderCard extends StatelessWidget {
+  final FolderInfo info;
+  final VoidCallback onTap;
+  final VoidCallback onRename;
+  final VoidCallback onDelete;
+
+  const _FolderCard({
+    required this.info,
+    required this.onTap,
+    required this.onRename,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final radius = BorderRadius.circular(16);
-    final firstDefinition = term.termDefinitions.isNotEmpty
-        ? term.termDefinitions.first.definition
-        : '';
 
-    return Slidable(
-      key: ValueKey(term.id),
-      startActionPane: ActionPane(
-        motion: const ScrollMotion(),
-        extentRatio: 0.28,
-        children: [
-          SlidableAction(
-            onPressed: (_) {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text('Edit ${term.termWord}')));
-            },
-            backgroundColor: scheme.primaryContainer,
-            foregroundColor: scheme.onPrimaryContainer,
-            icon: Icons.edit_outlined,
-            label: 'Edit',
-            borderRadius: radius,
-          ),
-        ],
+    return Material(
+      color: scheme.surfaceContainerLow,
+      shape: RoundedRectangleBorder(
+        borderRadius: radius,
+        side: BorderSide(color: scheme.outlineVariant),
       ),
-      endActionPane: ActionPane(
-        motion: const ScrollMotion(),
-        extentRatio: 0.28,
-        children: [
-          SlidableAction(
-            onPressed: (_) =>
-                context.read<VocabularyCubit>().deleteTermById(term.id),
-            backgroundColor: scheme.errorContainer,
-            foregroundColor: scheme.onErrorContainer,
-            icon: Icons.delete_outline_rounded,
-            label: 'Delete',
-            borderRadius: radius,
-          ),
-        ],
-      ),
-      child: Material(
-        color: scheme.surfaceContainerLow,
-        shape: RoundedRectangleBorder(
-          borderRadius: radius,
-          side: BorderSide(color: scheme.outlineVariant),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: () => VocabularyDetail.show(context, term),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        term.termWord,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      if (firstDefinition.isNotEmpty) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          firstDefinition,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: scheme.onSurfaceVariant,
-                            height: 1.3,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        onLongPress: () => _showContextMenu(context),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.folder_rounded, color: scheme.primary, size: 32),
+                  const Spacer(),
+                  _PopupMenu(onRename: onRename, onDelete: onDelete),
+                ],
+              ),
+              const Spacer(),
+              Text(
+                info.folder.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
                 ),
-                Icon(Icons.chevron_right_rounded, color: scheme.outline),
-              ],
-            ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                info.termCount == 1 ? '1 term' : '${info.termCount} terms',
+                style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant),
+              ),
+            ],
           ),
+        ),
+      ),
+    );
+  }
+
+  void _showContextMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit_outlined),
+              title: const Text('Rename'),
+              onTap: () {
+                Navigator.pop(ctx);
+                onRename();
+              },
+            ),
+            ListTile(
+              leading: Icon(
+                Icons.delete_outline_rounded,
+                color: Theme.of(ctx).colorScheme.error,
+              ),
+              title: Text(
+                'Delete',
+                style: TextStyle(color: Theme.of(ctx).colorScheme.error),
+              ),
+              onTap: () {
+                Navigator.pop(ctx);
+                onDelete();
+              },
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
+class _PopupMenu extends StatelessWidget {
+  final VoidCallback onRename;
+  final VoidCallback onDelete;
+
+  const _PopupMenu({required this.onRename, required this.onDelete});
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<String>(
+      icon: Icon(
+        Icons.more_vert_rounded,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+        size: 20,
+      ),
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(),
+      style: const ButtonStyle(tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+      onSelected: (value) {
+        switch (value) {
+          case 'rename':
+            onRename();
+          case 'delete':
+            onDelete();
+        }
+      },
+      itemBuilder: (_) => const [
+        PopupMenuItem(value: 'rename', child: Text('Rename')),
+        PopupMenuItem(value: 'delete', child: Text('Delete')),
+      ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Empty / Error / Initial state
 // ---------------------------------------------------------------------------
 
-class _Message extends StatelessWidget {
+class _EmptyMessage extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
   final String? actionLabel;
   final VoidCallback? onAction;
 
-  const _Message({
+  const _EmptyMessage({
     super.key,
     required this.icon,
     required this.title,
