@@ -46,8 +46,9 @@ class SecureStorageService {
   }
 
   Future<bool> hasAccessToken() async {
-    if (_cachedAccessToken != null && _cachedAccessToken!.isNotEmpty)
+    if (_cachedAccessToken != null && _cachedAccessToken!.isNotEmpty) {
       return true;
+    }
     final token = await getAccessToken();
     return token != null && token.isNotEmpty;
   }
