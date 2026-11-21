@@ -1,9 +1,10 @@
-import 'package:smart_translator_test/core/config/secrets.dart';
-
 class Env {
-  const Env._();
+  Env._();
 
-  static const String baseUrl = Secrets.baseUrl;
+  static final String baseUrl = String.fromEnvironment(
+    "BASE_URL",
+    defaultValue: "https://ai-automation-translater-backend.onrender.com",
+  );
 
   static final Duration connectTimeout = Duration(seconds: 40);
   static final Duration receiveTimeout = Duration(seconds: 45);

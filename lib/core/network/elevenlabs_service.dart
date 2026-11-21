@@ -6,11 +6,12 @@ import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:dio/dio.dart';
+import 'package:smart_translator_test/core/config/secrets.dart';
 
 class ElevenLabsService {
   final Dio _dio;
   // Replace with your ElevenLabs API Key or inject via secure storage / env
-  final String _apiKey = 'sk_f157cb4917d414e84b48d538bc6439885b98c40e01877aca';
+  final String _apiKey = Secrets.elevenLabApi;
   // Default voice ID (e.g. Rachel, Adam, or custom voice ID)
   final String _defaultVoiceId = 'JBFqnCBsd6RMkjVDRZzb';
 
