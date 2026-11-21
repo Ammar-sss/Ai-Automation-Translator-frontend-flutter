@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smart_translator_test/core/util/responsive.dart';
 import 'package:smart_translator_test/features/user/presentation/widgets/setting_group.dart';
 import 'package:smart_translator_test/features/user/presentation/widgets/setting_switch.dart';
 import 'package:smart_translator_test/features/user/presentation/widgets/setting_title.dart';
@@ -69,38 +70,45 @@ class _SettingPageState extends State<SettingPage> {
         ),
         scrolledUnderElevation: 0,
       ),
-      body: ListView(
-        physics: const AlwaysScrollableScrollPhysics(
-          parent: BouncingScrollPhysics(),
-        ),
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-        children: [
-          SettingsGroup(
-            title: 'Preferences',
+      body: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: context.isTablet ? 650 : double.infinity,
+          ),
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics(),
+            ),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
             children: [
-              SettingTile(
-                icon: Icons.language_outlined,
-                title: 'Language',
-                subtitle: _selectedLanguage,
-                onTap: _pickLanguage,
-              ),
-              BlocSelector<ThemeCubit, ThemeState, bool>(
-                selector: (state) => state.themeMode == ThemeMode.dark,
-                builder: (context, isDarkMode) {
-                  return SettingSwitch(
-                    icon: Icons.dark_mode_outlined,
-                    title: 'Dark theme',
-                    subtitle: 'Switch between light and dark',
-                    value: isDarkMode,
-                    onChanged: (value) {
-                      context.read<ThemeCubit>().toggleTheme(value);
+              SettingsGroup(
+                title: 'Preferences',
+                children: [
+                  SettingTile(
+                    icon: Icons.language_outlined,
+                    title: 'Language',
+                    subtitle: _selectedLanguage,
+                    onTap: _pickLanguage,
+                  ),
+                  BlocSelector<ThemeCubit, ThemeState, bool>(
+                    selector: (state) => state.themeMode == ThemeMode.dark,
+                    builder: (context, isDarkMode) {
+                      return SettingSwitch(
+                        icon: Icons.dark_mode_outlined,
+                        title: 'Dark theme',
+                        subtitle: 'Switch between light and dark',
+                        value: isDarkMode,
+                        onChanged: (value) {
+                          context.read<ThemeCubit>().toggleTheme(value);
+                        },
+                      );
                     },
-                  );
-                },
+                  ),
+                ],
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }

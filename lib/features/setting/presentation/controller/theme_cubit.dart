@@ -8,7 +8,9 @@ class ThemeCubit extends Cubit<ThemeState> {
 
   void toggleTheme(bool isDark) {
     final mode = isDark ? ThemeMode.dark : ThemeMode.light;
-    emit(ThemeLoaded(themeMode: mode));
+    if (state.themeMode != mode) {
+      emit(ThemeLoaded(themeMode: mode));
+    }
   }
 
   bool isDarkTheme() {
@@ -16,6 +18,8 @@ class ThemeCubit extends Cubit<ThemeState> {
   }
 
   void setThemeMode(ThemeMode mode) {
-    emit(ThemeLoaded(themeMode: mode));
+    if (state.themeMode != mode) {
+      emit(ThemeLoaded(themeMode: mode));
+    }
   }
 }

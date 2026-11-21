@@ -18,6 +18,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final _key = GlobalKey<FormState>();
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -39,28 +40,35 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      appBar: AppBar(actions: [ServerStatusIndicator()]),
+      appBar: AppBar(actions: [const ServerStatusIndicator()]),
       body: SafeArea(
         child: BlocConsumer<AuthBloc, AuthState>(
           listener: (context, state) {
             if (state is AuthFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
+                  behavior: SnackBarBehavior.floating,
                   content: Text(state.message),
-                  backgroundColor: Colors.red,
+                  backgroundColor: scheme.error,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               );
             }
           },
           builder: (context, state) {
             final bool isLoading = state is AuthLoading;
+
             return Center(
               child: SingleChildScrollView(
                 padding: context.screenPadding,
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
-                    maxWidth: context.isTablet ? 450 : double.infinity,
+                    maxWidth: context.isTablet ? 440 : double.infinity,
                   ),
                   child: Form(
                     key: _key,
@@ -68,18 +76,30 @@ class _LoginPageState extends State<LoginPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Icon(
-                          Icons.translate_rounded,
-                          size: context.sp(64, min: 48, max: 80),
-                          color: Theme.of(context).primaryColor,
+                        Center(
+                          child: Container(
+                            padding: const EdgeInsets.all(22),
+                            decoration: BoxDecoration(
+                              color: scheme.primaryContainer.withValues(
+                                alpha: 0.7,
+                              ),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.translate_rounded,
+                              size: context.sp(48, min: 36, max: 60),
+                              color: scheme.primary,
+                            ),
+                          ),
                         ),
-                        SizedBox(height: context.hp(2)),
+                        SizedBox(height: context.hp(2.5)),
                         Text(
                           "Welcome Back!",
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: context.sp(28, min: 22, max: 32),
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.5,
                           ),
                         ),
                         SizedBox(height: context.hp(1)),
@@ -87,45 +107,65 @@ class _LoginPageState extends State<LoginPage> {
                           "Sign in to continue exploring languages",
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontSize: context.sp(15, min: 13, max: 18),
-                            color: Colors.grey[600],
+                            fontSize: context.sp(15, min: 13, max: 17),
+                            color: scheme.onSurfaceVariant,
                           ),
                         ),
                         SizedBox(height: context.hp(4)),
                         TextFormField(
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.next,
+                          validator: (val) {
+                            if (val == null || val.trim().isEmpty) {
+                              return 'Please enter your email';
+                            }
+                            return null;
+                          },
                           decoration: InputDecoration(
                             labelText: "Email",
                             hintText: "Enter your email",
                             prefixIcon: const Icon(Icons.email_outlined),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(
-                                context.defaultRadius,
-                              ),
+                              borderRadius: BorderRadius.circular(16),
                             ),
                           ),
                         ),
                         SizedBox(height: context.hp(2)),
                         TextFormField(
-                          obscureText: true,
+                          obscureText: _obscurePassword,
                           controller: _passwordController,
                           keyboardType: TextInputType.visiblePassword,
+                          textInputAction: TextInputAction.done,
+                          onFieldSubmitted: (_) => _submit(),
+                          validator: (val) {
+                            if (val == null || val.isEmpty) {
+                              return 'Please enter your password';
+                            }
+                            return null;
+                          },
                           decoration: InputDecoration(
                             labelText: "Password",
                             hintText: "Enter your password",
                             prefixIcon: const Icon(Icons.lock_outline),
-                            suffixIcon: const Icon(
-                              Icons.visibility_off_outlined,
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
                             ),
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(
-                                context.defaultRadius,
-                              ),
+                              borderRadius: BorderRadius.circular(16),
                             ),
                           ),
                         ),
-                        SizedBox(height: context.hp(1)),
+                        SizedBox(height: context.hp(0.8)),
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton(
@@ -134,36 +174,36 @@ class _LoginPageState extends State<LoginPage> {
                               "Forgot Password?",
                               style: TextStyle(
                                 fontSize: context.sp(13, min: 11, max: 15),
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
                         ),
                         SizedBox(height: context.hp(2.5)),
-                        ElevatedButton(
+                        FilledButton(
                           onPressed: isLoading ? null : _submit,
-                          style: ElevatedButton.styleFrom(
+                          style: FilledButton.styleFrom(
                             padding: EdgeInsets.symmetric(
                               vertical: context.hp(1.8).clamp(14.0, 20.0),
                             ),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                context.defaultRadius,
-                              ),
+                              borderRadius: BorderRadius.circular(16),
                             ),
                           ),
                           child: isLoading
                               ? SizedBox(
                                   height: context.sp(20),
                                   width: context.sp(20),
-                                  child: const CircularProgressIndicator(
-                                    strokeWidth: 2,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    color: scheme.onPrimary,
                                   ),
                                 )
                               : Text(
                                   "Login",
                                   style: TextStyle(
                                     fontSize: context.sp(16, min: 14, max: 18),
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
                         ),
@@ -175,6 +215,7 @@ class _LoginPageState extends State<LoginPage> {
                               "Don't have an account?",
                               style: TextStyle(
                                 fontSize: context.sp(14, min: 12, max: 16),
+                                color: scheme.onSurfaceVariant,
                               ),
                             ),
                             TextButton(
@@ -185,7 +226,7 @@ class _LoginPageState extends State<LoginPage> {
                                 "Register",
                                 style: TextStyle(
                                   fontSize: context.sp(14, min: 12, max: 16),
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ),

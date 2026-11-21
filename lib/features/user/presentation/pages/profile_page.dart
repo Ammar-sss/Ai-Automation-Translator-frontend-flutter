@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:smart_translator_test/core/route/app_routes.dart';
+import 'package:smart_translator_test/core/util/responsive.dart';
 import 'package:smart_translator_test/features/auth/presentation/controller/auth_bloc.dart';
 import 'package:smart_translator_test/features/user/presentation/widgets/edit_profile_sheet.dart';
 import 'package:smart_translator_test/features/user/presentation/widgets/profile_header.dart';
@@ -181,99 +182,107 @@ class _ProfilePageState extends State<ProfilePage> {
                     vocabularyCubit.getAllTerms(),
                   ]);
                 },
-                child: Skeletonizer(
-                  enabled: isLoading,
-                  effect: ShimmerEffect(
-                    baseColor: Colors.white.withValues(alpha: 0.15),
-                    highlightColor: Colors.white.withValues(alpha: 0.35),
-                  ),
-                  child: ListView(
-                    physics: const AlwaysScrollableScrollPhysics(
-                      parent: BouncingScrollPhysics(),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: context.isTablet ? 750 : double.infinity,
                     ),
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-                    children: [
-                      ProfileHeader(
-                        username: username,
-                        email: email,
-                        isEnabled: isEnabled,
-                        onEdit: () => _editProfile(username, email),
+                    child: Skeletonizer(
+                      enabled: isLoading,
+                      effect: ShimmerEffect(
+                        baseColor: Colors.white.withValues(alpha: 0.15),
+                        highlightColor: Colors.white.withValues(alpha: 0.35),
                       ),
-                      const SizedBox(height: 28),
-
-                      SettingsGroup(
-                        title: 'Preferences',
+                      child: ListView(
+                        physics: const AlwaysScrollableScrollPhysics(
+                          parent: BouncingScrollPhysics(),
+                        ),
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
                         children: [
-                          SettingTile(
-                            icon: Icons.bookmark_outline_rounded,
-                            title: 'Number of terms',
-                            subtitle: termsCount,
-                            onTap: () {
-                              context.go(AppRoutes.vocabulary);
-                            },
+                          ProfileHeader(
+                            username: username,
+                            email: email,
+                            isEnabled: isEnabled,
+                            onEdit: () => _editProfile(username, email),
                           ),
-                          BlocSelector<ThemeCubit, ThemeState, bool>(
-                            selector: (state) =>
-                                state.themeMode == ThemeMode.dark,
-                            builder: (context, isDark) {
-                              return SettingSwitch(
-                                icon: Icons.dark_mode_outlined,
-                                title: 'Dark theme',
-                                subtitle: 'Switch between light and dark',
-                                value: isDark,
-                                onChanged: (v) =>
-                                    context.read<ThemeCubit>().toggleTheme(v),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
+                          const SizedBox(height: 28),
 
-                      SettingsGroup(
-                        title: 'Support',
-                        children: [
-                          SettingTile(
-                            icon: Icons.help_outline_rounded,
-                            title: 'Help & support',
-                            subtitle: 'FAQ and contact',
-                            onTap: _showHelp,
+                          SettingsGroup(
+                            title: 'Preferences',
+                            children: [
+                              SettingTile(
+                                icon: Icons.bookmark_outline_rounded,
+                                title: 'Number of terms',
+                                subtitle: termsCount,
+                                onTap: () {
+                                  context.go(AppRoutes.vocabulary);
+                                },
+                              ),
+                              BlocSelector<ThemeCubit, ThemeState, bool>(
+                                selector: (state) =>
+                                    state.themeMode == ThemeMode.dark,
+                                builder: (context, isDark) {
+                                  return SettingSwitch(
+                                    icon: Icons.dark_mode_outlined,
+                                    title: 'Dark theme',
+                                    subtitle: 'Switch between light and dark',
+                                    value: isDark,
+                                    onChanged: (v) => context
+                                        .read<ThemeCubit>()
+                                        .toggleTheme(v),
+                                  );
+                                },
+                              ),
+                            ],
                           ),
-                          SettingTile(
-                            icon: Icons.privacy_tip_outlined,
-                            title: 'Privacy policy',
-                            subtitle: 'Terms and privacy',
-                            onTap: _showPrivacy,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
+                          const SizedBox(height: 20),
 
-                      // Log out
-                      Material(
-                        color: scheme.errorContainer.withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(20),
-                        clipBehavior: Clip.antiAlias,
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 4,
+                          SettingsGroup(
+                            title: 'Support',
+                            children: [
+                              SettingTile(
+                                icon: Icons.help_outline_rounded,
+                                title: 'Help & support',
+                                subtitle: 'FAQ and contact',
+                                onTap: _showHelp,
+                              ),
+                              SettingTile(
+                                icon: Icons.privacy_tip_outlined,
+                                title: 'Privacy policy',
+                                subtitle: 'Terms and privacy',
+                                onTap: _showPrivacy,
+                              ),
+                            ],
                           ),
-                          leading: Icon(
-                            Icons.logout_rounded,
-                            color: scheme.error,
-                          ),
-                          title: Text(
-                            'Log out',
-                            style: TextStyle(
-                              color: scheme.error,
-                              fontWeight: FontWeight.w700,
+                          const SizedBox(height: 20),
+
+                          // Log out
+                          Material(
+                            color: scheme.errorContainer.withValues(alpha: 0.5),
+                            borderRadius: BorderRadius.circular(20),
+                            clipBehavior: Clip.antiAlias,
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 4,
+                              ),
+                              leading: Icon(
+                                Icons.logout_rounded,
+                                color: scheme.error,
+                              ),
+                              title: Text(
+                                'Log out',
+                                style: TextStyle(
+                                  color: scheme.error,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              onTap: _confirmLogout,
                             ),
                           ),
-                          onTap: _confirmLogout,
-                        ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               );

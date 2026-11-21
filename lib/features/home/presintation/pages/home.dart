@@ -31,18 +31,15 @@ class _HomeState extends State<Home> {
 
   Future<void> _loadDashboardData() async {
     try {
-      final allTerms = await AppDatabase.instance.getAllTerms();
+      final recentTermsFuture = AppDatabase.instance.getRecentTerms(limit: 5);
+      final wordOfDayFuture = AppDatabase.instance.getWordOfTheDay();
+
+      final results = await Future.wait([recentTermsFuture, wordOfDayFuture]);
       if (!mounted) return;
 
       setState(() {
-        _recentTerms = allTerms.reversed.take(5).toList();
-        if (allTerms.isNotEmpty) {
-          // Stable random pick for the day based on day of the year
-          final dayIndex = DateTime.now().day % allTerms.length;
-          _wordOfTheDay = allTerms[dayIndex];
-        } else {
-          _wordOfTheDay = null;
-        }
+        _recentTerms = results[0] as List<Term>;
+        _wordOfTheDay = results[1] as Term?;
         _isLoadingRecent = false;
       });
     } catch (_) {

@@ -60,14 +60,16 @@ class _FolderPickerSheetState extends State<FolderPickerSheet> {
     final name = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: const Text('New Folder'),
         content: TextField(
           controller: controller,
           autofocus: true,
           textCapitalization: TextCapitalization.words,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             hintText: 'Folder name',
-            border: OutlineInputBorder(),
+            prefixIcon: const Icon(Icons.folder_open_rounded),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
           ),
           onSubmitted: (val) => Navigator.pop(ctx, val),
         ),
@@ -122,6 +124,7 @@ class _FolderPickerSheetState extends State<FolderPickerSheet> {
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
+                          letterSpacing: -0.3,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -137,6 +140,11 @@ class _FolderPickerSheetState extends State<FolderPickerSheet> {
                 ),
                 IconButton.filledTonal(
                   tooltip: 'New Folder',
+                  style: IconButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
                   onPressed: _showCreateFolderDialog,
                   icon: const Icon(Icons.create_new_folder_outlined),
                 ),
@@ -166,10 +174,18 @@ class _FolderPickerSheetState extends State<FolderPickerSheet> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
-                              Icons.folder_open_rounded,
-                              size: 48,
-                              color: scheme.outline,
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: scheme.surfaceContainerHighest
+                                    .withValues(alpha: 0.5),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.folder_open_rounded,
+                                size: 40,
+                                color: scheme.primary,
+                              ),
                             ),
                             const SizedBox(height: 12),
                             const Text(
@@ -217,23 +233,36 @@ class _FolderPickerSheetState extends State<FolderPickerSheet> {
                               )
                             : scheme.surfaceContainerLow,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(16),
                           side: BorderSide(
                             color: isAlreadyIn
                                 ? scheme.primary.withValues(alpha: 0.3)
-                                : scheme.outlineVariant,
+                                : scheme.outlineVariant.withValues(alpha: 0.5),
                           ),
                         ),
                         clipBehavior: Clip.antiAlias,
                         child: ListTile(
-                          leading: Icon(
-                            isAlreadyIn
-                                ? Icons.folder_special_rounded
-                                : Icons.folder_rounded,
-                            color: isAlreadyIn
-                                ? scheme.primary
-                                : scheme.secondary,
-                            size: 28,
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: isAlreadyIn
+                                  ? scheme.primaryContainer.withValues(
+                                      alpha: 0.6,
+                                    )
+                                  : scheme.secondaryContainer.withValues(
+                                      alpha: 0.5,
+                                    ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(
+                              isAlreadyIn
+                                  ? Icons.folder_special_rounded
+                                  : Icons.folder_rounded,
+                              color: isAlreadyIn
+                                  ? scheme.primary
+                                  : scheme.secondary,
+                              size: 22,
+                            ),
                           ),
                           title: Text(
                             item.folder.name,
@@ -256,7 +285,7 @@ class _FolderPickerSheetState extends State<FolderPickerSheet> {
                               ? Icon(
                                   Icons.check_circle_rounded,
                                   color: scheme.primary,
-                                  size: 20,
+                                  size: 22,
                                 )
                               : const Icon(Icons.chevron_right_rounded),
                           onTap: () {
