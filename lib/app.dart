@@ -23,7 +23,6 @@ class MyApp extends StatelessWidget {
       colorScheme: scheme,
       useMaterial3: true,
 
-      // Smooth route transitions on every platform.
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
           TargetPlatform.android: ZoomPageTransitionsBuilder(),
@@ -34,7 +33,6 @@ class MyApp extends StatelessWidget {
         },
       ),
 
-      // Shared look so the redesigned screens stay consistent.
       appBarTheme: const AppBarTheme(
         centerTitle: false,
         scrolledUnderElevation: 0,
@@ -50,13 +48,35 @@ class MyApp extends StatelessWidget {
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         backgroundColor: scheme.surfaceContainer,
       ),
+
+      // One input style for the whole app: soft filled fields, no heavy
+      // outline. Pages no longer need to repeat their own borders.
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: scheme.primary, width: 1.5),
+        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ThemeCubit, ThemeState>(
-      // Only rebuild the app when the theme mode actually changes.
       buildWhen: (previous, current) => previous.themeMode != current.themeMode,
       builder: (context, state) {
         return MaterialApp.router(
@@ -65,7 +85,6 @@ class MyApp extends StatelessWidget {
           theme: _lightTheme,
           darkTheme: _darkTheme,
           themeMode: state.themeMode,
-          // Bypasses multi-frame color interpolation for an instant, lag-free theme switch.
           themeAnimationDuration: Duration.zero,
           routerConfig: router,
         );

@@ -14,128 +14,77 @@ class AddTermDialog extends StatefulWidget {
 }
 
 class AddTermDialogState extends State<AddTermDialog> {
-  late final TextEditingController _wordController;
-  late final TextEditingController _definitionController;
-  late final TextEditingController _exampleController;
-  late final TextEditingController _exampleDefinitionController;
-
-  @override
-  void initState() {
-    super.initState();
-    _wordController = TextEditingController();
-    _definitionController = TextEditingController();
-    _exampleController = TextEditingController();
-    _exampleDefinitionController = TextEditingController();
-  }
+  final _word = TextEditingController();
+  final _definition = TextEditingController();
+  final _example = TextEditingController();
+  final _exampleDefinition = TextEditingController();
 
   @override
   void dispose() {
-    _wordController.dispose();
-    _definitionController.dispose();
-    _exampleController.dispose();
-    _exampleDefinitionController.dispose();
+    _word.dispose();
+    _definition.dispose();
+    _example.dispose();
+    _exampleDefinition.dispose();
     super.dispose();
   }
 
   void _submit() {
-    final word = _wordController.text.trim();
+    final word = _word.text.trim();
     if (word.isEmpty) return;
 
-    final defText = _definitionController.text.trim();
-    final exText = _exampleController.text.trim();
-    final exDefText = _exampleDefinitionController.text.trim();
+    final def = _definition.text.trim();
+    final ex = _example.text.trim();
+    final exDef = _exampleDefinition.text.trim();
 
-    final term = Term(
-      id: 0,
-      termWord: word,
-      termDefinitions: defText.isNotEmpty
-          ? {TermDefinition(id: 0, definition: defText)}
-          : {},
-      termExamples: exText.isNotEmpty
-          ? {Example(id: 0, exampleSentence: exText)}
-          : {},
-      exampleDefinitions: exDefText.isNotEmpty
-          ? {ExampleDefinition(id: 0, exampleDefinition: exDefText)}
-          : {},
+    Navigator.pop(
+      context,
+      Term(
+        id: 0,
+        termWord: word,
+        termDefinitions: def.isNotEmpty
+            ? {TermDefinition(id: 0, definition: def)}
+            : {},
+        termExamples: ex.isNotEmpty
+            ? {Example(id: 0, exampleSentence: ex)}
+            : {},
+        exampleDefinitions: exDef.isNotEmpty
+            ? {ExampleDefinition(id: 0, exampleDefinition: exDef)}
+            : {},
+      ),
     );
+  }
 
-    Navigator.pop(context, term);
+  Widget _field(
+    TextEditingController controller,
+    String label, {
+    String? hint,
+    bool autofocus = false,
+    bool last = false,
+  }) {
+    return TextField(
+      controller: controller,
+      autofocus: autofocus,
+      textInputAction: last ? TextInputAction.done : TextInputAction.next,
+      decoration: InputDecoration(labelText: label, hintText: hint),
+      onSubmitted: last ? (_) => _submit() : null,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-
     return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      title: Row(
-        children: [
-          Icon(Icons.add_circle_outline_rounded, color: scheme.primary),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              'Add Term to ${widget.folderName}',
-              style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700),
-            ),
-          ),
-        ],
-      ),
+      title: Text('Add to ${widget.folderName}'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(
-              controller: _wordController,
-              autofocus: true,
-              decoration: InputDecoration(
-                labelText: 'Term / Word *',
-                hintText: 'e.g. sister',
-                prefixIcon: const Icon(Icons.text_fields_rounded),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-              onSubmitted: (_) => _submit(),
-            ),
+            _field(_word, 'Word *', hint: 'e.g. sister', autofocus: true),
             const SizedBox(height: 12),
-            TextField(
-              controller: _definitionController,
-              decoration: InputDecoration(
-                labelText: 'Definition (optional)',
-                hintText: 'e.g. A female sibling',
-                prefixIcon: const Icon(Icons.notes_rounded),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-              onSubmitted: (_) => _submit(),
-            ),
+            _field(_definition, 'Definition', hint: 'e.g. A female sibling'),
             const SizedBox(height: 12),
-            TextField(
-              controller: _exampleController,
-              decoration: InputDecoration(
-                labelText: 'Example sentence (optional)',
-                hintText: 'e.g. My sister is older than me',
-                prefixIcon: const Icon(Icons.format_quote_rounded),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-              onSubmitted: (_) => _submit(),
-            ),
+            _field(_example, 'Example sentence'),
             const SizedBox(height: 12),
-            TextField(
-              controller: _exampleDefinitionController,
-              decoration: InputDecoration(
-                labelText: 'Example definition (optional)',
-                hintText: 'e.g. اختي أكبر مني سنًا',
-                prefixIcon: const Icon(Icons.translate_rounded),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-              onSubmitted: (_) => _submit(),
-            ),
+            _field(_exampleDefinition, 'Example translation', last: true),
           ],
         ),
       ),
@@ -144,10 +93,12 @@ class AddTermDialogState extends State<AddTermDialog> {
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
-        FilledButton.icon(
-          onPressed: _submit,
-          icon: const Icon(Icons.check_rounded, size: 18),
-          label: const Text('Add Term'),
+        ValueListenableBuilder<TextEditingValue>(
+          valueListenable: _word,
+          builder: (_, value, _) => FilledButton(
+            onPressed: value.text.trim().isEmpty ? null : _submit,
+            child: const Text('Add'),
+          ),
         ),
       ],
     );

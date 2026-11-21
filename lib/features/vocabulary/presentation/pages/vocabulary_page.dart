@@ -12,19 +12,14 @@ import 'package:smart_translator_test/features/vocabulary/presentation/widgets/v
 class VocabularyPage extends StatelessWidget {
   const VocabularyPage({super.key});
 
-  // ---------------------------------------------------------------------------
-  // Dialogs
-  // ---------------------------------------------------------------------------
-
   Future<void> _showCreateFolderDialog(BuildContext context) async {
     final name = await showDialog<String>(
       context: context,
       builder: (_) =>
-          const FolderInputDialog(title: 'New Folder', actionLabel: 'Create'),
+          const FolderInputDialog(title: 'New folder', actionLabel: 'Create'),
     );
-
-    if (name != null && name.trim().isNotEmpty && context.mounted) {
-      context.read<FolderCubit>().createFolder(name.trim());
+    if (name != null && context.mounted) {
+      context.read<FolderCubit>().createFolder(name);
     }
   }
 
@@ -35,14 +30,13 @@ class VocabularyPage extends StatelessWidget {
     final newName = await showDialog<String>(
       context: context,
       builder: (_) => FolderInputDialog(
-        title: 'Rename Folder',
+        title: 'Rename folder',
         initialValue: folder.name,
         actionLabel: 'Rename',
       ),
     );
-
-    if (newName != null && newName.trim().isNotEmpty && context.mounted) {
-      context.read<FolderCubit>().renameFolder(folder.id, newName.trim());
+    if (newName != null && context.mounted) {
+      context.read<FolderCubit>().renameFolder(folder.id, newName);
     }
   }
 
@@ -50,10 +44,10 @@ class VocabularyPage extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete Folder?'),
+        title: const Text('Delete folder?'),
         content: Text(
-          'Are you sure you want to delete "${folder.name}"?\n\n'
-          'Terms will not be deleted if they belong to other folders.',
+          '"${folder.name}" will be deleted. Terms that also belong to '
+          'other folders are kept.',
         ),
         actions: [
           TextButton(
@@ -71,148 +65,132 @@ class VocabularyPage extends StatelessWidget {
         ],
       ),
     );
-
     if (confirmed == true && context.mounted) {
       context.read<FolderCubit>().deleteFolder(folder.id);
     }
   }
 
   void _openFolder(BuildContext context, Folder folder) {
-    context.read<FolderCubit>().loadTermsInFolder(folder.id);
+    // FolderTermsPage loads its own terms in initState.
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => FolderTermsPage(folder: folder)),
     ).then((_) {
-      if (context.mounted) {
-        context.read<FolderCubit>().loadFolders();
-      }
+      if (context.mounted) context.read<FolderCubit>().loadFolders();
     });
   }
 
-  // ---------------------------------------------------------------------------
-  // Build
-  // ---------------------------------------------------------------------------
+  /// Completes when the reload finishes so the pull-to-refresh spinner
+  /// stays visible for the right amount of time.
+  Future<void> _refresh(BuildContext context) async {
+    final cubit = context.read<FolderCubit>();
+    final done = cubit.stream.firstWhere(
+      (s) => s is FoldersLoaded || s is FolderFailure,
+    );
+    cubit.loadFolders();
+    await done.timeout(
+      const Duration(seconds: 5),
+      onTimeout: () => cubit.state,
+    );
+  }
+
+  List<Widget> _slivers(BuildContext context, FolderState state) {
+    return switch (state) {
+      FoldersLoaded(folders: final folders) when folders.isEmpty => [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: EmptyMessage(
+            icon: Icons.folder_outlined,
+            title: 'No folders yet',
+            subtitle: 'Create a folder to organize your vocabulary.',
+            actionLabel: 'Create folder',
+            onAction: () => _showCreateFolderDialog(context),
+          ),
+        ),
+      ],
+      FoldersLoaded(folders: final folders) => [
+        SliverToBoxAdapter(
+          child: VocabularyHeader(
+            folderCount: folders.length,
+            totalTermsCount: folders.fold<int>(0, (s, i) => s + i.termCount),
+          ),
+        ),
+        FolderGrid(
+          folders: folders,
+          onTap: (f) => _openFolder(context, f),
+          onRename: (f) => _showRenameFolderDialog(context, f),
+          onDelete: (f) => _confirmDeleteFolder(context, f),
+        ),
+      ],
+      FolderLoading() => const [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      ],
+      FolderFailure(message: final message) => [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: EmptyMessage(
+            icon: Icons.error_outline_rounded,
+            title: 'Something went wrong',
+            subtitle: message,
+            actionLabel: 'Try again',
+            onAction: () => context.read<FolderCubit>().loadFolders(),
+          ),
+        ),
+      ],
+      _ => [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: EmptyMessage(
+            icon: Icons.folder_outlined,
+            title: 'Your vocabulary folders',
+            subtitle: 'Create folders to organize your words.',
+            actionLabel: 'Load folders',
+            onAction: () => context.read<FolderCubit>().loadFolders(),
+          ),
+        ),
+      ],
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-
     return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: context.isTablet ? 850 : double.infinity,
-            ),
-            child: BlocConsumer<FolderCubit, FolderState>(
-              listenWhen: (_, current) => current is FolderFailure,
-              listener: (context, state) {
-                if (state is FolderFailure) {
-                  ScaffoldMessenger.of(context)
-                    ..hideCurrentSnackBar()
-                    ..showSnackBar(
-                      SnackBar(
-                        behavior: SnackBarBehavior.floating,
-                        content: Text(
-                          state.message,
-                          style: TextStyle(color: scheme.onErrorContainer),
-                        ),
-                        backgroundColor: scheme.errorContainer,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    );
-                }
-              },
-              buildWhen: (_, current) =>
-                  current is FolderLoading ||
+      body: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: context.isTablet ? 850 : double.infinity,
+          ),
+          child: BlocBuilder<FolderCubit, FolderState>(
+            // Refreshing keeps the current list on screen instead of
+            // flashing a spinner.
+            buildWhen: (prev, current) {
+              if (current is FolderLoading && prev is FoldersLoaded) {
+                return false;
+              }
+              return current is FolderLoading ||
                   current is FoldersLoaded ||
                   current is FolderFailure ||
-                  current is FolderInitial,
-              builder: (context, state) {
-                final folders = state is FoldersLoaded ? state.folders : null;
-                final folderCount = folders?.length;
-                final totalTermsCount = folders?.fold<int>(
-                  0,
-                  (sum, item) => sum + item.termCount,
-                );
-
-                return Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      VocabularyHeader(
-                        folderCount: folderCount,
-                        totalTermsCount: totalTermsCount,
-                        onRefresh: () =>
-                            context.read<FolderCubit>().loadFolders(),
-                      ),
-                      const SizedBox(height: 16),
-                      Expanded(
-                        child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 250),
-                          child: switch (state) {
-                            FolderLoading() => const Center(
-                              key: ValueKey('loading'),
-                              child: CircularProgressIndicator(),
-                            ),
-                            FoldersLoaded(folders: final folders) =>
-                              folders.isEmpty
-                                  ? EmptyMessage(
-                                      key: const ValueKey('empty'),
-                                      icon: Icons.folder_outlined,
-                                      title: 'No folders yet',
-                                      subtitle: 'Create a folder to organize your vocabulary.',
-                                      actionLabel: 'Create folder',
-                                      onAction: () =>
-                                          _showCreateFolderDialog(context),
-                                    )
-                                  : FolderGrid(
-                                      key: const ValueKey('grid'),
-                                      folders: folders,
-                                      onTap: (f) => _openFolder(context, f),
-                                      onRename: (f) =>
-                                          _showRenameFolderDialog(context, f),
-                                      onDelete: (f) =>
-                                          _confirmDeleteFolder(context, f),
-                                    ),
-                            FolderFailure(message: final message) =>
-                              EmptyMessage(
-                                key: const ValueKey('error'),
-                                icon: Icons.error_outline_rounded,
-                                title: 'Something went wrong',
-                                subtitle: message,
-                                actionLabel: 'Try again',
-                                onAction: () =>
-                                    context.read<FolderCubit>().loadFolders(),
-                              ),
-                            _ => EmptyMessage(
-                              key: const ValueKey('initial'),
-                              icon: Icons.folder_outlined,
-                              title: 'Your vocabulary folders',
-                              subtitle:
-                                  'Create folders to organize your words.',
-                              actionLabel: 'Load folders',
-                              onAction: () =>
-                                  context.read<FolderCubit>().loadFolders(),
-                            ),
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
+                  current is FolderInitial;
+            },
+            builder: (context, state) => RefreshIndicator(
+              onRefresh: () => _refresh(context),
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
+                ),
+                slivers: _slivers(context, state),
+              ),
             ),
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showCreateFolderDialog(context),
-        tooltip: 'New folder',
-        child: const Icon(Icons.create_new_folder_outlined),
+        icon: const Icon(Icons.create_new_folder_outlined),
+        label: const Text('New folder'),
       ),
     );
   }

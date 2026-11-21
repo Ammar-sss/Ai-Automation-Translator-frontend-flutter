@@ -17,7 +17,6 @@ import 'package:smart_translator_test/features/vocabulary/data/models/example_de
 import 'package:smart_translator_test/features/vocabulary/data/models/term.dart';
 import 'package:smart_translator_test/features/vocabulary/data/models/term_definitions.dart';
 import 'package:smart_translator_test/features/vocabulary/presentation/controller/folder_cubit.dart';
-import 'package:smart_translator_test/features/vocabulary/presentation/controller/vocabulary_cubit.dart';
 import 'package:smart_translator_test/features/vocabulary/presentation/widgets/folder_picker_sheet.dart';
 
 class TranslatePage extends StatefulWidget {
@@ -38,9 +37,6 @@ class _TranslatePageState extends State<TranslatePage> {
 
   /// Only the save button listens to this, so saving never rebuilds the page.
   final ValueNotifier<bool> _isSaving = ValueNotifier(false);
-
-  /// Keeps track of the folder selected for saving during online sync.
-  Folder? _pendingFolderForSave;
 
   @override
   void dispose() {
@@ -91,42 +87,22 @@ class _TranslatePageState extends State<TranslatePage> {
     if (selectedFolder == null || !mounted) return;
 
     _isSaving.value = true;
-    final vocabCubit = context.read<VocabularyCubit>();
     final folderCubit = context.read<FolderCubit>();
 
     try {
-      // 2. Check if the term is already saved online (or in local database)
-      final localExisting = await AppDatabase.instance.getExistingTerm(
-        aiResponse.termWord,
+      // 2. Save directly to local database
+      final localTerm = _mapAiResponseToTerm(aiResponse);
+
+      await AppDatabase.instance.saveTermToFolder(
+        term: localTerm,
+        folderId: selectedFolder.id,
       );
-      final isOnline =
-          localExisting != null ||
-          vocabCubit.isTermSavedOnline(aiResponse.termWord);
 
-      if (isOnline) {
-        // ALREADY SAVED ONLINE:
-        // Do NOT call online save again. Save/link directly in the selected folder locally.
-        final termToLink =
-            localExisting ??
-            vocabCubit.getSavedOnlineTerm(aiResponse.termWord) ??
-            _mapAiResponseToTerm(aiResponse);
+      folderCubit.loadFolders();
 
-        await AppDatabase.instance.saveTermToFolder(
-          term: termToLink,
-          folderId: selectedFolder.id,
-        );
-
-        folderCubit.loadFolders();
-
-        if (mounted) {
-          _isSaving.value = false;
-          _showSnack(context, 'Saved to "${selectedFolder.name}"');
-        }
-      } else {
-        // NOT YET SAVED ONLINE:
-        // Save online first via confirmTermSave, then link locally when success returns.
-        _pendingFolderForSave = selectedFolder;
-        vocabCubit.confirmTermSave(aiResponse);
+      if (mounted) {
+        _isSaving.value = false;
+        _showSnack(context, 'Saved to "${selectedFolder.name}"');
       }
     } catch (e) {
       if (mounted) {
@@ -159,53 +135,12 @@ class _TranslatePageState extends State<TranslatePage> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: MultiBlocListener(
-        listeners: [
-          BlocListener<TranslateCubit, TranslateState>(
-            listener: (context, state) {
-              if (state is TranslateFailure) {
-                _showSnack(context, state.message, isError: true);
-              }
-            },
-          ),
-          BlocListener<VocabularyCubit, VocabularyState>(
-            listener: (context, state) async {
-              if (state is TermSavedSuccess) {
-                if (_pendingFolderForSave != null) {
-                  final folder = _pendingFolderForSave!;
-                  _pendingFolderForSave = null;
-                  try {
-                    await AppDatabase.instance.saveTermToFolder(
-                      term: state.term,
-                      folderId: folder.id,
-                    );
-                    if (context.mounted) {
-                      context.read<FolderCubit>().loadFolders();
-                      _showSnack(
-                        context,
-                        'Saved to "${folder.name}" and synced online',
-                      );
-                    }
-                  } catch (e) {
-                    if (context.mounted) {
-                      _showSnack(
-                        context,
-                        'Saved online, but local link failed: $e',
-                        isError: true,
-                      );
-                    }
-                  }
-                } else {
-                  _showSnack(context, 'Saved to vocabulary');
-                }
-                _isSaving.value = false;
-              } else if (state is VocabularyFailure) {
-                _pendingFolderForSave = null;
-                _isSaving.value = false;
-              }
-            },
-          ),
-        ],
+      child: BlocListener<TranslateCubit, TranslateState>(
+        listener: (context, state) {
+          if (state is TranslateFailure) {
+            _showSnack(context, state.message, isError: true);
+          }
+        },
         child: Padding(
           padding: context.screenPadding,
           child: Column(
@@ -229,38 +164,36 @@ class _TranslatePageState extends State<TranslatePage> {
               // Only the button + result area rebuild on state changes.
               Expanded(
                 child: BlocBuilder<TranslateCubit, TranslateState>(
-                  buildWhen: (previous, current) =>
-                      previous.runtimeType != current.runtimeType,
                   builder: (context, state) {
                     final isLoading = state is TranslateLoading;
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        FilledButton(
+                        FilledButton.icon(
                           onPressed: isLoading ? null : _submit,
                           style: FilledButton.styleFrom(
-                            minimumSize: const Size.fromHeight(52),
+                            minimumSize: const Size.fromHeight(54),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                context.defaultRadius * 1.5,
-                              ),
+                              borderRadius: BorderRadius.circular(16),
                             ),
                           ),
-                          child: isLoading
+                          icon: isLoading
                               ? SizedBox(
                                   height: context.sp(20),
                                   width: context.sp(20),
                                   child: const CircularProgressIndicator(
                                     strokeWidth: 2.4,
+                                    color: Colors.white,
                                   ),
                                 )
-                              : const Text(
-                                  'Translate',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
+                              : const Icon(Icons.auto_awesome_rounded),
+                          label: Text(
+                            isLoading ? 'Translating…' : 'Translate',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                         SizedBox(height: context.hp(2)),
                         Expanded(
@@ -273,7 +206,12 @@ class _TranslatePageState extends State<TranslatePage> {
                                     isSaving: _isSaving,
                                     onSave: () => _saveToVocabulary(state),
                                   )
-                                : const EmptyHint(),
+                                : EmptyHint(
+                                    onSelectPrompt: (prompt) {
+                                      _termController.text = prompt;
+                                      _submit();
+                                    },
+                                  ),
                           ),
                         ),
                       ],

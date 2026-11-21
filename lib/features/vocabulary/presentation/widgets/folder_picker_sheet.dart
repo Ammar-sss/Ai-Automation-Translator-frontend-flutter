@@ -2,14 +2,16 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_translator_test/core/storage/app_database.dart';
 import 'package:smart_translator_test/features/vocabulary/presentation/controller/folder_cubit.dart';
+import 'package:smart_translator_test/features/vocabulary/presentation/widgets/empty_message.dart';
+import 'package:smart_translator_test/features/vocabulary/presentation/widgets/folder_input_dialog.dart';
 
-/// Modal bottom sheet allowing the user to select which folder to save a term into.
+/// Bottom sheet to choose which folder a term is saved into.
 class FolderPickerSheet extends StatefulWidget {
   final String termWord;
 
   const FolderPickerSheet({super.key, required this.termWord});
 
-  /// Displays the picker and returns the selected [Folder], or null if dismissed.
+  /// Returns the selected [Folder], or null if dismissed.
   static Future<Folder?> show(
     BuildContext context, {
     required String termWord,
@@ -19,10 +21,6 @@ class FolderPickerSheet extends StatefulWidget {
       isScrollControlled: true,
       useSafeArea: true,
       showDragHandle: true,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
       builder: (_) => FolderPickerSheet(termWord: termWord),
     );
   }
@@ -32,12 +30,11 @@ class FolderPickerSheet extends StatefulWidget {
 }
 
 class _FolderPickerSheetState extends State<FolderPickerSheet> {
-  final Set<int> _alreadyContainingFolderIds = {};
+  Set<int> _containing = const {};
 
   @override
   void initState() {
     super.initState();
-    // Refresh folder list to get updated term counts
     context.read<FolderCubit>().loadFolders();
     _checkExistingLinks();
   }
@@ -47,68 +44,36 @@ class _FolderPickerSheetState extends State<FolderPickerSheet> {
       final ids = await AppDatabase.instance.getFolderIdsForTerm(
         widget.termWord,
       );
-      if (mounted) {
-        setState(() {
-          _alreadyContainingFolderIds.addAll(ids);
-        });
-      }
+      if (mounted) setState(() => _containing = ids.toSet());
     } catch (_) {}
   }
 
-  Future<void> _showCreateFolderDialog() async {
-    final controller = TextEditingController();
+  Future<void> _createFolder() async {
     final name = await showDialog<String>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Text('New Folder'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          textCapitalization: TextCapitalization.words,
-          decoration: InputDecoration(
-            hintText: 'Folder name',
-            prefixIcon: const Icon(Icons.folder_open_rounded),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-          ),
-          onSubmitted: (val) => Navigator.pop(ctx, val),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, controller.text),
-            child: const Text('Create'),
-          ),
-        ],
-      ),
+      builder: (_) =>
+          const FolderInputDialog(title: 'New folder', actionLabel: 'Create'),
     );
-    controller.dispose();
+    if (name == null || !mounted) return;
 
-    if (name != null && name.trim().isNotEmpty && mounted) {
-      final trimmed = name.trim();
-      final newId = await AppDatabase.instance.createFolder(trimmed);
-      if (!mounted) return;
-      context.read<FolderCubit>().loadFolders();
-      final all = await AppDatabase.instance.getAllFolders();
-      final created = all.firstWhere(
-        (f) => f.name.toLowerCase() == trimmed.toLowerCase() || f.id == newId,
-      );
-      if (mounted) {
-        Navigator.pop(context, created);
-      }
-    }
+    final newId = await AppDatabase.instance.createFolder(name);
+    final all = await AppDatabase.instance.getAllFolders();
+    final created = all.firstWhere(
+      (f) => f.id == newId || f.name.toLowerCase() == name.toLowerCase(),
+    );
+    if (!mounted) return;
+    context.read<FolderCubit>().loadFolders();
+    Navigator.pop(context, created);
   }
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
 
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,179 +84,90 @@ class _FolderPickerSheetState extends State<FolderPickerSheet> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Save to Folder',
-                        style: TextStyle(
-                          fontSize: 22,
+                      Text(
+                        'Save to folder',
+                        style: text.titleLarge?.copyWith(
                           fontWeight: FontWeight.w700,
-                          letterSpacing: -0.3,
                         ),
                       ),
-                      const SizedBox(height: 2),
                       Text(
-                        'Where would you like to save "${widget.termWord}"?',
-                        style: TextStyle(
+                        '"${widget.termWord}"',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: text.bodyMedium?.copyWith(
                           color: scheme.onSurfaceVariant,
-                          fontSize: 14,
                         ),
                       ),
                     ],
                   ),
                 ),
                 IconButton.filledTonal(
-                  tooltip: 'New Folder',
-                  style: IconButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                  onPressed: _showCreateFolderDialog,
+                  tooltip: 'New folder',
+                  onPressed: _createFolder,
                   icon: const Icon(Icons.create_new_folder_outlined),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Flexible(
               child: BlocBuilder<FolderCubit, FolderState>(
                 builder: (context, state) {
-                  final folders = switch (state) {
-                    FoldersLoaded(folders: final f) => f,
-                    _ => const <FolderInfo>[],
-                  };
+                  final folders = state is FoldersLoaded
+                      ? state.folders
+                      : const <FolderInfo>[];
 
                   if (folders.isEmpty) {
                     if (state is FolderLoading || state is FolderInitial) {
-                      return const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(32),
-                          child: CircularProgressIndicator(),
-                        ),
+                      return const SizedBox(
+                        height: 160,
+                        child: Center(child: CircularProgressIndicator()),
                       );
                     }
-                    return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 28),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: scheme.surfaceContainerHighest
-                                    .withValues(alpha: 0.5),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                Icons.folder_open_rounded,
-                                size: 40,
-                                color: scheme.primary,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            const Text(
-                              'No folders yet',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Create a folder to store this word.',
-                              style: TextStyle(
-                                color: scheme.onSurfaceVariant,
-                                fontSize: 14,
-                              ),
-                            ),
-                            const SizedBox(height: 14),
-                            FilledButton.tonalIcon(
-                              onPressed: _showCreateFolderDialog,
-                              icon: const Icon(Icons.add_rounded),
-                              label: const Text('Create folder'),
-                            ),
-                          ],
-                        ),
+                    return SizedBox(
+                      height: 260,
+                      child: EmptyMessage(
+                        icon: Icons.folder_open_rounded,
+                        title: 'No folders yet',
+                        subtitle: 'Create a folder to store this word.',
+                        actionLabel: 'Create folder',
+                        onAction: _createFolder,
                       ),
                     );
                   }
 
-                  return ListView.separated(
+                  return ListView.builder(
                     shrinkWrap: true,
                     physics: const BouncingScrollPhysics(),
                     itemCount: folders.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 8),
                     itemBuilder: (context, index) {
                       final item = folders[index];
-                      final isAlreadyIn = _alreadyContainingFolderIds.contains(
-                        item.folder.id,
-                      );
+                      final saved = _containing.contains(item.folder.id);
 
-                      return Material(
-                        color: isAlreadyIn
-                            ? scheme.surfaceContainerHighest.withValues(
-                                alpha: 0.4,
-                              )
-                            : scheme.surfaceContainerLow,
+                      return ListTile(
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          side: BorderSide(
-                            color: isAlreadyIn
-                                ? scheme.primary.withValues(alpha: 0.3)
-                                : scheme.outlineVariant.withValues(alpha: 0.5),
-                          ),
+                          borderRadius: BorderRadius.circular(14),
                         ),
-                        clipBehavior: Clip.antiAlias,
-                        child: ListTile(
-                          leading: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: isAlreadyIn
-                                  ? scheme.primaryContainer.withValues(
-                                      alpha: 0.6,
-                                    )
-                                  : scheme.secondaryContainer.withValues(
-                                      alpha: 0.5,
-                                    ),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Icon(
-                              isAlreadyIn
-                                  ? Icons.folder_special_rounded
-                                  : Icons.folder_rounded,
-                              color: isAlreadyIn
-                                  ? scheme.primary
-                                  : scheme.secondary,
-                              size: 22,
-                            ),
-                          ),
-                          title: Text(
-                            item.folder.name,
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                          subtitle: Text(
-                            isAlreadyIn
-                                ? 'Already saved in this folder'
-                                : (item.termCount == 1
-                                      ? '1 term'
-                                      : '${item.termCount} terms'),
-                            style: TextStyle(
-                              color: isAlreadyIn
-                                  ? scheme.primary
-                                  : scheme.onSurfaceVariant,
-                              fontSize: 12,
-                            ),
-                          ),
-                          trailing: isAlreadyIn
-                              ? Icon(
-                                  Icons.check_circle_rounded,
-                                  color: scheme.primary,
-                                  size: 22,
-                                )
-                              : const Icon(Icons.chevron_right_rounded),
-                          onTap: () {
-                            Navigator.pop(context, item.folder);
-                          },
+                        leading: Icon(
+                          Icons.folder_rounded,
+                          color: saved
+                              ? scheme.primary
+                              : scheme.onSurfaceVariant,
                         ),
+                        title: Text(item.folder.name),
+                        subtitle: Text(
+                          saved
+                              ? 'Already saved here'
+                              : (item.termCount == 1
+                                    ? '1 term'
+                                    : '${item.termCount} terms'),
+                        ),
+                        trailing: saved
+                            ? Icon(
+                                Icons.check_circle_rounded,
+                                color: scheme.primary,
+                              )
+                            : null,
+                        onTap: () => Navigator.pop(context, item.folder),
                       );
                     },
                   );

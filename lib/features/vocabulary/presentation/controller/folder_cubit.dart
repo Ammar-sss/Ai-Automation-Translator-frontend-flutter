@@ -98,9 +98,14 @@ class FolderCubit extends Cubit<FolderState> {
   Future<void> removeTermFromFolder({
     required int termId,
     required int folderId,
+    String? termWord,
   }) async {
     try {
-      await _db.removeTermFromFolder(termId: termId, folderId: folderId);
+      await _db.removeTermFromFolder(
+        termId: termId,
+        folderId: folderId,
+        termWord: termWord,
+      );
       await loadTermsInFolder(folderId);
     } catch (e) {
       emit(FolderFailure(message: 'Failed to remove term: ${e.toString()}'));

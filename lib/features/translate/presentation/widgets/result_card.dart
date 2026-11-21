@@ -1,4 +1,6 @@
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:smart_translator_test/app_snackbar.dart';
 
 import '../../../../core/util/responsive.dart';
 import '../controller/translate_cubit.dart';
@@ -15,6 +17,23 @@ class ResultCard extends StatelessWidget {
     required this.onSave,
   });
 
+  void _copyResult(BuildContext context) {
+    final res = state.aiResponse;
+    final buffer = StringBuffer();
+    buffer.writeln(res.termWord);
+    if (res.termDefinitions.isNotEmpty) {
+      buffer.writeln('Meanings: ${res.termDefinitions.join(', ')}');
+    }
+    if (res.exampleSentence.isNotEmpty) {
+      buffer.writeln('Example: ${res.exampleSentence}');
+      if (res.exampleDefinition.isNotEmpty) {
+        buffer.writeln('Translation: ${res.exampleDefinition}');
+      }
+    }
+    Clipboard.setData(ClipboardData(text: buffer.toString()));
+    showAppSnackBar(context, 'Translation copied to clipboard');
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -28,28 +47,52 @@ class ResultCard extends StatelessWidget {
         padding: EdgeInsets.all(context.wp(5)),
         decoration: BoxDecoration(
           color: scheme.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(context.defaultRadius * 2),
-          border: Border.all(color: scheme.outlineVariant),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: scheme.outlineVariant.withValues(alpha: 0.4),
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Headline: the translated term
-            Text(
-              res.termWord,
-              style: TextStyle(
-                fontSize: context.sp(28, min: 24, max: 34),
-                fontWeight: FontWeight.w700,
-                height: 1.15,
-                color: scheme.onSurface,
-              ),
+            // Translated Word Header & Copy Action
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    res.termWord,
+                    style: text.headlineLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
+                      color: scheme.onSurface,
+                      height: 1.15,
+                    ),
+                  ),
+                ),
+                IconButton.filledTonal(
+                  onPressed: () => _copyResult(context),
+                  tooltip: 'Copy translation',
+                  icon: const Icon(Icons.copy_rounded, size: 20),
+                ),
+              ],
             ),
             SizedBox(height: context.hp(2)),
 
-            // Meanings
-            Text(
-              'Meanings',
-              style: text.labelLarge?.copyWith(color: scheme.onSurfaceVariant),
+            // Meanings / Definitions Section
+            Row(
+              children: [
+                Icon(Icons.menu_book_rounded, size: 16, color: scheme.primary),
+                const SizedBox(width: 6),
+                Text(
+                  'MEANINGS',
+                  style: text.labelSmall?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+              ],
             ),
             SizedBox(height: context.hp(1)),
             Wrap(
@@ -68,9 +111,8 @@ class ResultCard extends StatelessWidget {
                     ),
                     child: Text(
                       def,
-                      style: TextStyle(
-                        fontSize: context.sp(15, min: 14, max: 16),
-                        fontWeight: FontWeight.w500,
+                      style: text.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
                         color: scheme.onSecondaryContainer,
                       ),
                     ),
@@ -78,76 +120,127 @@ class ResultCard extends StatelessWidget {
               ],
             ),
 
-            // Example
+            // Example Sentence & Translation Section
             if (res.exampleSentence.isNotEmpty) ...[
               SizedBox(height: context.hp(2.5)),
-              Text(
-                'Example',
-                style: text.labelLarge?.copyWith(
-                  color: scheme.onSurfaceVariant,
-                ),
+              Row(
+                children: [
+                  Icon(
+                    Icons.subtitles_outlined,
+                    size: 16,
+                    color: scheme.primary,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'EXAMPLE SENTENCE',
+                    style: text.labelSmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                ],
               ),
               SizedBox(height: context.hp(1)),
               Container(
                 width: double.infinity,
-                padding: EdgeInsets.all(context.wp(4)),
                 decoration: BoxDecoration(
-                  color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(context.defaultRadius),
-                  border: Border(
-                    left: BorderSide(color: scheme.primary, width: 3),
+                  color: scheme.surfaceContainerHigh.withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: scheme.outlineVariant.withValues(alpha: 0.3),
                   ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      res.exampleSentence,
-                      style: TextStyle(
-                        fontSize: context.sp(16, min: 14, max: 18),
-                        height: 1.4,
-                        color: scheme.onSurface,
+                child: IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Container(
+                        width: 4,
+                        decoration: BoxDecoration(
+                          color: scheme.primary,
+                          borderRadius: const BorderRadius.horizontal(
+                            left: Radius.circular(16),
+                          ),
+                        ),
                       ),
-                    ),
-                    if (res.exampleDefinition.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        res.exampleDefinition,
-                        style: TextStyle(
-                          fontSize: context.sp(14, min: 13, max: 15),
-                          height: 1.4,
-                          color: scheme.onSurfaceVariant,
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.all(context.wp(4)),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                res.exampleSentence,
+                                style: text.bodyLarge?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  height: 1.35,
+                                  color: scheme.onSurface,
+                                ),
+                              ),
+                              if (res.exampleDefinition.isNotEmpty) ...[
+                                const SizedBox(height: 8),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Icon(
+                                      Icons.subdirectory_arrow_right_rounded,
+                                      size: 16,
+                                      color: scheme.primary,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Expanded(
+                                      child: Text(
+                                        res.exampleDefinition,
+                                        style: text.bodyMedium?.copyWith(
+                                          color: scheme.onSurfaceVariant,
+                                          height: 1.35,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ],
+                          ),
                         ),
                       ),
                     ],
-                  ],
+                  ),
                 ),
               ),
             ],
 
             SizedBox(height: context.hp(3)),
 
-            // Save: only this button rebuilds while saving.
+            // Save to Vocabulary Button
             ValueListenableBuilder<bool>(
               valueListenable: isSaving,
-              builder: (context, saving, _) => FilledButton.tonalIcon(
+              builder: (context, saving, _) => FilledButton.icon(
                 onPressed: saving ? null : onSave,
                 style: FilledButton.styleFrom(
-                  minimumSize: const Size.fromHeight(48),
+                  minimumSize: const Size.fromHeight(52),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(
-                      context.defaultRadius * 1.5,
-                    ),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                 ),
                 icon: saving
                     ? SizedBox(
                         height: context.sp(18),
                         width: context.sp(18),
-                        child: const CircularProgressIndicator(strokeWidth: 2),
+                        child: const CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
                       )
-                    : const Icon(Icons.bookmark_add_outlined),
-                label: Text(saving ? 'Saving…' : 'Save to vocabulary'),
+                    : const Icon(Icons.bookmark_add_rounded),
+                label: Text(
+                  saving ? 'Saving to vocabulary…' : 'Save to vocabulary',
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ),
           ],
