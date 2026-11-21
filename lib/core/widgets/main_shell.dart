@@ -5,6 +5,8 @@ import 'package:smart_translator_test/core/route/app_routes.dart';
 import 'package:smart_translator_test/core/util/responsive.dart';
 import 'package:smart_translator_test/core/widgets/offline_banner.dart';
 import 'package:smart_translator_test/core/widgets/server_status_indicator.dart';
+import 'package:smart_translator_test/features/vocabulary/presentation/controller/folder_cubit.dart';
+import 'package:smart_translator_test/features/vocabulary/presentation/controller/vocabulary_cubit.dart';
 
 import '../../features/auth/presentation/controller/auth_bloc.dart';
 import '../../features/user/presentation/controller/user_cubit.dart';
@@ -51,6 +53,9 @@ class _MainShellState extends State<MainShell> {
 
   void _openSettings() =>
       _closeDrawerThen(() => context.push(AppRoutes.setting));
+
+  void _onVocabularySynced() =>
+      _closeDrawerThen(() => context.push(AppRoutes.vocabularySynced));
 
   void _confirmLogout() {
     _closeDrawerThen(() {
@@ -128,15 +133,19 @@ class _MainShellState extends State<MainShell> {
           onProfile: _openProfile,
           onSettings: _openSettings,
           onLogout: _confirmLogout,
+          onVocabularySynced: _onVocabularySynced,
         ),
         body: OfflineBanner(child: shell),
         bottomNavigationBar: NavigationBar(
           selectedIndex: shell.currentIndex,
           labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-          onDestinationSelected: (index) => shell.goBranch(
-            index,
-            initialLocation: index == shell.currentIndex,
-          ),
+          onDestinationSelected: (index) {
+            if (index == 0) {
+              context.read<VocabularyCubit>().getAllTerms();
+              context.read<FolderCubit>().loadFolders();
+            }
+            shell.goBranch(index, initialLocation: index == shell.currentIndex);
+          },
           destinations: const [
             NavigationDestination(
               icon: Icon(Icons.home_outlined),
@@ -199,12 +208,14 @@ class _UserAvatar extends StatelessWidget {
 class _AccountDrawer extends StatelessWidget {
   final VoidCallback onProfile;
   final VoidCallback onSettings;
+  final VoidCallback onVocabularySynced;
   final VoidCallback onLogout;
 
   const _AccountDrawer({
     required this.onProfile,
     required this.onSettings,
     required this.onLogout,
+    required this.onVocabularySynced,
   });
 
   @override
@@ -276,6 +287,11 @@ class _AccountDrawer extends StatelessWidget {
               icon: Icons.person_outline_rounded,
               label: 'Profile',
               onTap: onProfile,
+            ),
+            _DrawerItem(
+              icon: Icons.category,
+              label: 'Synced Vocabulary',
+              onTap: onVocabularySynced,
             ),
             _DrawerItem(
               icon: Icons.settings_outlined,

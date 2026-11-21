@@ -12,6 +12,7 @@ import 'package:smart_translator_test/features/onboarding/presentation/pages/onb
 import 'package:smart_translator_test/features/setting/presentation/pages/setting_page.dart';
 import 'package:smart_translator_test/features/translate/presentation/pages/translate_page.dart';
 import 'package:smart_translator_test/features/user/presentation/pages/profile_page.dart';
+import 'package:smart_translator_test/features/vocabulary/presentation/pages/synced_vocabulary_page.dart';
 import 'package:smart_translator_test/features/vocabulary/presentation/pages/vocabulary_page.dart';
 
 class OnRouterRefreshStream extends ChangeNotifier {
@@ -91,6 +92,10 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.setting,
         builder: (context, state) => const SettingPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.vocabularySynced,
+        builder: (context, state) => const SyncedVocabularyPage(),
       ),
 
       // Routes WITH bottom navigation bar (Managed globally by MainShell):

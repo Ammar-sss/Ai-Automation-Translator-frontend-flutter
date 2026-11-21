@@ -1,6 +1,5 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:smart_translator_test/features/setting/presentation/pages/refresh_rate_service.dart';
 import 'package:smart_translator_test/features/user/presentation/widgets/setting_group.dart';
 import 'package:smart_translator_test/features/user/presentation/widgets/setting_switch.dart';
 import 'package:smart_translator_test/features/user/presentation/widgets/setting_title.dart';
@@ -22,12 +21,8 @@ class _SettingPageState extends State<SettingPage> {
     'German',
     'Chinese',
   ];
-  static const _refreshRates = ['60 Hz', '120 Hz'];
 
   String _selectedLanguage = 'English';
-
-  // Starts from the saved choice applied at app launch.
-  String _selectedRefreshRate = RefreshRateService.current.label;
 
   Future<void> _pickLanguage() async {
     final picked = await showModalBottomSheet<String>(
@@ -62,49 +57,6 @@ class _SettingPageState extends State<SettingPage> {
       },
     );
     if (picked != null && mounted) setState(() => _selectedLanguage = picked);
-  }
-
-  Future<void> _pickRefreshRate() async {
-    final picked = await showModalBottomSheet<String>(
-      context: context,
-      showDragHandle: true,
-      builder: (sheetContext) {
-        final scheme = Theme.of(sheetContext).colorScheme;
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(24, 0, 24, 8),
-                child: Text(
-                  'Refresh rate',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-                ),
-              ),
-              for (final rate in _refreshRates)
-                ListTile(
-                  title: Text(rate),
-                  subtitle: Text(
-                    rate == '120 Hz'
-                        ? 'Smooth animations and scrolling'
-                        : 'Standard battery saving',
-                  ),
-                  trailing: rate == _selectedRefreshRate
-                      ? Icon(Icons.check_rounded, color: scheme.primary)
-                      : null,
-                  onTap: () => Navigator.pop(sheetContext, rate),
-                ),
-              const SizedBox(height: 8),
-            ],
-          ),
-        );
-      },
-    );
-    if (picked != null && mounted) {
-      setState(() => _selectedRefreshRate = picked);
-      await RefreshRateService.set(RefreshRate.fromLabel(picked));
-    }
   }
 
   @override
@@ -146,13 +98,6 @@ class _SettingPageState extends State<SettingPage> {
                   );
                 },
               ),
-              if (RefreshRateService.supportsHigh)
-                SettingTile(
-                  icon: Icons.speed_rounded,
-                  title: 'Refresh rate',
-                  subtitle: _selectedRefreshRate,
-                  onTap: _pickRefreshRate,
-                ),
             ],
           ),
         ],

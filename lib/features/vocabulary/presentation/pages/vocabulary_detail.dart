@@ -110,9 +110,26 @@ class VocabularyDetail extends StatelessWidget {
                       left: BorderSide(color: scheme.primary, width: 3),
                     ),
                   ),
-                  child: Text(
-                    ex.exampleSentence,
-                    style: const TextStyle(fontSize: 16, height: 1.4),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        ex.exampleSentence,
+                        style: const TextStyle(fontSize: 16, height: 1.4),
+                      ),
+                      if (term.exampleDefinitions.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        for (final exDef in term.exampleDefinitions)
+                          Text(
+                            exDef.exampleDefinition,
+                            style: TextStyle(
+                              fontSize: 14,
+                              height: 1.4,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                      ],
+                    ],
                   ),
                 ),
             ],

@@ -1,7 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_translator_test/features/translate/data/models/ai_response.dart';
+import 'package:smart_translator_test/features/vocabulary/data/models/example.dart';
+import 'package:smart_translator_test/features/vocabulary/data/models/example_definitions.dart';
 import 'package:smart_translator_test/features/vocabulary/data/models/term.dart';
+import 'package:smart_translator_test/features/vocabulary/data/models/term_definitions.dart';
 import 'package:smart_translator_test/features/vocabulary/domain/repositories/vocabulary_repository.dart';
 
 part 'vocabulary_state.dart';
@@ -12,7 +15,40 @@ class VocabularyCubit extends Cubit<VocabularyState> {
   /// In-memory cache of loaded terms for local list updates.
   List<Term> _cachedTerms = [];
 
+  List<Term> get cachedTerms => _cachedTerms;
+
+  bool isTermSavedOnline(String word) {
+    final lower = word.trim().toLowerCase();
+    return _cachedTerms.any((t) => t.termWord.trim().toLowerCase() == lower);
+  }
+
+  Term? getSavedOnlineTerm(String word) {
+    final lower = word.trim().toLowerCase();
+    for (final term in _cachedTerms) {
+      if (term.termWord.trim().toLowerCase() == lower) {
+        return term;
+      }
+    }
+    return null;
+  }
+
   VocabularyCubit(this.vocabularyRepository) : super(VocabularyInitial());
+
+  Term _mapAiResponseToTerm(AiResponse ai) {
+    return Term(
+      id: 0,
+      termWord: ai.termWord,
+      termDefinitions: ai.termDefinitions
+          .map((d) => TermDefinition(id: 0, definition: d))
+          .toSet(),
+      termExamples: ai.exampleSentence.isNotEmpty
+          ? {Example(id: 0, exampleSentence: ai.exampleSentence)}
+          : {},
+      exampleDefinitions: ai.exampleDefinition.isNotEmpty
+          ? {ExampleDefinition(id: 0, exampleDefinition: ai.exampleDefinition)}
+          : {},
+    );
+  }
 
   Future<void> confirmTermSave(AiResponse aiResponse) async {
     emit(VocabularySaving());
@@ -27,6 +63,27 @@ class VocabularyCubit extends Cubit<VocabularyState> {
       }
     } catch (e) {
       final error = e.toString().replaceAll("Exception: ", "");
+      if (error.toLowerCase().contains('already exists') ||
+          error.contains('409')) {
+        try {
+          final allResponse = await vocabularyRepository.getAllTerms();
+          if (allResponse.data != null) {
+            _cachedTerms = allResponse.data!;
+            final existing = _cachedTerms.firstWhere(
+              (t) =>
+                  t.termWord.trim().toLowerCase() ==
+                  aiResponse.termWord.trim().toLowerCase(),
+              orElse: () => _mapAiResponseToTerm(aiResponse),
+            );
+            emit(TermSavedSuccess(term: existing));
+            return;
+          }
+        } catch (_) {}
+        // Fallback if getAllTerms fails
+        final fallbackTerm = _mapAiResponseToTerm(aiResponse);
+        emit(TermSavedSuccess(term: fallbackTerm));
+        return;
+      }
       emit(VocabularyFailure(message: error));
     }
   }
