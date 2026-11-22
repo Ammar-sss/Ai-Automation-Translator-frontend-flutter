@@ -1,11 +1,18 @@
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:dio/dio.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:smart_translator_test/app_snackbar.dart';
+import 'package:smart_translator_test/core/network/elevenlabs_service.dart';
+import 'package:smart_translator_test/core/util/language_detect.dart';
 import 'package:smart_translator_test/features/vocabulary/data/models/term.dart';
 
 class VocabularyDetail extends StatelessWidget {
   final Term term;
-  const VocabularyDetail({super.key, required this.term});
+  VocabularyDetail({super.key, required this.term});
+
+  final ElevenLabsService _elevenLabsService = ElevenLabsService(Dio());
+  final AudioPlayer _audioPlayer = AudioPlayer();
 
   /// Opens the detail as a bottom sheet.
   static Future<void> show(BuildContext context, Term term) {
@@ -26,6 +33,26 @@ class VocabularyDetail extends StatelessWidget {
   void _copyWord(BuildContext context) {
     Clipboard.setData(ClipboardData(text: term.termWord));
     showAppSnackBar(context, '"${term.termWord}" copied to clipboard');
+  }
+
+  Future<void> _speak(BuildContext context, String text) async {
+    showAppSnackBar(context, 'Synthesizing speech...');
+    try {
+      final audioBytes = await _elevenLabsService.textToSpeech(
+        text,
+        languageCode: detectLanguageCode(text),
+      );
+      if (!context.mounted) return;
+      if (audioBytes != null) {
+        await _audioPlayer.stop();
+        await _audioPlayer.play(BytesSource(audioBytes));
+      } else {
+        showAppSnackBar(context, 'Failed to generate speech.');
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      showAppSnackBar(context, 'Error playing audio: $e');
+    }
   }
 
   @override
@@ -66,10 +93,21 @@ class VocabularyDetail extends StatelessWidget {
                       ),
                     ),
                   ),
-                  IconButton.filledTonal(
-                    onPressed: () => _copyWord(context),
-                    tooltip: 'Copy word',
-                    icon: const Icon(Icons.copy_rounded, size: 20),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton.filledTonal(
+                        onPressed: () => _speak(context, term.termWord),
+                        tooltip: 'Pronounce word',
+                        icon: const Icon(Icons.volume_up_rounded, size: 20),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton.filledTonal(
+                        onPressed: () => _copyWord(context),
+                        tooltip: 'Copy word',
+                        icon: const Icon(Icons.copy_rounded, size: 20),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -108,7 +146,11 @@ class VocabularyDetail extends StatelessWidget {
                 )
               else
                 for (final (i, def) in definitions.indexed)
-                  _DefinitionCard(index: i + 1, definition: def.definition),
+                  _DefinitionCard(
+                    index: i + 1,
+                    definition: def.definition,
+                    onPronounce: () => _speak(context, def.definition),
+                  ),
 
               const SizedBox(height: 24),
 
@@ -228,8 +270,13 @@ class _StatBadge extends StatelessWidget {
 class _DefinitionCard extends StatelessWidget {
   final int index;
   final String definition;
+  final VoidCallback? onPronounce;
 
-  const _DefinitionCard({required this.index, required this.definition});
+  const _DefinitionCard({
+    required this.index,
+    required this.definition,
+    this.onPronounce,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -277,6 +324,15 @@ class _DefinitionCard extends StatelessWidget {
               ),
             ),
           ),
+          if (onPronounce != null)
+            IconButton(
+              icon: Icon(
+                Icons.volume_up_rounded,
+                size: 20,
+                color: scheme.primary,
+              ),
+              onPressed: onPronounce,
+            ),
         ],
       ),
     );

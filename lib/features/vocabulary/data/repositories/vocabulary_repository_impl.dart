@@ -1,19 +1,24 @@
+// ignore_for_file: prefer_initializing_formals
 import 'package:smart_translator_test/core/error/app_exception.dart';
 import 'package:smart_translator_test/core/util/api_response.dart';
-import 'package:smart_translator_test/features/translate/data/models/ai_response.dart';
 import 'package:smart_translator_test/features/vocabulary/data/datasource/vocabulary_remote_datasource.dart';
+import 'package:smart_translator_test/features/vocabulary/data/models/save_term_request.dart';
 import 'package:smart_translator_test/features/vocabulary/data/models/term.dart';
 import 'package:smart_translator_test/features/vocabulary/domain/repositories/vocabulary_repository.dart';
 
 class VocabularyRepositoryImpl implements VocabularyRepository {
   final VocabularyRemoteDatasource _vocabularyRemoteDatasource;
 
-  new({required this._vocabularyRemoteDatasource});
+  VocabularyRepositoryImpl({
+    required VocabularyRemoteDatasource vocabularyRemoteDatasource,
+  }) : _vocabularyRemoteDatasource = vocabularyRemoteDatasource;
 
   @override
-  Future<ApiResponse<Term>> confirmTermSave(AiResponse aiResponse) async {
+  Future<ApiResponse<Term>> confirmTermSave(
+    SaveTermRequest saveTermRequest,
+  ) async {
     try {
-      return await _vocabularyRemoteDatasource.confirmTermSave(aiResponse);
+      return await _vocabularyRemoteDatasource.confirmTermSave(saveTermRequest);
     } catch (e) {
       throw ApiErrorHandler.handle(
         e,

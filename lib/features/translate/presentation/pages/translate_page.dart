@@ -28,6 +28,7 @@ class TranslatePage extends StatefulWidget {
 
 class _TranslatePageState extends State<TranslatePage> {
   final TextEditingController _termController = TextEditingController();
+  final FocusNode _inputFocusNode = FocusNode();
 
   TranslationLanguage sourceLang = TranslationLanguage.english;
   TranslationLanguage targetLang = TranslationLanguage.arabic;
@@ -35,12 +36,37 @@ class _TranslatePageState extends State<TranslatePage> {
   /// Debounce guard: prevents duplicate submits within 500ms.
   Timer? _debounceTimer;
 
+  String _languageCode(TranslationLanguage lang) {
+    switch (lang) {
+      case TranslationLanguage.english:
+        return 'en';
+      case TranslationLanguage.arabic:
+        return 'ar';
+      case TranslationLanguage.french:
+        return 'fr';
+      case TranslationLanguage.germany:
+        return 'de';
+      case TranslationLanguage.italy:
+        return 'it';
+      case TranslationLanguage.spanish:
+        return 'es';
+      case TranslationLanguage.russian:
+        return 'ru';
+      case TranslationLanguage.kurdishSorani:
+      case TranslationLanguage.kurdishKurmanji:
+        return 'ar'; // fallback for Kurdish
+      case TranslationLanguage.dutch:
+        return 'nl';
+    }
+  }
+
   /// Only the save button listens to this, so saving never rebuilds the page.
   final ValueNotifier<bool> _isSaving = ValueNotifier(false);
 
   @override
   void dispose() {
     _termController.dispose();
+    _inputFocusNode.dispose();
     _debounceTimer?.cancel();
     _isSaving.dispose();
     super.dispose();
@@ -76,13 +102,23 @@ class _TranslatePageState extends State<TranslatePage> {
   Future<void> _saveToVocabulary(TranslateLoaded state) async {
     if (_isSaving.value) return;
 
+    // Ensure focus is completely dropped from the input field before opening sheet
+    _inputFocusNode.unfocus();
+    FocusManager.instance.primaryFocus?.unfocus();
+
     final aiResponse = state.aiResponse;
 
-    // 1. Ask user where to save the term
+    // 1. Ask user where to save the term (passing language pair to prevent false "already saved" checks)
     final selectedFolder = await FolderPickerSheet.show(
       context,
       termWord: aiResponse.termWord,
+      sourceLanguage: sourceLang.backendValue,
+      targetLanguage: targetLang.backendValue,
     );
+
+    // Keep focus cleared after bottom sheet closes
+    _inputFocusNode.unfocus();
+    FocusManager.instance.primaryFocus?.unfocus();
 
     if (selectedFolder == null || !mounted) return;
 
@@ -90,7 +126,7 @@ class _TranslatePageState extends State<TranslatePage> {
     final folderCubit = context.read<FolderCubit>();
 
     try {
-      // 2. Save directly to local database
+      // 2. Save strictly locally to SQLite (cloud sync is done manually via the sync badge)
       final localTerm = _mapAiResponseToTerm(aiResponse);
 
       await AppDatabase.instance.saveTermToFolder(
@@ -102,7 +138,7 @@ class _TranslatePageState extends State<TranslatePage> {
 
       if (mounted) {
         _isSaving.value = false;
-        _showSnack(context, 'Saved to "${selectedFolder.name}"');
+        _showSnack(context, 'Saved locally to "${selectedFolder.name}"');
       }
     } catch (e) {
       if (mounted) {
@@ -120,6 +156,8 @@ class _TranslatePageState extends State<TranslatePage> {
     return Term(
       id: 0,
       termWord: ai.termWord,
+      sourceLanguage: sourceLang.backendValue,
+      targetLanguage: targetLang.backendValue,
       termDefinitions: ai.termDefinitions
           .map((d) => TermDefinition(id: 0, definition: d))
           .toSet(),
@@ -158,7 +196,11 @@ class _TranslatePageState extends State<TranslatePage> {
                 onSwap: _swapLanguages,
               ),
               SizedBox(height: context.hp(2)),
-              InputField(controller: _termController, onSubmit: _submit),
+              InputField(
+                controller: _termController,
+                focusNode: _inputFocusNode,
+                onSubmit: _submit,
+              ),
               SizedBox(height: context.hp(1.5)),
 
               // Only the button + result area rebuild on state changes.
@@ -205,6 +247,9 @@ class _TranslatePageState extends State<TranslatePage> {
                                     state: state,
                                     isSaving: _isSaving,
                                     onSave: () => _saveToVocabulary(state),
+                                    targetLanguageCode: _languageCode(
+                                      targetLang,
+                                    ),
                                   )
                                 : EmptyHint(
                                     onSelectPrompt: (prompt) {

@@ -10,6 +10,7 @@ import 'folder_card.dart';
 class FolderGrid extends StatelessWidget {
   final List<FolderInfo> folders;
   final ValueChanged<Folder> onTap;
+  final ValueChanged<Folder>? onPractice;
   final ValueChanged<Folder> onRename;
   final ValueChanged<Folder> onDelete;
 
@@ -17,6 +18,7 @@ class FolderGrid extends StatelessWidget {
     super.key,
     required this.folders,
     required this.onTap,
+    this.onPractice,
     required this.onRename,
     required this.onDelete,
   });
@@ -39,6 +41,9 @@ class FolderGrid extends StatelessWidget {
             key: ValueKey(info.folder.id),
             info: info,
             onTap: () => onTap(info.folder),
+            onPractice: onPractice != null
+                ? () => onPractice!(info.folder)
+                : null,
             onRename: () => onRename(info.folder),
             onDelete: () => onDelete(info.folder),
           );

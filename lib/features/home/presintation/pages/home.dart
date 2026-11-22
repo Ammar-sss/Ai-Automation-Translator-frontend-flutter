@@ -26,6 +26,7 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
+    context.read<VocabularyCubit>().getAllTerms();
     _loadDashboardData();
   }
 
@@ -503,9 +504,14 @@ class _StatsOverview extends StatelessWidget {
 
         return BlocBuilder<VocabularyCubit, VocabularyState>(
           builder: (context, vocabState) {
+            final cubit = context.read<VocabularyCubit>();
             final syncedCount = vocabState is VocabularyLoaded
                 ? vocabState.terms.length
-                : 0;
+                : cubit.cachedTerms.length;
+
+            final isLoading =
+                vocabState is VocabularyLoading ||
+                vocabState is VocabularyInitial;
 
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -531,7 +537,9 @@ class _StatsOverview extends StatelessWidget {
                   Container(width: 1, height: 32, color: scheme.outlineVariant),
                   _StatItem(
                     label: 'Cloud Synced',
-                    value: '$syncedCount',
+                    value: (isLoading && syncedCount == 0)
+                        ? '…'
+                        : '$syncedCount',
                     icon: Icons.cloud_outlined,
                   ),
                 ],

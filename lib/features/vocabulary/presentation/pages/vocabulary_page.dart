@@ -9,8 +9,19 @@ import 'package:smart_translator_test/features/vocabulary/presentation/widgets/f
 import 'package:smart_translator_test/features/vocabulary/presentation/widgets/folder_input_dialog.dart';
 import 'package:smart_translator_test/features/vocabulary/presentation/widgets/vocabulary_header.dart';
 
+import 'package:smart_translator_test/features/practice/presentation/pages/practice_page.dart';
+
 class VocabularyPage extends StatelessWidget {
   const VocabularyPage({super.key});
+
+  void _practiceFolder(BuildContext context, Folder folder) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => PracticePage(folder: folder)),
+    ).then((_) {
+      if (context.mounted) context.read<FolderCubit>().loadFolders();
+    });
+  }
 
   Future<void> _showCreateFolderDialog(BuildContext context) async {
     final name = await showDialog<String>(
@@ -118,6 +129,7 @@ class VocabularyPage extends StatelessWidget {
         FolderGrid(
           folders: folders,
           onTap: (f) => _openFolder(context, f),
+          onPractice: (f) => _practiceFolder(context, f),
           onRename: (f) => _showRenameFolderDialog(context, f),
           onDelete: (f) => _confirmDeleteFolder(context, f),
         ),

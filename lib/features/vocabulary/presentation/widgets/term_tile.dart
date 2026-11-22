@@ -4,9 +4,10 @@ import 'package:smart_translator_test/app_snackbar.dart';
 import 'package:smart_translator_test/core/network/network_cubit.dart';
 import 'package:smart_translator_test/core/network/server_health_cubit.dart';
 import 'package:smart_translator_test/core/storage/app_database.dart';
+import 'package:smart_translator_test/core/util/translation_language.dart';
 import 'package:smart_translator_test/core/widgets/pulsing_dot.dart';
 import 'package:smart_translator_test/core/widgets/radio_wave_dot.dart';
-import 'package:smart_translator_test/features/translate/data/models/ai_response.dart';
+import 'package:smart_translator_test/features/vocabulary/data/models/save_term_request.dart';
 import 'package:smart_translator_test/features/vocabulary/data/models/term.dart';
 import 'package:smart_translator_test/features/vocabulary/data/models/term_definitions.dart';
 import 'package:smart_translator_test/features/vocabulary/presentation/controller/vocabulary_cubit.dart';
@@ -55,7 +56,11 @@ class _TermTileState extends State<TermTile> {
     if (widget.term.id > 0) return _SyncStatus.synced;
     try {
       final vocabCubit = context.read<VocabularyCubit>();
-      if (vocabCubit.isTermSavedOnline(widget.term.termWord)) {
+      if (vocabCubit.isTermSavedOnline(
+        widget.term.termWord,
+        sourceLanguage: widget.term.sourceLanguage,
+        targetLanguage: widget.term.targetLanguage,
+      )) {
         return _SyncStatus.synced;
       }
     } catch (_) {}
@@ -108,8 +113,16 @@ class _TermTileState extends State<TermTile> {
       _syncStatus = _SyncStatus.syncing;
     });
 
-    final aiResponse = AiResponse(
+    final saveTermRequest = SaveTermRequest(
       termWord: widget.term.termWord,
+      sourceLanguage: TranslationLanguage.values.firstWhere(
+        (l) => l.backendValue == widget.term.sourceLanguage,
+        orElse: () => TranslationLanguage.english,
+      ),
+      targetLanguage: TranslationLanguage.values.firstWhere(
+        (l) => l.backendValue == widget.term.targetLanguage,
+        orElse: () => TranslationLanguage.arabic,
+      ),
       exampleSentence: widget.term.termExamples.isNotEmpty
           ? widget.term.termExamples.first.exampleSentence
           : '',
@@ -123,9 +136,15 @@ class _TermTileState extends State<TermTile> {
 
     try {
       final vocabCubit = context.read<VocabularyCubit>();
-      await vocabCubit.confirmTermSave(aiResponse);
+      final savedTerm = await vocabCubit.confirmTermSave(saveTermRequest);
 
-      final onlineTerm = vocabCubit.getSavedOnlineTerm(widget.term.termWord);
+      final onlineTerm =
+          savedTerm ??
+          vocabCubit.getSavedOnlineTerm(
+            widget.term.termWord,
+            sourceLanguage: widget.term.sourceLanguage,
+            targetLanguage: widget.term.targetLanguage,
+          );
       if (onlineTerm != null && onlineTerm.id > 0) {
         await AppDatabase.instance.updateTerm(onlineTerm);
       }
@@ -189,7 +208,7 @@ class _TermTileState extends State<TermTile> {
       text = 'Failed';
       onTap = _syncTerm;
     } else {
-      dotColor = scheme.outline;
+      dotColor = Colors.amber;
       textColor = scheme.onSurfaceVariant;
       backgroundColor = scheme.surfaceContainerHigh;
       text = 'Not synced';
@@ -208,7 +227,9 @@ class _TermTileState extends State<TermTile> {
           maxSize: 1.4,
         );
       }
-      return DecoratedBox(
+      return Container(
+        width: 7,
+        height: 7,
         decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
       );
     }
@@ -217,13 +238,19 @@ class _TermTileState extends State<TermTile> {
       listener: (context, state) {
         if (_syncStatus == _SyncStatus.syncing) return;
         final vocabCubit = context.read<VocabularyCubit>();
-        if (vocabCubit.isTermSavedOnline(widget.term.termWord)) {
+        if (vocabCubit.isTermSavedOnline(
+          widget.term.termWord,
+          sourceLanguage: widget.term.sourceLanguage,
+          targetLanguage: widget.term.targetLanguage,
+        )) {
           if (_syncStatus != _SyncStatus.synced) {
             setState(() {
               _syncStatus = _SyncStatus.synced;
             });
             final onlineTerm = vocabCubit.getSavedOnlineTerm(
               widget.term.termWord,
+              sourceLanguage: widget.term.sourceLanguage,
+              targetLanguage: widget.term.targetLanguage,
             );
             if (onlineTerm != null && onlineTerm.id > 0) {
               AppDatabase.instance.updateTerm(onlineTerm);

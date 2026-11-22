@@ -9,4 +9,5 @@ class AppRoutes {
   static final String translate = "/translate";
   static final String profile = "/profile";
   static final String setting = "/setting";
+  static final String practice = "/practice";
 }

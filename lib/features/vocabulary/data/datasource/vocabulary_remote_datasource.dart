@@ -3,7 +3,7 @@ import 'package:retrofit/error_logger.dart';
 import 'package:retrofit/http.dart';
 import 'package:smart_translator_test/core/network/api_endpoint.dart';
 import 'package:smart_translator_test/core/util/api_response.dart';
-import 'package:smart_translator_test/features/translate/data/models/ai_response.dart';
+import 'package:smart_translator_test/features/vocabulary/data/models/save_term_request.dart';
 import 'package:smart_translator_test/features/vocabulary/data/models/term.dart';
 
 part 'vocabulary_remote_datasource.g.dart';
@@ -14,7 +14,9 @@ abstract class VocabularyRemoteDatasource {
       _VocabularyRemoteDatasource;
 
   @POST(ApiEndpoint.confirmTermSave)
-  Future<ApiResponse<Term>> confirmTermSave(@Body() AiResponse aiResponse);
+  Future<ApiResponse<Term>> confirmTermSave(
+    @Body() SaveTermRequest saveTermRequest,
+  );
 
   @GET(ApiEndpoint.getTermById)
   Future<ApiResponse<Term>> getTermById(@Path("id") int id);

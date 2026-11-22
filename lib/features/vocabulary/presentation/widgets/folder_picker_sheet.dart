@@ -8,20 +8,33 @@ import 'package:smart_translator_test/features/vocabulary/presentation/widgets/f
 /// Bottom sheet to choose which folder a term is saved into.
 class FolderPickerSheet extends StatefulWidget {
   final String termWord;
+  final String? sourceLanguage;
+  final String? targetLanguage;
 
-  const FolderPickerSheet({super.key, required this.termWord});
+  const FolderPickerSheet({
+    super.key,
+    required this.termWord,
+    this.sourceLanguage,
+    this.targetLanguage,
+  });
 
   /// Returns the selected [Folder], or null if dismissed.
   static Future<Folder?> show(
     BuildContext context, {
     required String termWord,
+    String? sourceLanguage,
+    String? targetLanguage,
   }) {
     return showModalBottomSheet<Folder>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
       showDragHandle: true,
-      builder: (_) => FolderPickerSheet(termWord: termWord),
+      builder: (_) => FolderPickerSheet(
+        termWord: termWord,
+        sourceLanguage: sourceLanguage,
+        targetLanguage: targetLanguage,
+      ),
     );
   }
 
@@ -43,6 +56,8 @@ class _FolderPickerSheetState extends State<FolderPickerSheet> {
     try {
       final ids = await AppDatabase.instance.getFolderIdsForTerm(
         widget.termWord,
+        sourceLanguage: widget.sourceLanguage,
+        targetLanguage: widget.targetLanguage,
       );
       if (mounted) setState(() => _containing = ids.toSet());
     } catch (_) {}

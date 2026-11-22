@@ -70,6 +70,8 @@ class _SyncedVocabularyPageState extends State<SyncedVocabularyPage> {
     final folder = await FolderPickerSheet.show(
       context,
       termWord: term.termWord,
+      sourceLanguage: term.sourceLanguage,
+      targetLanguage: term.targetLanguage,
     );
     if (folder == null || !mounted) return;
 

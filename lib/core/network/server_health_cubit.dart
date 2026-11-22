@@ -1,8 +1,11 @@
+// ignore_for_file: prefer_initializing_formals
 import 'dart:async';
 
 import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'network_cubit.dart';
 import 'server_health_service.dart';
 
 part 'server_health_state.dart';
@@ -10,21 +13,42 @@ part 'server_health_state.dart';
 class ServerHealthCubit extends Cubit<ServerHealthState>
     with WidgetsBindingObserver {
   final ServerHealthService _service;
+  final NetworkCubit? _networkCubit;
+  StreamSubscription? _networkSubscription;
+  CancelToken? _cancelToken;
   Timer? _timer;
 
-  /// Adaptive interval: fast when sleeping, slow when awake.
-  static const _sleepingInterval = Duration(seconds: 30);
-  static const _awakeInterval = Duration(seconds: 120);
+  /// Automatically check server health every 10 seconds.
+  static const _checkInterval = Duration(seconds: 10);
 
-  ServerHealthCubit({required this._service}) : super(ServerSleeping()) {
+  ServerHealthCubit({
+    required ServerHealthService service,
+    NetworkCubit? networkCubit,
+  }) : _service = service,
+       _networkCubit = networkCubit,
+       super(ServerWakingUp()) {
     WidgetsBinding.instance.addObserver(this);
+    _listenToNetwork();
     _startHealthTimer();
+    wakeServer(force: true);
+  }
+
+  void _listenToNetwork() {
+    final cubit = _networkCubit;
+    if (cubit == null) return;
+    _networkSubscription = cubit.stream.listen((networkState) {
+      if (networkState is NetworkConnected) {
+        // Automatically re-check server when network reconnects
+        wakeServer(force: true);
+      }
+    });
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _startHealthTimer();
+      wakeServer(force: true);
     } else if (state == AppLifecycleState.paused) {
       _stopHealthTimer();
     }
@@ -32,8 +56,7 @@ class ServerHealthCubit extends Cubit<ServerHealthState>
 
   void _startHealthTimer() {
     _timer?.cancel();
-    final interval = state is ServerAwake ? _awakeInterval : _sleepingInterval;
-    _timer = Timer.periodic(interval, (_) {
+    _timer = Timer.periodic(_checkInterval, (_) {
       wakeServer();
     });
   }
@@ -42,25 +65,32 @@ class ServerHealthCubit extends Cubit<ServerHealthState>
     _timer?.cancel();
   }
 
-  Future<void> wakeServer() async {
-    if (state is ServerWakingUp) return;
+  Future<void> wakeServer({bool force = false}) async {
+    if (state is ServerWakingUp && !force) return;
 
-    emit(ServerWakingUp());
+    // Cancel any previous hanging request
+    _cancelToken?.cancel('New health check started');
+    _cancelToken = CancelToken();
 
-    final isAlive = await _service.isServerAlive();
+    if (state is! ServerWakingUp) {
+      emit(ServerWakingUp());
+    }
+
+    final isAlive = await _service.isServerAlive(cancelToken: _cancelToken);
+
+    if (_cancelToken?.isCancelled ?? false) return;
 
     if (isAlive) {
       emit(ServerAwake());
     } else {
       emit(ServerSleeping());
     }
-
-    // Restart timer with the appropriate interval for the new state
-    _startHealthTimer();
   }
 
   @override
   Future<void> close() {
+    _networkSubscription?.cancel();
+    _cancelToken?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _stopHealthTimer();
     return super.close();
