@@ -19,7 +19,7 @@ class ServerStatusIndicator extends StatelessWidget {
       builder: (context, networkState) {
         if (networkState is NetworkDisconnected) {
           return _StatusPill(
-            dotColor: scheme.outline,
+            dotColor: Colors.black,
             text: 'Offline',
             isLoading: false,
             isAwake: false,
@@ -50,9 +50,8 @@ class ServerStatusIndicator extends StatelessWidget {
               text: text,
               isLoading: isWakingUp,
               isAwake: isAwake,
-              onTap: isWakingUp
-                  ? null
-                  : () => context.read<ServerHealthCubit>().wakeServer(),
+              onTap: () =>
+                  context.read<ServerHealthCubit>().wakeServer(force: true),
             );
           },
         );
@@ -78,18 +77,41 @@ class _StatusPill extends StatelessWidget {
 
   Widget _buildDot() {
     if (isAwake) {
-      return const RadioWaveDot(color: Colors.green, size: 7, maxScale: 2.2);
+      return RadioWaveDot(
+        key: ValueKey('dot-awake-$text'),
+        color: Colors.green,
+        size: 7,
+        maxScale: 2.2,
+      );
     }
     if (isLoading) {
-      return const PulsingDot(
+      return PulsingDot(
+        key: ValueKey('dot-loading-$text'),
         color: Colors.amber,
         size: 7,
         minSize: 0.7,
         maxSize: 1.4,
+        duration: const Duration(milliseconds: 700),
       );
     }
-    return DecoratedBox(
-      decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
+    if (dotColor == Colors.black) {
+      return Container(
+        key: const ValueKey('dot-offline'),
+        width: 7,
+        height: 7,
+        decoration: const BoxDecoration(
+          color: Colors.grey,
+          shape: BoxShape.circle,
+        ),
+      );
+    }
+    return PulsingDot(
+      key: ValueKey('dot-sleeping-$text'),
+      color: dotColor,
+      size: 7,
+      minSize: 0.8,
+      maxSize: 1.35,
+      duration: const Duration(milliseconds: 1400),
     );
   }
 

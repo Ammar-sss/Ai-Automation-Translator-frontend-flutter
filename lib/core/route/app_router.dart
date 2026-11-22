@@ -12,8 +12,12 @@ import 'package:smart_translator_test/features/onboarding/presentation/pages/onb
 import 'package:smart_translator_test/features/setting/presentation/pages/setting_page.dart';
 import 'package:smart_translator_test/features/translate/presentation/pages/translate_page.dart';
 import 'package:smart_translator_test/features/user/presentation/pages/profile_page.dart';
+import 'package:smart_translator_test/core/storage/app_database.dart';
+import 'package:smart_translator_test/features/vocabulary/data/models/term.dart';
 import 'package:smart_translator_test/features/vocabulary/presentation/pages/synced_vocabulary_page.dart';
 import 'package:smart_translator_test/features/vocabulary/presentation/pages/vocabulary_page.dart';
+
+import '../../features/practice/presentation/pages/practice_page.dart';
 
 class OnRouterRefreshStream extends ChangeNotifier {
   late final StreamSubscription<dynamic> _subscription;
@@ -96,6 +100,23 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.vocabularySynced,
         builder: (context, state) => const SyncedVocabularyPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.practice,
+        builder: (context, state) {
+          final extra = state.extra;
+          if (extra is Folder) {
+            return PracticePage(folder: extra);
+          } else if (extra is List<Term>) {
+            return PracticePage(initialTerms: extra);
+          } else if (extra is Map<String, dynamic>) {
+            return PracticePage(
+              folder: extra['folder'] as Folder?,
+              initialTerms: extra['terms'] as List<Term>?,
+            );
+          }
+          return const PracticePage();
+        },
       ),
 
       // Routes WITH bottom navigation bar (Managed globally by MainShell):

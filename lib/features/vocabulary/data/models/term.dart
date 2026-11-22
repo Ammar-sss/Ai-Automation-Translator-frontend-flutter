@@ -9,13 +9,17 @@ part 'term.g.dart';
 class Term {
   final int id;
   final String termWord;
+  final String? sourceLanguage;
+  final String? targetLanguage;
   final Set<TermDefinition> termDefinitions;
   final Set<Example> termExamples;
   final Set<ExampleDefinition> exampleDefinitions;
 
-  new({
+  Term({
     required this.id,
     required this.termWord,
+    this.sourceLanguage,
+    this.targetLanguage,
     required this.termDefinitions,
     required this.termExamples,
     required this.exampleDefinitions,

@@ -29,24 +29,27 @@ class ElevenLabsService {
 
   Future<Uint8List?> textToSpeech(
     String text, {
-    String languageCode = 'en', // e.g. 'en', 'ar'
+    String? languageCode, // null = auto-detect
     String? voiceId,
   }) async {
     try {
       final vId = voiceId ?? _defaultVoiceId;
-      final file = await _cacheFile(text, '$vId|$languageCode');
+      final file = await _cacheFile(text, '$vId|${languageCode ?? 'auto'}');
+
       if (await file.exists()) return await file.readAsBytes();
 
       final url = 'https://api.elevenlabs.io/v1/text-to-speech/$vId';
 
+      final data = {
+        'text': text,
+        'model_id': 'eleven_v4',
+        ...languageCode != null ? {'language_code': languageCode} : {},
+        'voice_settings': {'stability': 0.5, 'similarity_boost': 0.75},
+      };
+
       final response = await _dio.post(
         url,
-        data: {
-          'text': text,
-          'model_id': 'eleven_turbo_v2_5',
-          'language_code': languageCode,
-          'voice_settings': {'stability': 0.5, 'similarity_boost': 0.75},
-        },
+        data: data,
         options: Options(
           headers: {
             'xi-api-key': _apiKey,

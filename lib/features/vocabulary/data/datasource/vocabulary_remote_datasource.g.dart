@@ -21,12 +21,14 @@ class _VocabularyRemoteDatasource implements VocabularyRemoteDatasource {
   final ParseErrorLogger? errorLogger;
 
   @override
-  Future<ApiResponse<Term>> confirmTermSave(AiResponse aiResponse) async {
+  Future<ApiResponse<Term>> confirmTermSave(
+    SaveTermRequest saveTermRequest,
+  ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     final _data = <String, dynamic>{};
-    _data.addAll(aiResponse.toJson());
+    _data.addAll(saveTermRequest.toJson());
     final _options = _setStreamType<ApiResponse<Term>>(
       Options(method: 'POST', headers: _headers, extra: _extra)
           .compose(

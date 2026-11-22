@@ -56,8 +56,10 @@ void main() {
 
   // Server health checker
   final serverHealthService = ServerHealthService();
-  final serverHealthCubit = ServerHealthCubit(service: serverHealthService)
-    ..wakeServer();
+  final serverHealthCubit = ServerHealthCubit(
+    service: serverHealthService,
+    networkCubit: networkCubit,
+  )..wakeServer();
 
   final themeCubit = ThemeCubit();
 

@@ -4,11 +4,13 @@ import '../../../../core/util/responsive.dart';
 
 class InputField extends StatelessWidget {
   final TextEditingController controller;
+  final FocusNode? focusNode;
   final VoidCallback onSubmit;
 
   const InputField({
     super.key,
     required this.controller,
+    this.focusNode,
     required this.onSubmit,
   });
 
@@ -20,6 +22,7 @@ class InputField extends StatelessWidget {
 
     return TextField(
       controller: controller,
+      focusNode: focusNode,
       minLines: 2,
       maxLines: 5,
       textInputAction: TextInputAction.search,

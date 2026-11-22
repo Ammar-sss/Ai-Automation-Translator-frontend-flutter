@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:smart_translator_test/app_snackbar.dart';
 import 'package:smart_translator_test/core/network/elevenlabs_service.dart';
+import 'package:smart_translator_test/core/util/language_detect.dart';
 import 'package:smart_translator_test/features/vocabulary/data/models/term.dart';
 
 class VocabularyDetail extends StatelessWidget {
@@ -34,10 +35,13 @@ class VocabularyDetail extends StatelessWidget {
     showAppSnackBar(context, '"${term.termWord}" copied to clipboard');
   }
 
-  Future<void> _pronounceWord(BuildContext context) async {
-    showAppSnackBar(context, 'Synthesizing speech for "${term.termWord}"...');
+  Future<void> _speak(BuildContext context, String text) async {
+    showAppSnackBar(context, 'Synthesizing speech...');
     try {
-      final audioBytes = await _elevenLabsService.textToSpeech(term.termWord);
+      final audioBytes = await _elevenLabsService.textToSpeech(
+        text,
+        languageCode: detectLanguageCode(text),
+      );
       if (!context.mounted) return;
       if (audioBytes != null) {
         await _audioPlayer.stop();
@@ -93,7 +97,7 @@ class VocabularyDetail extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton.filledTonal(
-                        onPressed: () => _pronounceWord(context),
+                        onPressed: () => _speak(context, term.termWord),
                         tooltip: 'Pronounce word',
                         icon: const Icon(Icons.volume_up_rounded, size: 20),
                       ),
@@ -142,7 +146,11 @@ class VocabularyDetail extends StatelessWidget {
                 )
               else
                 for (final (i, def) in definitions.indexed)
-                  _DefinitionCard(index: i + 1, definition: def.definition),
+                  _DefinitionCard(
+                    index: i + 1,
+                    definition: def.definition,
+                    onPronounce: () => _speak(context, def.definition),
+                  ),
 
               const SizedBox(height: 24),
 
@@ -262,8 +270,13 @@ class _StatBadge extends StatelessWidget {
 class _DefinitionCard extends StatelessWidget {
   final int index;
   final String definition;
+  final VoidCallback? onPronounce;
 
-  const _DefinitionCard({required this.index, required this.definition});
+  const _DefinitionCard({
+    required this.index,
+    required this.definition,
+    this.onPronounce,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -311,6 +324,15 @@ class _DefinitionCard extends StatelessWidget {
               ),
             ),
           ),
+          if (onPronounce != null)
+            IconButton(
+              icon: Icon(
+                Icons.volume_up_rounded,
+                size: 20,
+                color: scheme.primary,
+              ),
+              onPressed: onPronounce,
+            ),
         ],
       ),
     );

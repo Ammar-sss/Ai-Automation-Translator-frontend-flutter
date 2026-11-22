@@ -1,11 +1,13 @@
 import 'package:material_ui/material_ui.dart';
 
 class FolderPopupMenu extends StatelessWidget {
+  final VoidCallback? onPractice;
   final VoidCallback onRename;
   final VoidCallback onDelete;
 
   const FolderPopupMenu({
     super.key,
+    this.onPractice,
     required this.onRename,
     required this.onDelete,
   });
@@ -20,6 +22,8 @@ class FolderPopupMenu extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       onSelected: (value) {
         switch (value) {
+          case 'practice':
+            onPractice?.call();
           case 'rename':
             onRename();
           case 'delete':
@@ -27,6 +31,22 @@ class FolderPopupMenu extends StatelessWidget {
         }
       },
       itemBuilder: (_) => [
+        if (onPractice != null)
+          PopupMenuItem(
+            value: 'practice',
+            child: ListTile(
+              leading: Icon(Icons.style_rounded, color: scheme.primary),
+              title: Text(
+                'Practice Deck',
+                style: TextStyle(
+                  color: scheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+            ),
+          ),
         const PopupMenuItem(
           value: 'rename',
           child: ListTile(

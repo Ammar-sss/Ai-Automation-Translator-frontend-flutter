@@ -7,6 +7,7 @@ import 'folder_popup_menu.dart';
 class FolderCard extends StatelessWidget {
   final FolderInfo info;
   final VoidCallback onTap;
+  final VoidCallback? onPractice;
   final VoidCallback onRename;
   final VoidCallback onDelete;
 
@@ -14,6 +15,7 @@ class FolderCard extends StatelessWidget {
     super.key,
     required this.info,
     required this.onTap,
+    this.onPractice,
     required this.onRename,
     required this.onDelete,
   });
@@ -70,7 +72,11 @@ class FolderCard extends StatelessWidget {
                   ],
                 ),
               ),
-              FolderPopupMenu(onRename: onRename, onDelete: onDelete),
+              FolderPopupMenu(
+                onPractice: onPractice,
+                onRename: onRename,
+                onDelete: onDelete,
+              ),
             ],
           ),
         ),

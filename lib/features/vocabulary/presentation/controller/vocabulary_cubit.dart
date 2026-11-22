@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:smart_translator_test/core/storage/app_database.dart';
-import 'package:smart_translator_test/features/translate/data/models/ai_response.dart';
 import 'package:smart_translator_test/features/vocabulary/data/models/example.dart';
 import 'package:smart_translator_test/features/vocabulary/data/models/example_definitions.dart';
+import 'package:smart_translator_test/features/vocabulary/data/models/save_term_request.dart';
 import 'package:smart_translator_test/features/vocabulary/data/models/term.dart';
 import 'package:smart_translator_test/features/vocabulary/data/models/term_definitions.dart';
 import 'package:smart_translator_test/features/vocabulary/domain/repositories/vocabulary_repository.dart';
@@ -18,51 +18,107 @@ class VocabularyCubit extends Cubit<VocabularyState> {
 
   List<Term> get cachedTerms => _cachedTerms;
 
-  bool isTermSavedOnline(String word) {
+  bool isTermSavedOnline(
+    String word, {
+    String? sourceLanguage,
+    String? targetLanguage,
+  }) {
     final lower = word.trim().toLowerCase();
-    return _cachedTerms.any((t) => t.termWord.trim().toLowerCase() == lower);
+    return _cachedTerms.any((t) {
+      if (t.termWord.trim().toLowerCase() != lower) return false;
+      if (sourceLanguage != null && sourceLanguage.isNotEmpty) {
+        if (t.sourceLanguage == null || t.sourceLanguage != sourceLanguage) {
+          return false;
+        }
+      }
+      if (targetLanguage != null && targetLanguage.isNotEmpty) {
+        if (t.targetLanguage == null || t.targetLanguage != targetLanguage) {
+          return false;
+        }
+      }
+      return true;
+    });
   }
 
-  Term? getSavedOnlineTerm(String word) {
+  Term? getSavedOnlineTerm(
+    String word, {
+    String? sourceLanguage,
+    String? targetLanguage,
+  }) {
     final lower = word.trim().toLowerCase();
     for (final term in _cachedTerms) {
-      if (term.termWord.trim().toLowerCase() == lower) {
-        return term;
+      if (term.termWord.trim().toLowerCase() != lower) continue;
+      if (sourceLanguage != null && sourceLanguage.isNotEmpty) {
+        if (term.sourceLanguage == null ||
+            term.sourceLanguage != sourceLanguage) {
+          continue;
+        }
       }
+      if (targetLanguage != null && targetLanguage.isNotEmpty) {
+        if (term.targetLanguage == null ||
+            term.targetLanguage != targetLanguage) {
+          continue;
+        }
+      }
+      return term;
     }
     return null;
   }
 
   VocabularyCubit(this.vocabularyRepository) : super(VocabularyInitial());
 
-  Term _mapAiResponseToTerm(AiResponse ai) {
+  Term _mapSaveRequestToTerm(SaveTermRequest req) {
     return Term(
       id: 0,
-      termWord: ai.termWord,
-      termDefinitions: ai.termDefinitions
+      termWord: req.termWord,
+      sourceLanguage: req.sourceLanguage.backendValue,
+      targetLanguage: req.targetLanguage.backendValue,
+      termDefinitions: req.termDefinitions
           .map((d) => TermDefinition(id: 0, definition: d))
           .toSet(),
-      termExamples: ai.exampleSentence.isNotEmpty
-          ? {Example(id: 0, exampleSentence: ai.exampleSentence)}
+      termExamples: req.exampleSentence.isNotEmpty
+          ? {Example(id: 0, exampleSentence: req.exampleSentence)}
           : {},
-      exampleDefinitions: ai.exampleDefinition.isNotEmpty
-          ? {ExampleDefinition(id: 0, exampleDefinition: ai.exampleDefinition)}
+      exampleDefinitions: req.exampleDefinition.isNotEmpty
+          ? {ExampleDefinition(id: 0, exampleDefinition: req.exampleDefinition)}
           : {},
     );
   }
 
-  Future<Term?> confirmTermSave(AiResponse aiResponse) async {
+  Future<Term?> confirmTermSave(SaveTermRequest saveTermRequest) async {
     emit(VocabularySaving());
     try {
-      final response = await vocabularyRepository.confirmTermSave(aiResponse);
+      final response = await vocabularyRepository.confirmTermSave(
+        saveTermRequest,
+      );
       if (response.data != null) {
+        // Ensure sourceLanguage and targetLanguage are populated even if backend DTO omits them
+        final serverTerm = response.data!;
+        final termWithLangs = Term(
+          id: serverTerm.id,
+          termWord: serverTerm.termWord,
+          sourceLanguage:
+              (serverTerm.sourceLanguage != null &&
+                  serverTerm.sourceLanguage!.isNotEmpty)
+              ? serverTerm.sourceLanguage
+              : saveTermRequest.sourceLanguage.backendValue,
+          targetLanguage:
+              (serverTerm.targetLanguage != null &&
+                  serverTerm.targetLanguage!.isNotEmpty)
+              ? serverTerm.targetLanguage
+              : saveTermRequest.targetLanguage.backendValue,
+          termDefinitions: serverTerm.termDefinitions,
+          termExamples: serverTerm.termExamples,
+          exampleDefinitions: serverTerm.exampleDefinitions,
+        );
+
         // Update local list instead of re-fetching all terms from the server
-        _cachedTerms = [response.data!, ..._cachedTerms];
+        _cachedTerms = [termWithLangs, ..._cachedTerms];
         try {
-          await AppDatabase.instance.updateTerm(response.data!);
+          await AppDatabase.instance.updateTerm(termWithLangs);
         } catch (_) {}
-        emit(TermSavedSuccess(term: response.data!));
-        return response.data!;
+        emit(TermSavedSuccess(term: termWithLangs));
+        return termWithLangs;
       } else if (response.message.toLowerCase().contains('success') ||
           response.message.toLowerCase().contains('saved')) {
         try {
@@ -72,8 +128,11 @@ class VocabularyCubit extends Cubit<VocabularyState> {
             final existing = _cachedTerms.firstWhere(
               (t) =>
                   t.termWord.trim().toLowerCase() ==
-                  aiResponse.termWord.trim().toLowerCase(),
-              orElse: () => _mapAiResponseToTerm(aiResponse),
+                      saveTermRequest.termWord.trim().toLowerCase() &&
+                  (t.targetLanguage == null ||
+                      t.targetLanguage ==
+                          saveTermRequest.targetLanguage.backendValue),
+              orElse: () => _mapSaveRequestToTerm(saveTermRequest),
             );
             if (existing.id > 0) {
               try {
@@ -84,7 +143,7 @@ class VocabularyCubit extends Cubit<VocabularyState> {
             return existing;
           }
         } catch (_) {}
-        final fallbackTerm = _mapAiResponseToTerm(aiResponse);
+        final fallbackTerm = _mapSaveRequestToTerm(saveTermRequest);
         emit(TermSavedSuccess(term: fallbackTerm));
         return fallbackTerm;
       } else {
@@ -107,8 +166,11 @@ class VocabularyCubit extends Cubit<VocabularyState> {
             final existing = _cachedTerms.firstWhere(
               (t) =>
                   t.termWord.trim().toLowerCase() ==
-                  aiResponse.termWord.trim().toLowerCase(),
-              orElse: () => _mapAiResponseToTerm(aiResponse),
+                      saveTermRequest.termWord.trim().toLowerCase() &&
+                  (t.targetLanguage == null ||
+                      t.targetLanguage ==
+                          saveTermRequest.targetLanguage.backendValue),
+              orElse: () => _mapSaveRequestToTerm(saveTermRequest),
             );
             if (existing.id > 0) {
               try {
@@ -120,7 +182,7 @@ class VocabularyCubit extends Cubit<VocabularyState> {
           }
         } catch (_) {}
         // Fallback if getAllTerms fails
-        final fallbackTerm = _mapAiResponseToTerm(aiResponse);
+        final fallbackTerm = _mapSaveRequestToTerm(saveTermRequest);
         emit(TermSavedSuccess(term: fallbackTerm));
         return fallbackTerm;
       }

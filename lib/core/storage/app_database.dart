@@ -24,14 +24,24 @@ class Folders extends Table {
 class Terms extends Table {
   IntColumn get id => integer().autoIncrement()();
 
-  /// The word itself, stored in lowercase for uniqueness.
-  TextColumn get termWord => text().unique()();
+  /// The word itself, stored in lowercase.
+  TextColumn get termWord => text()();
+
+  /// Source language for this translation entry.
+  TextColumn get sourceLanguage => text().nullable()();
+
+  /// Target language for this translation entry.
+  TextColumn get targetLanguage => text().nullable()();
 
   /// The full AI response data serialized as a JSON string.
-  /// Contains definitions, examples, example definitions, etc.
   TextColumn get termData => text()();
 
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  List<Set<Column>> get uniqueKeys => [
+    {termWord, sourceLanguage, targetLanguage},
+  ];
 }
 
 /// Junction table for the Many-to-Many relationship between Terms and Folders.
@@ -59,12 +69,21 @@ class AppDatabase extends _$AppDatabase {
   static final AppDatabase instance = AppDatabase._();
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) async {
       await m.createAll();
+    },
+    onUpgrade: (m, from, to) async {
+      if (from < 5) {
+        // Recreate terms and term_folders tables to clean up schema and data
+        await customStatement('DROP TABLE IF EXISTS term_folders;');
+        await customStatement('DROP TABLE IF EXISTS terms;');
+        await m.create(terms);
+        await m.create(termFolders);
+      }
     },
     beforeOpen: (details) async {
       // Ensure folder_id on junction table is indexed to prevent full table scans
@@ -149,32 +168,111 @@ class AppDatabase extends _$AppDatabase {
   ///
   /// Example: saving "sister" to folder "People" (id=1) and "Family" (id=2)
   /// results in ONE row in `terms` and TWO rows in `term_folders`.
+  /// Returns `true` if this exact term+pair is already in the given folder.
+  Future<bool> isTermInFolderExact({
+    required String termWord,
+    required int folderId,
+    String? sourceLanguage,
+    String? targetLanguage,
+  }) async {
+    final ids = await getFolderIdsForTerm(
+      termWord,
+      sourceLanguage: sourceLanguage,
+      targetLanguage: targetLanguage,
+    );
+    return ids.contains(folderId);
+  }
+
   Future<void> saveTermToFolder({
     required models.Term term,
     required int folderId,
   }) async {
     await transaction(() async {
       final cleanWord = term.termWord.trim().toLowerCase();
+      final sourceLang = term.sourceLanguage ?? '';
+      final targetLang = term.targetLanguage ?? '';
 
-      // 1. Try to find existing term
-      final existing = await (select(
-        terms,
-      )..where((t) => t.termWord.equals(cleanWord))).getSingleOrNull();
+      // 1. Try to find existing term by word + source + target language
+      final existing =
+          await (select(terms)..where(
+                (t) =>
+                    t.termWord.equals(cleanWord) &
+                    t.sourceLanguage.equals(sourceLang) &
+                    t.targetLanguage.equals(targetLang),
+              ))
+              .getSingleOrNull();
 
       int termId;
       if (existing != null) {
         termId = existing.id;
-        // If the new term has an ID (>0), persist the updated data into SQLite.
-        if (term.id > 0) {
-          await (update(terms)..where((t) => t.id.equals(termId))).write(
-            TermsCompanion(termData: Value(jsonEncode(term.toJson()))),
+
+        // Check if already linked to this folder – throw to surface a snackbar
+        final alreadyLinked =
+            await (select(termFolders)..where(
+                  (t) => t.termId.equals(termId) & t.folderId.equals(folderId),
+                ))
+                .getSingleOrNull();
+        if (alreadyLinked != null) {
+          throw Exception(
+            'This term is already saved in that folder for the same language pair.',
           );
+        }
+
+        // Merge new definitions and examples with existing term data
+        try {
+          final existingJson =
+              jsonDecode(existing.termData) as Map<String, dynamic>;
+          final existingTerm = models.Term.fromJson(existingJson);
+
+          final mergedDefinitions = {
+            ...existingTerm.termDefinitions,
+            ...term.termDefinitions,
+          };
+          final mergedExamples = {
+            ...existingTerm.termExamples,
+            ...term.termExamples,
+          };
+          final mergedExampleDefs = {
+            ...existingTerm.exampleDefinitions,
+            ...term.exampleDefinitions,
+          };
+
+          final updatedTerm = models.Term(
+            id: existingTerm.id > 0 ? existingTerm.id : term.id,
+            termWord: existingTerm.termWord,
+            sourceLanguage: existingTerm.sourceLanguage ?? term.sourceLanguage,
+            targetLanguage: existingTerm.targetLanguage ?? term.targetLanguage,
+            termDefinitions: mergedDefinitions,
+            termExamples: mergedExamples,
+            exampleDefinitions: mergedExampleDefs,
+          );
+
+          await (update(terms)..where((t) => t.id.equals(termId))).write(
+            TermsCompanion(
+              termData: Value(jsonEncode(updatedTerm.toJson())),
+              sourceLanguage: Value(term.sourceLanguage),
+              targetLanguage: Value(term.targetLanguage),
+            ),
+          );
+        } catch (e) {
+          if (e.toString().contains('already saved')) rethrow;
+          if (term.id > 0) {
+            await (update(terms)..where((t) => t.id.equals(termId))).write(
+              TermsCompanion(
+                termData: Value(jsonEncode(term.toJson())),
+                sourceLanguage: Value(term.sourceLanguage),
+                targetLanguage: Value(term.targetLanguage),
+              ),
+            );
+          }
         }
       } else {
         // Insert new term
         termId = await into(terms).insert(
           TermsCompanion.insert(
             termWord: cleanWord,
+            sourceLanguage: Value(term.sourceLanguage),
+            targetLanguage: Value(term.targetLanguage),
             termData: jsonEncode(term.toJson()),
           ),
         );
@@ -203,23 +301,63 @@ class AppDatabase extends _$AppDatabase {
     }).toList();
   }
 
-  /// Gets all folder IDs linked to a specific term word.
-  /// e.g. "sister" → [1, 2]
-  Future<List<int>> getFolderIdsForTerm(String termWord) async {
-    final query = select(termFolders).join([
-      innerJoin(terms, terms.id.equalsExp(termFolders.termId)),
-    ])..where(terms.termWord.equals(termWord.toLowerCase()));
+  /// Gets all folder IDs linked to a specific term word and target language.
+  Future<List<int>> getFolderIdsForTerm(
+    String termWord, {
+    String? sourceLanguage,
+    String? targetLanguage,
+  }) async {
+    final query = select(termFolders)
+        .join([innerJoin(terms, terms.id.equalsExp(termFolders.termId))]);
+
+    final cleanWord = termWord.trim().toLowerCase();
+    Expression<bool> where = terms.termWord.equals(cleanWord);
+
+    if (sourceLanguage != null && sourceLanguage.isNotEmpty) {
+      where = where & terms.sourceLanguage.equals(sourceLanguage);
+    } else {
+      where =
+          where &
+          (terms.sourceLanguage.isNull() | terms.sourceLanguage.equals(''));
+    }
+
+    if (targetLanguage != null && targetLanguage.isNotEmpty) {
+      where = where & terms.targetLanguage.equals(targetLanguage);
+    } else {
+      where =
+          where &
+          (terms.targetLanguage.isNull() | terms.targetLanguage.equals(''));
+    }
+
+    query.where(where);
 
     final rows = await query.get();
     return rows.map((row) => row.readTable(termFolders).folderId).toList();
   }
 
   /// Checks if a term word already exists in the local database.
-  Future<models.Term?> getExistingTerm(String termWord) async {
+  Future<models.Term?> getExistingTerm(
+    String termWord, {
+    String? sourceLanguage,
+    String? targetLanguage,
+  }) async {
     final lowerWord = termWord.trim().toLowerCase();
-    final existing = await (select(
-      terms,
-    )..where((t) => t.termWord.equals(lowerWord))).getSingleOrNull();
+    final query = select(terms)..where((t) => t.termWord.equals(lowerWord));
+    if (sourceLanguage != null && sourceLanguage.isNotEmpty) {
+      query.where((t) => t.sourceLanguage.equals(sourceLanguage));
+    } else {
+      query.where(
+        (t) => t.sourceLanguage.isNull() | t.sourceLanguage.equals(''),
+      );
+    }
+    if (targetLanguage != null && targetLanguage.isNotEmpty) {
+      query.where((t) => t.targetLanguage.equals(targetLanguage));
+    } else {
+      query.where(
+        (t) => t.targetLanguage.isNull() | t.targetLanguage.equals(''),
+      );
+    }
+    final existing = await query.getSingleOrNull();
 
     if (existing == null) return null;
     final jsonMap = jsonDecode(existing.termData) as Map<String, dynamic>;
@@ -230,17 +368,47 @@ class AppDatabase extends _$AppDatabase {
   Future<bool> isTermInFolder({
     required String termWord,
     required int folderId,
+    String? sourceLanguage,
+    String? targetLanguage,
   }) async {
-    final folderIds = await getFolderIdsForTerm(termWord);
+    final folderIds = await getFolderIdsForTerm(
+      termWord,
+      sourceLanguage: sourceLanguage,
+      targetLanguage: targetLanguage,
+    );
     return folderIds.contains(folderId);
   }
 
   /// Gets all folders that a specific term belongs to.
-  Future<List<Folder>> getFoldersForTerm(String termWord) async {
+  Future<List<Folder>> getFoldersForTerm(
+    String termWord, {
+    String? sourceLanguage,
+    String? targetLanguage,
+  }) async {
     final query = select(folders).join([
       innerJoin(termFolders, termFolders.folderId.equalsExp(folders.id)),
       innerJoin(terms, terms.id.equalsExp(termFolders.termId)),
-    ])..where(terms.termWord.equals(termWord.toLowerCase()));
+    ]);
+
+    Expression<bool> where = terms.termWord.equals(termWord.toLowerCase());
+
+    if (sourceLanguage != null && sourceLanguage.isNotEmpty) {
+      where = where & terms.sourceLanguage.equals(sourceLanguage);
+    } else {
+      where =
+          where &
+          (terms.sourceLanguage.isNull() | terms.sourceLanguage.equals(''));
+    }
+
+    if (targetLanguage != null && targetLanguage.isNotEmpty) {
+      where = where & terms.targetLanguage.equals(targetLanguage);
+    } else {
+      where =
+          where &
+          (terms.targetLanguage.isNull() | terms.targetLanguage.equals(''));
+    }
+
+    query.where(where);
 
     final rows = await query.get();
     return rows.map((row) => row.readTable(folders)).toList();
@@ -250,9 +418,21 @@ class AppDatabase extends _$AppDatabase {
   /// Used when a locally saved term is successfully synced with the cloud.
   Future<void> updateTerm(models.Term term) async {
     final cleanWord = term.termWord.trim().toLowerCase();
-    await (update(terms)..where((t) => t.termWord.equals(cleanWord))).write(
-      TermsCompanion(termData: Value(jsonEncode(term.toJson()))),
-    );
+    final sourceLang = term.sourceLanguage ?? '';
+    final targetLang = term.targetLanguage ?? '';
+    await (update(terms)..where(
+          (t) =>
+              t.termWord.equals(cleanWord) &
+              t.sourceLanguage.equals(sourceLang) &
+              t.targetLanguage.equals(targetLang),
+        ))
+        .write(
+          TermsCompanion(
+            termData: Value(jsonEncode(term.toJson())),
+            sourceLanguage: Value(term.sourceLanguage),
+            targetLanguage: Value(term.targetLanguage),
+          ),
+        );
   }
 
   /// Removes a term from a specific folder (but keeps the term in the DB).
@@ -261,36 +441,71 @@ class AppDatabase extends _$AppDatabase {
     required int termId,
     required int folderId,
     String? termWord,
+    String? sourceLanguage,
+    String? targetLanguage,
   }) async {
     await transaction(() async {
-      int effectiveTermId = termId;
+      int? effectiveTermId;
+
       if (termWord != null && termWord.isNotEmpty) {
-        final row =
-            await (select(terms)..where(
-                  (t) => t.termWord.equals(termWord.trim().toLowerCase()),
-                ))
-                .getSingleOrNull();
-        if (row != null) {
-          effectiveTermId = row.id;
+        final query = select(terms)
+          ..where((t) => t.termWord.equals(termWord.trim().toLowerCase()));
+
+        if (sourceLanguage != null && sourceLanguage.isNotEmpty) {
+          query.where((t) => t.sourceLanguage.equals(sourceLanguage));
+        }
+        if (targetLanguage != null && targetLanguage.isNotEmpty) {
+          query.where((t) => t.targetLanguage.equals(targetLanguage));
+        }
+
+        final rows = await query.get();
+        if (rows.isNotEmpty) {
+          // If multiple match, pick the one linked to this folder
+          for (final row in rows) {
+            final link =
+                await (select(termFolders)..where(
+                      (tf) =>
+                          tf.termId.equals(row.id) &
+                          tf.folderId.equals(folderId),
+                    ))
+                    .getSingleOrNull();
+            if (link != null) {
+              effectiveTermId = row.id;
+              break;
+            }
+          }
+          effectiveTermId ??= rows.first.id;
         }
       }
+
+      effectiveTermId ??= (termId > 0 ? termId : null);
+      if (effectiveTermId == null) return;
 
       // Remove the link
       await (delete(termFolders)..where(
             (t) =>
-                t.termId.equals(effectiveTermId) & t.folderId.equals(folderId),
+                t.termId.equals(effectiveTermId!) & t.folderId.equals(folderId),
           ))
           .go();
 
       // Check if the term still belongs to any folder
       final remaining = await (select(
         termFolders,
-      )..where((t) => t.termId.equals(effectiveTermId))).get();
+      )..where((t) => t.termId.equals(effectiveTermId!))).get();
 
       // If orphaned, delete the term entirely
       if (remaining.isEmpty) {
-        await (delete(terms)..where((t) => t.id.equals(effectiveTermId))).go();
+        await (delete(terms)..where((t) => t.id.equals(effectiveTermId!))).go();
       }
+    });
+  }
+
+  /// Clears all tables in the local database.
+  Future<void> clearAllData() async {
+    await transaction(() async {
+      await delete(termFolders).go();
+      await delete(terms).go();
+      await delete(folders).go();
     });
   }
 

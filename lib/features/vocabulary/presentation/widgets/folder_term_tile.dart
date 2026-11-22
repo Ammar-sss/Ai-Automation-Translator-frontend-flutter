@@ -27,6 +27,8 @@ class FolderTermTile extends StatelessWidget {
               termId: term.id,
               folderId: folderId,
               termWord: term.termWord,
+              sourceLanguage: term.sourceLanguage,
+              targetLanguage: term.targetLanguage,
             ),
             backgroundColor: scheme.errorContainer,
             foregroundColor: scheme.onErrorContainer,

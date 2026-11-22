@@ -99,12 +99,16 @@ class FolderCubit extends Cubit<FolderState> {
     required int termId,
     required int folderId,
     String? termWord,
+    String? sourceLanguage,
+    String? targetLanguage,
   }) async {
     try {
       await _db.removeTermFromFolder(
         termId: termId,
         folderId: folderId,
         termWord: termWord,
+        sourceLanguage: sourceLanguage,
+        targetLanguage: targetLanguage,
       );
       await loadTermsInFolder(folderId);
     } catch (e) {

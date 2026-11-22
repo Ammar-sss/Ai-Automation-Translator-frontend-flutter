@@ -273,7 +273,28 @@ class $TermsTable extends Terms with TableInfo<$TermsTable, TermRow> {
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _sourceLanguageMeta = const VerificationMeta(
+    'sourceLanguage',
+  );
+  @override
+  late final GeneratedColumn<String> sourceLanguage = GeneratedColumn<String>(
+    'source_language',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _targetLanguageMeta = const VerificationMeta(
+    'targetLanguage',
+  );
+  @override
+  late final GeneratedColumn<String> targetLanguage = GeneratedColumn<String>(
+    'target_language',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _termDataMeta = const VerificationMeta(
     'termData',
@@ -299,7 +320,14 @@ class $TermsTable extends Terms with TableInfo<$TermsTable, TermRow> {
     defaultValue: currentDateAndTime,
   );
   @override
-  List<GeneratedColumn> get $columns => [id, termWord, termData, createdAt];
+  List<GeneratedColumn> get $columns => [
+    id,
+    termWord,
+    sourceLanguage,
+    targetLanguage,
+    termData,
+    createdAt,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -323,6 +351,24 @@ class $TermsTable extends Terms with TableInfo<$TermsTable, TermRow> {
     } else if (isInserting) {
       context.missing(_termWordMeta);
     }
+    if (data.containsKey('source_language')) {
+      context.handle(
+        _sourceLanguageMeta,
+        sourceLanguage.isAcceptableOrUnknown(
+          data['source_language']!,
+          _sourceLanguageMeta,
+        ),
+      );
+    }
+    if (data.containsKey('target_language')) {
+      context.handle(
+        _targetLanguageMeta,
+        targetLanguage.isAcceptableOrUnknown(
+          data['target_language']!,
+          _targetLanguageMeta,
+        ),
+      );
+    }
     if (data.containsKey('term_data')) {
       context.handle(
         _termDataMeta,
@@ -343,6 +389,10 @@ class $TermsTable extends Terms with TableInfo<$TermsTable, TermRow> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {termWord, sourceLanguage, targetLanguage},
+  ];
+  @override
   TermRow map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TermRow(
@@ -354,6 +404,14 @@ class $TermsTable extends Terms with TableInfo<$TermsTable, TermRow> {
         DriftSqlType.string,
         data['${effectivePrefix}term_word'],
       )!,
+      sourceLanguage: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_language'],
+      ),
+      targetLanguage: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}target_language'],
+      ),
       termData: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}term_data'],
@@ -374,16 +432,23 @@ class $TermsTable extends Terms with TableInfo<$TermsTable, TermRow> {
 class TermRow extends DataClass implements Insertable<TermRow> {
   final int id;
 
-  /// The word itself, stored in lowercase for uniqueness.
+  /// The word itself, stored in lowercase.
   final String termWord;
 
+  /// Source language for this translation entry.
+  final String? sourceLanguage;
+
+  /// Target language for this translation entry.
+  final String? targetLanguage;
+
   /// The full AI response data serialized as a JSON string.
-  /// Contains definitions, examples, example definitions, etc.
   final String termData;
   final DateTime createdAt;
   const TermRow({
     required this.id,
     required this.termWord,
+    this.sourceLanguage,
+    this.targetLanguage,
     required this.termData,
     required this.createdAt,
   });
@@ -392,6 +457,12 @@ class TermRow extends DataClass implements Insertable<TermRow> {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['term_word'] = Variable<String>(termWord);
+    if (!nullToAbsent || sourceLanguage != null) {
+      map['source_language'] = Variable<String>(sourceLanguage);
+    }
+    if (!nullToAbsent || targetLanguage != null) {
+      map['target_language'] = Variable<String>(targetLanguage);
+    }
     map['term_data'] = Variable<String>(termData);
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
@@ -401,6 +472,12 @@ class TermRow extends DataClass implements Insertable<TermRow> {
     return TermsCompanion(
       id: Value(id),
       termWord: Value(termWord),
+      sourceLanguage: sourceLanguage == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceLanguage),
+      targetLanguage: targetLanguage == null && nullToAbsent
+          ? const Value.absent()
+          : Value(targetLanguage),
       termData: Value(termData),
       createdAt: Value(createdAt),
     );
@@ -414,6 +491,8 @@ class TermRow extends DataClass implements Insertable<TermRow> {
     return TermRow(
       id: serializer.fromJson<int>(json['id']),
       termWord: serializer.fromJson<String>(json['termWord']),
+      sourceLanguage: serializer.fromJson<String?>(json['sourceLanguage']),
+      targetLanguage: serializer.fromJson<String?>(json['targetLanguage']),
       termData: serializer.fromJson<String>(json['termData']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
@@ -424,6 +503,8 @@ class TermRow extends DataClass implements Insertable<TermRow> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'termWord': serializer.toJson<String>(termWord),
+      'sourceLanguage': serializer.toJson<String?>(sourceLanguage),
+      'targetLanguage': serializer.toJson<String?>(targetLanguage),
       'termData': serializer.toJson<String>(termData),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
@@ -432,11 +513,19 @@ class TermRow extends DataClass implements Insertable<TermRow> {
   TermRow copyWith({
     int? id,
     String? termWord,
+    Value<String?> sourceLanguage = const Value.absent(),
+    Value<String?> targetLanguage = const Value.absent(),
     String? termData,
     DateTime? createdAt,
   }) => TermRow(
     id: id ?? this.id,
     termWord: termWord ?? this.termWord,
+    sourceLanguage: sourceLanguage.present
+        ? sourceLanguage.value
+        : this.sourceLanguage,
+    targetLanguage: targetLanguage.present
+        ? targetLanguage.value
+        : this.targetLanguage,
     termData: termData ?? this.termData,
     createdAt: createdAt ?? this.createdAt,
   );
@@ -444,6 +533,12 @@ class TermRow extends DataClass implements Insertable<TermRow> {
     return TermRow(
       id: data.id.present ? data.id.value : this.id,
       termWord: data.termWord.present ? data.termWord.value : this.termWord,
+      sourceLanguage: data.sourceLanguage.present
+          ? data.sourceLanguage.value
+          : this.sourceLanguage,
+      targetLanguage: data.targetLanguage.present
+          ? data.targetLanguage.value
+          : this.targetLanguage,
       termData: data.termData.present ? data.termData.value : this.termData,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
@@ -454,6 +549,8 @@ class TermRow extends DataClass implements Insertable<TermRow> {
     return (StringBuffer('TermRow(')
           ..write('id: $id, ')
           ..write('termWord: $termWord, ')
+          ..write('sourceLanguage: $sourceLanguage, ')
+          ..write('targetLanguage: $targetLanguage, ')
           ..write('termData: $termData, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
@@ -461,13 +558,22 @@ class TermRow extends DataClass implements Insertable<TermRow> {
   }
 
   @override
-  int get hashCode => Object.hash(id, termWord, termData, createdAt);
+  int get hashCode => Object.hash(
+    id,
+    termWord,
+    sourceLanguage,
+    targetLanguage,
+    termData,
+    createdAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is TermRow &&
           other.id == this.id &&
           other.termWord == this.termWord &&
+          other.sourceLanguage == this.sourceLanguage &&
+          other.targetLanguage == this.targetLanguage &&
           other.termData == this.termData &&
           other.createdAt == this.createdAt);
 }
@@ -475,17 +581,23 @@ class TermRow extends DataClass implements Insertable<TermRow> {
 class TermsCompanion extends UpdateCompanion<TermRow> {
   final Value<int> id;
   final Value<String> termWord;
+  final Value<String?> sourceLanguage;
+  final Value<String?> targetLanguage;
   final Value<String> termData;
   final Value<DateTime> createdAt;
   const TermsCompanion({
     this.id = const Value.absent(),
     this.termWord = const Value.absent(),
+    this.sourceLanguage = const Value.absent(),
+    this.targetLanguage = const Value.absent(),
     this.termData = const Value.absent(),
     this.createdAt = const Value.absent(),
   });
   TermsCompanion.insert({
     this.id = const Value.absent(),
     required String termWord,
+    this.sourceLanguage = const Value.absent(),
+    this.targetLanguage = const Value.absent(),
     required String termData,
     this.createdAt = const Value.absent(),
   }) : termWord = Value(termWord),
@@ -493,12 +605,16 @@ class TermsCompanion extends UpdateCompanion<TermRow> {
   static Insertable<TermRow> custom({
     Expression<int>? id,
     Expression<String>? termWord,
+    Expression<String>? sourceLanguage,
+    Expression<String>? targetLanguage,
     Expression<String>? termData,
     Expression<DateTime>? createdAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (termWord != null) 'term_word': termWord,
+      if (sourceLanguage != null) 'source_language': sourceLanguage,
+      if (targetLanguage != null) 'target_language': targetLanguage,
       if (termData != null) 'term_data': termData,
       if (createdAt != null) 'created_at': createdAt,
     });
@@ -507,12 +623,16 @@ class TermsCompanion extends UpdateCompanion<TermRow> {
   TermsCompanion copyWith({
     Value<int>? id,
     Value<String>? termWord,
+    Value<String?>? sourceLanguage,
+    Value<String?>? targetLanguage,
     Value<String>? termData,
     Value<DateTime>? createdAt,
   }) {
     return TermsCompanion(
       id: id ?? this.id,
       termWord: termWord ?? this.termWord,
+      sourceLanguage: sourceLanguage ?? this.sourceLanguage,
+      targetLanguage: targetLanguage ?? this.targetLanguage,
       termData: termData ?? this.termData,
       createdAt: createdAt ?? this.createdAt,
     );
@@ -526,6 +646,12 @@ class TermsCompanion extends UpdateCompanion<TermRow> {
     }
     if (termWord.present) {
       map['term_word'] = Variable<String>(termWord.value);
+    }
+    if (sourceLanguage.present) {
+      map['source_language'] = Variable<String>(sourceLanguage.value);
+    }
+    if (targetLanguage.present) {
+      map['target_language'] = Variable<String>(targetLanguage.value);
     }
     if (termData.present) {
       map['term_data'] = Variable<String>(termData.value);
@@ -541,6 +667,8 @@ class TermsCompanion extends UpdateCompanion<TermRow> {
     return (StringBuffer('TermsCompanion(')
           ..write('id: $id, ')
           ..write('termWord: $termWord, ')
+          ..write('sourceLanguage: $sourceLanguage, ')
+          ..write('targetLanguage: $targetLanguage, ')
           ..write('termData: $termData, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
@@ -1039,12 +1167,16 @@ typedef $$FoldersTableProcessedTableManager =
 typedef $$TermsTableCreateCompanionBuilder = TermsCompanion Function({
   Value<int> id,
   required String termWord,
+  Value<String?> sourceLanguage,
+  Value<String?> targetLanguage,
   required String termData,
   Value<DateTime> createdAt,
 });
 typedef $$TermsTableUpdateCompanionBuilder = TermsCompanion Function({
   Value<int> id,
   Value<String> termWord,
+  Value<String?> sourceLanguage,
+  Value<String?> targetLanguage,
   Value<String> termData,
   Value<DateTime> createdAt,
 });
@@ -1087,6 +1219,16 @@ class $$TermsTableFilterComposer extends Composer<_$AppDatabase, $TermsTable> {
 
   ColumnFilters<String> get termWord => $composableBuilder(
     column: $table.termWord,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceLanguage => $composableBuilder(
+    column: $table.sourceLanguage,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get targetLanguage => $composableBuilder(
+    column: $table.targetLanguage,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1145,6 +1287,16 @@ class $$TermsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get sourceLanguage => $composableBuilder(
+    column: $table.sourceLanguage,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get targetLanguage => $composableBuilder(
+    column: $table.targetLanguage,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get termData => $composableBuilder(
     column: $table.termData,
     builder: (column) => ColumnOrderings(column),
@@ -1170,6 +1322,16 @@ class $$TermsTableAnnotationComposer
 
   GeneratedColumn<String> get termWord =>
       $composableBuilder(column: $table.termWord, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceLanguage => $composableBuilder(
+    column: $table.sourceLanguage,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get targetLanguage => $composableBuilder(
+    column: $table.targetLanguage,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get termData =>
       $composableBuilder(column: $table.termData, builder: (column) => column);
@@ -1233,11 +1395,15 @@ class $$TermsTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<String> termWord = const Value.absent(),
+                Value<String?> sourceLanguage = const Value.absent(),
+                Value<String?> targetLanguage = const Value.absent(),
                 Value<String> termData = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
               }) => TermsCompanion(
                 id: id,
                 termWord: termWord,
+                sourceLanguage: sourceLanguage,
+                targetLanguage: targetLanguage,
                 termData: termData,
                 createdAt: createdAt,
               ),
@@ -1245,11 +1411,15 @@ class $$TermsTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 required String termWord,
+                Value<String?> sourceLanguage = const Value.absent(),
+                Value<String?> targetLanguage = const Value.absent(),
                 required String termData,
                 Value<DateTime> createdAt = const Value.absent(),
               }) => TermsCompanion.insert(
                 id: id,
                 termWord: termWord,
+                sourceLanguage: sourceLanguage,
+                targetLanguage: targetLanguage,
                 termData: termData,
                 createdAt: createdAt,
               ),

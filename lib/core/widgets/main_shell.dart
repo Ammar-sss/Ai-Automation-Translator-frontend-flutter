@@ -43,7 +43,7 @@ class _MainShellState extends State<MainShell> {
   /// (the drawer's context is gone once it closes).
   void _closeDrawerThen(VoidCallback action) {
     Navigator.pop(context);
-    Future.delayed(const Duration(milliseconds: 220), () {
+    Future.delayed(const Duration(milliseconds: 250), () {
       if (mounted) action();
     });
   }
@@ -103,6 +103,8 @@ class _MainShellState extends State<MainShell> {
       },
       child: Scaffold(
         endDrawerEnableOpenDragGesture: true,
+        drawerEdgeDragWidth: 32,
+        drawerScrimColor: Colors.black.withValues(alpha: 0.38),
         appBar: AppBar(
           centerTitle: false,
           scrolledUnderElevation: 0,
@@ -129,13 +131,39 @@ class _MainShellState extends State<MainShell> {
             const SizedBox(width: 16),
           ],
         ),
-        endDrawer: _AccountDrawer(
-          onProfile: _openProfile,
-          onSettings: _openSettings,
-          onLogout: _confirmLogout,
-          onVocabularySynced: _onVocabularySynced,
+        endDrawer: RepaintBoundary(
+          child: _AccountDrawer(
+            onProfile: _openProfile,
+            onSettings: _openSettings,
+            onLogout: _confirmLogout,
+            onVocabularySynced: _onVocabularySynced,
+          ),
         ),
-        body: OfflineBanner(child: shell),
+        body: RepaintBoundary(
+          child: OfflineBanner(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 240),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              transitionBuilder: (child, animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0.04, 0.0),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: child,
+                  ),
+                );
+              },
+              child: KeyedSubtree(
+                key: ValueKey<int>(shell.currentIndex),
+                child: shell,
+              ),
+            ),
+          ),
+        ),
         bottomNavigationBar: NavigationBar(
           selectedIndex: shell.currentIndex,
           labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
@@ -223,6 +251,7 @@ class _AccountDrawer extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
 
     return Drawer(
+      elevation: 0,
       clipBehavior: Clip.antiAlias,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.horizontal(left: Radius.circular(28)),
@@ -289,7 +318,7 @@ class _AccountDrawer extends StatelessWidget {
               onTap: onProfile,
             ),
             _DrawerItem(
-              icon: Icons.category,
+              icon: Icons.cloud_done_outlined,
               label: 'Synced Vocabulary',
               onTap: onVocabularySynced,
             ),
