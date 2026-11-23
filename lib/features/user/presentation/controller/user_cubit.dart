@@ -42,4 +42,8 @@ class UserCubit extends Cubit<UserState> {
       emit(UserFailure(message: error));
     }
   }
+
+  void reset() {
+    emit(UserInitial());
+  }
 }

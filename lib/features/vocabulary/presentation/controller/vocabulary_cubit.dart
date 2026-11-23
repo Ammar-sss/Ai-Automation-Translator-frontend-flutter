@@ -252,4 +252,9 @@ class VocabularyCubit extends Cubit<VocabularyState> {
       emit(VocabularyFailure(message: error));
     }
   }
+
+  void reset() {
+    _cachedTerms = [];
+    emit(VocabularyInitial());
+  }
 }

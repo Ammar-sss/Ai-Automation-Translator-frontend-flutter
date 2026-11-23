@@ -13,6 +13,8 @@ final class AuthAuthenticated extends AuthState {
 
 final class AuthUnAuthenticated extends AuthState {}
 
+final class AuthRegistrationSuccess extends AuthState {}
+
 final class AuthLoading extends AuthState {}
 
 final class AuthLogoutLoading extends AuthState {}

@@ -69,7 +69,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           password: event.password,
         ),
       );
-      emit(AuthUnAuthenticated());
+      emit(AuthRegistrationSuccess());
     } catch (e) {
       final error = e.toString().replaceAll('Exception: ', '');
       emit(AuthFailure(message: error));

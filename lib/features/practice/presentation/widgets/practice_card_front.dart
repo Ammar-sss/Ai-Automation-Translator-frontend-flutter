@@ -1,200 +1,245 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:smart_translator_test/features/vocabulary/data/models/term.dart';
+import 'package:smart_translator_test/features/practice/presentation/widgets/pill.dart';
+import 'package:smart_translator_test/features/practice/presentation/widgets/speak_button.dart';
 
 class PracticeCardFront extends StatelessWidget {
   final Term term;
   final bool isPlayingAudio;
-  final VoidCallback onSpeak;
+  final VoidCallback onSpeakPressed;
 
   const PracticeCardFront({
     super.key,
     required this.term,
     required this.isPlayingAudio,
-    required this.onSpeak,
+    required this.onSpeakPressed,
   });
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-    final examples = term.termExamples.toList();
 
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(
-          color: scheme.outlineVariant.withValues(alpha: 0.35),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(22),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Audio button header only
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              IconButton.filledTonal(
-                onPressed: onSpeak,
-                style: IconButton.styleFrom(
-                  backgroundColor: scheme.surfaceContainerHigh,
-                ),
-                icon: isPlayingAudio
-                    ? SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: scheme.primary,
-                        ),
-                      )
-                    : Icon(
-                        Icons.volume_up_rounded,
-                        size: 20,
-                        color: scheme.primary,
-                      ),
-                tooltip: 'Pronounce word',
+    final languageLabel =
+        (term.targetLanguage != null && term.targetLanguage!.isNotEmpty)
+        ? 'NOUN • ${term.targetLanguage!.toUpperCase()}'
+        : 'NOUN • SLANG';
+    final hasHint =
+        term.sourceLanguage != null && term.sourceLanguage!.isNotEmpty;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxHeight < 430;
+        final avatarSize = compact ? 64.0 : 88.0;
+
+        return Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: scheme.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(32),
+            border: Border.all(
+              color: scheme.outlineVariant.withValues(alpha: 0.35),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 24,
+                offset: const Offset(0, 12),
               ),
             ],
           ),
-
-          const SizedBox(height: 8),
-
-          // Term Word
-          Text(
-            term.termWord,
-            style: text.headlineMedium?.copyWith(
-              fontWeight: FontWeight.w800,
-              color: scheme.onSurface,
-              letterSpacing: -0.5,
-            ),
-          ),
-
-          const SizedBox(height: 16),
-          Divider(
-            height: 1,
-            color: scheme.outlineVariant.withValues(alpha: 0.4),
-          ),
-          const SizedBox(height: 16),
-
-          // Scrollable Example section (Just term and example only)
-          Expanded(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
                 children: [
-                  if (examples.isNotEmpty) ...[
-                    Row(
+                  Expanded(
+                    child: Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        Container(
+                        Pill(
+                          color: scheme.surfaceContainerHigh,
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: scheme.secondaryContainer,
-                            borderRadius: BorderRadius.circular(6),
+                            horizontal: 10,
+                            vertical: 5,
                           ),
                           child: Text(
-                            'EXAMPLE IN CONTEXT',
-                            style: text.labelSmall?.copyWith(
-                              color: scheme.onSecondaryContainer,
+                            languageLabel,
+                            style: TextStyle(
+                              fontSize: 11,
                               fontWeight: FontWeight.w800,
-                              letterSpacing: 0.8,
+                              letterSpacing: 0.5,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                        Pill(
+                          color: scheme.primaryContainer.withValues(alpha: 0.5),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 9,
+                            vertical: 5,
+                          ),
+                          child: Text(
+                            'B2 Master',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: scheme.primary,
                             ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: scheme.surfaceContainerHigh.withValues(
-                          alpha: 0.6,
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: scheme.outlineVariant.withValues(alpha: 0.4),
-                        ),
+                  ),
+                  SpeakButton(
+                    isLoading: isPlayingAudio,
+                    onPressed: onSpeakPressed,
+                  ),
+                ],
+              ),
+
+              const Spacer(),
+
+              Center(
+                child: Container(
+                  width: avatarSize,
+                  height: avatarSize,
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: scheme.primary.withValues(alpha: 0.35),
+                      width: 2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: scheme.primary.withValues(alpha: 0.12),
+                        blurRadius: 18,
+                        spreadRadius: 1,
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '"${examples.first.exampleSentence}"',
-                            style: text.bodyMedium?.copyWith(
-                              fontStyle: FontStyle.italic,
-                              fontWeight: FontWeight.w600,
-                              color: scheme.onSurface,
-                              height: 1.35,
-                            ),
-                          ),
-                        ],
+                    ],
+                  ),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: scheme.primaryContainer.withValues(alpha: 0.4),
+                    ),
+                    child: Center(
+                      child: Icon(
+                        Icons.translate_rounded,
+                        size: avatarSize * 0.45,
+                        color: scheme.primary,
                       ),
                     ),
-                  ] else ...[
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 32),
+                  ),
+                ),
+              ),
+
+              SizedBox(height: compact ? 14 : 22),
+
+              Text(
+                term.termWord,
+                textAlign: TextAlign.center,
+                style: text.headlineLarge?.copyWith(
+                  fontSize: compact ? 32 : 40,
+                  fontWeight: FontWeight.w800,
+                  color: scheme.onSurface,
+                  letterSpacing: -0.5,
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              Center(
+                child: Pill(
+                  color: scheme.surfaceContainerHigh,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 7,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.auto_awesome_rounded,
+                        size: 13,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                      const SizedBox(width: 8),
+                      Flexible(
                         child: Text(
-                          'No example sentence recorded',
+                          '/${term.termWord.toLowerCase()}/',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: text.bodyMedium?.copyWith(
                             color: scheme.onSurfaceVariant,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          // Bottom instruction pill
-          Center(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-                color: scheme.surfaceContainerHigh.withValues(alpha: 0.8),
-                borderRadius: BorderRadius.circular(100),
-                border: Border.all(
-                  color: scheme.outlineVariant.withValues(alpha: 0.4),
+                    ],
+                  ),
                 ),
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.touch_app_rounded,
-                    size: 15,
-                    color: scheme.primary,
+
+              if (hasHint && !compact) ...[
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Text(
+                    'Informal, derogatory or slang term',
+                    textAlign: TextAlign.center,
+                    style: text.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant.withValues(alpha: 0.9),
+                      height: 1.4,
+                    ),
                   ),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Tap anywhere to flip definition',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                ),
+              ],
+
+              const Spacer(),
+
+              Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
                   ),
-                ],
+                  decoration: BoxDecoration(
+                    color: scheme.surfaceContainerHigh.withValues(alpha: 0.8),
+                    borderRadius: BorderRadius.circular(100),
+                    border: Border.all(
+                      color: scheme.outlineVariant.withValues(alpha: 0.4),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.touch_app_rounded,
+                        size: 15,
+                        color: scheme.primary,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Tap anywhere to flip definition',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: scheme.onSurface,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

@@ -23,7 +23,7 @@ import 'package:smart_translator_test/features/vocabulary/data/repositories/voca
 import 'package:smart_translator_test/features/vocabulary/presentation/controller/folder_cubit.dart';
 import 'package:smart_translator_test/features/vocabulary/presentation/controller/vocabulary_cubit.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final storageService = SecureStorageService();
@@ -61,7 +61,14 @@ void main() {
     networkCubit: networkCubit,
   )..wakeServer();
 
-  final themeCubit = ThemeCubit();
+  final savedThemeStr = await storageService.getThemeMode();
+  final initialThemeMode = savedThemeStr == 'dark'
+      ? ThemeMode.dark
+      : ThemeMode.light;
+  final themeCubit = ThemeCubit(
+    storageService: storageService,
+    initialThemeMode: initialThemeMode,
+  );
 
   final translateRemoteDataSource = TranslateRemoteDataSource(dioClient.dio);
   final translateRepository = TranslateRepositoryImpl(
