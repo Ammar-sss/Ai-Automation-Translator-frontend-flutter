@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 class Env {
   Env._();
 
@@ -9,9 +11,14 @@ class Env {
   static final Duration connectTimeout = Duration(seconds: 40);
   static final Duration receiveTimeout = Duration(seconds: 45);
 
-  static final environment = String.fromEnvironment(
+  static const String environment = String.fromEnvironment(
     "ENV",
-    defaultValue: "development",
+    defaultValue: kReleaseMode ? "production" : "development",
+  );
+
+  static final String sslFingerprint = String.fromEnvironment(
+    "SSL_FINGERPRINT",
+    defaultValue: "",
   );
 
   static bool get isProduction => environment == "production";

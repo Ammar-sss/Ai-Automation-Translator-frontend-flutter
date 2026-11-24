@@ -1,9 +1,9 @@
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:dio/dio.dart';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:smart_translator_test/app_snackbar.dart';
 import 'package:smart_translator_test/core/network/elevenlabs_service.dart';
+import 'package:smart_translator_test/core/services/audio_player_service.dart';
 
 import '../../../../core/util/responsive.dart';
 import '../controller/translate_cubit.dart';
@@ -23,7 +23,6 @@ class ResultCard extends StatelessWidget {
   });
 
   final ElevenLabsService _elevenLabsService = ElevenLabsService(Dio());
-  final AudioPlayer _audioPlayer = AudioPlayer();
 
   void _copyResult(BuildContext context) {
     final res = state.aiResponse;
@@ -52,8 +51,7 @@ class ResultCard extends StatelessWidget {
       );
       if (!context.mounted) return;
       if (audioBytes != null) {
-        await _audioPlayer.stop();
-        await _audioPlayer.play(BytesSource(audioBytes));
+        await AudioPlayerService().playBytes(audioBytes);
       } else {
         showAppSnackBar(context, 'Failed to generate speech.');
       }

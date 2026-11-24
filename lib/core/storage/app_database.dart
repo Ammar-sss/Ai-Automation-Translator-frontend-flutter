@@ -435,6 +435,32 @@ class AppDatabase extends _$AppDatabase {
         );
   }
 
+  /// Updates multiple [models.Term] data items in a single transaction.
+  Future<void> updateTerms(List<models.Term> termList) async {
+    await transaction(() async {
+      for (final term in termList) {
+        if (term.id > 0) {
+          final cleanWord = term.termWord.trim().toLowerCase();
+          final sourceLang = term.sourceLanguage ?? '';
+          final targetLang = term.targetLanguage ?? '';
+          await (update(terms)..where(
+                (t) =>
+                    t.termWord.equals(cleanWord) &
+                    t.sourceLanguage.equals(sourceLang) &
+                    t.targetLanguage.equals(targetLang),
+              ))
+              .write(
+                TermsCompanion(
+                  termData: Value(jsonEncode(term.toJson())),
+                  sourceLanguage: Value(term.sourceLanguage),
+                  targetLanguage: Value(term.targetLanguage),
+                ),
+              );
+        }
+      }
+    });
+  }
+
   /// Removes a term from a specific folder (but keeps the term in the DB).
   /// If the term has no more folders, it is deleted entirely.
   Future<void> removeTermFromFolder({

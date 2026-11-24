@@ -1,4 +1,8 @@
+import 'dart:io';
+
+import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:flutter/foundation.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:smart_translator_test/core/network/auth_interceptor.dart';
@@ -29,6 +33,8 @@ class DioClient {
                },
              ),
            ) {
+    _configureSslPinning();
+
     if (networkCubit != null) {
       dio.interceptors.add(NetworkInterceptor(networkCubit: networkCubit));
     }
@@ -41,7 +47,7 @@ class DioClient {
       ),
     );
 
-    if (kDebugMode || Env.isDevelopment) {
+    if (kDebugMode && Env.isDevelopment) {
       dio.interceptors.add(
         PrettyDioLogger(
           requestHeader: true,
@@ -51,6 +57,29 @@ class DioClient {
           error: true,
         ),
       );
+    }
+  }
+
+  void _configureSslPinning() {
+    if (!kIsWeb && dio.httpClientAdapter is IOHttpClientAdapter) {
+      (dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
+        final client = HttpClient();
+        client.badCertificateCallback =
+            (X509Certificate cert, String host, int port) {
+              final expectedFingerprint = Env.sslFingerprint
+                  .trim()
+                  .toLowerCase();
+              if (expectedFingerprint.isNotEmpty) {
+                final digest = sha256.convert(cert.der);
+                final certFingerprint = digest.toString().toLowerCase();
+                final expectedClean = expectedFingerprint.replaceAll(':', '');
+                return certFingerprint == expectedClean;
+              }
+              // Default: strict rejection of invalid or untrusted certificates
+              return false;
+            };
+        return client;
+      };
     }
   }
 }

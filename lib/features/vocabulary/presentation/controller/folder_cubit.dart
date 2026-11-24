@@ -115,4 +115,8 @@ class FolderCubit extends Cubit<FolderState> {
       emit(FolderFailure(message: 'Failed to remove term: ${e.toString()}'));
     }
   }
+
+  void reset() {
+    emit(FolderInitial());
+  }
 }

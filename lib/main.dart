@@ -42,11 +42,11 @@ void main() async {
   final authApiService = AuthApiService(dioClient.dio);
   final authRemoteDataSource = AuthRemoteDataSourceImpl(
     apiService: authApiService,
-    storageService: storageService,
   );
 
   final authRepository = AuthRepositoryImpl(
     authRemoteDataSource: authRemoteDataSource,
+    storageService: storageService,
   );
 
   authBloc = AuthBloc(
@@ -59,7 +59,7 @@ void main() async {
   final serverHealthCubit = ServerHealthCubit(
     service: serverHealthService,
     networkCubit: networkCubit,
-  )..wakeServer();
+  );
 
   final savedThemeStr = await storageService.getThemeMode();
   final initialThemeMode = savedThemeStr == 'dark'

@@ -57,7 +57,11 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 children: [
                   TextButton(
                     onPressed: () {
-                      context.go(AppRoutes.login);
+                      if (GoRouter.maybeOf(context) != null) {
+                        context.go(AppRoutes.login);
+                      } else {
+                        Navigator.of(context).maybePop();
+                      }
                     },
                     child: Text(
                       "Skip",

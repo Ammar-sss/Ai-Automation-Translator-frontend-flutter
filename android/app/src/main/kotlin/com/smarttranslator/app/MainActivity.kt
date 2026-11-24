@@ -1,4 +1,4 @@
-package com.example.smart_translator_test
+package com.smarttranslator.app
 
 import io.flutter.embedding.android.FlutterActivity
 

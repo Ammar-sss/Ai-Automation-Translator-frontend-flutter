@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:smart_translator_test/core/error/app_exception.dart';
+import 'package:smart_translator_test/core/storage/secure_storage_service.dart';
 import 'package:smart_translator_test/features/auth/data/datasource/auth_remote_data_source.dart';
 import 'package:smart_translator_test/features/auth/data/models/login_request.dart';
 import 'package:smart_translator_test/features/auth/data/models/login_response.dart';
@@ -9,13 +11,19 @@ import 'package:smart_translator_test/features/user/data/models/user.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource authRemoteDataSource;
+  final SecureStorageService storageService;
 
-  new({required this.authRemoteDataSource});
+  AuthRepositoryImpl({
+    required this.authRemoteDataSource,
+    required this.storageService,
+  });
 
   @override
   Future<LoginResponse> login(LoginRequest loginRequest) async {
     try {
-      return await authRemoteDataSource.login(loginRequest);
+      final response = await authRemoteDataSource.login(loginRequest);
+      await storageService.saveToken(response.token, response.refreshToken);
+      return response;
     } catch (e) {
       throw ApiErrorHandler.handle(
         e,
@@ -39,7 +47,9 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<LoginResponse> refreshToken(RefreshTokenRequest request) async {
     try {
-      return await authRemoteDataSource.refreshToken(request);
+      final response = await authRemoteDataSource.refreshToken(request);
+      await storageService.saveToken(response.token, response.refreshToken);
+      return response;
     } catch (e) {
       throw ApiErrorHandler.handle(
         e,
@@ -53,7 +63,9 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       await authRemoteDataSource.logout(request);
     } catch (e) {
-      throw ApiErrorHandler.handle(e, fallback: 'Logout failed.');
+      debugPrint('Network logout error: $e');
+    } finally {
+      await storageService.clearToken();
     }
   }
 }

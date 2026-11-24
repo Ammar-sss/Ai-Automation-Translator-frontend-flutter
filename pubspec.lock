@@ -382,14 +382,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "9.1.1"
-  flutter_displaymode:
-    dependency: "direct main"
-    description:
-      name: flutter_displaymode
-      sha256: ecd44b1e902b0073b42ff5b55bf283f38e088270724cdbb7f7065ccf54aa60a8
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.7.0"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -403,14 +395,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_overlay_window:
-    dependency: "direct main"
-    description:
-      name: flutter_overlay_window
-      sha256: "1cf8c180747c04b28bab12159b68ff8525ea9bb5210af959838a255345b5d74b"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.2"
   flutter_secure_storage:
     dependency: "direct main"
     description:
@@ -509,22 +493,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "18.1.4"
-  google_mlkit_commons:
-    dependency: transitive
-    description:
-      name: google_mlkit_commons
-      sha256: "58b969da65027b6242afb38b944f5a0d3f6b90305b29d70b0cca3048a50b4263"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.3"
-  google_mlkit_text_recognition:
-    dependency: "direct main"
-    description:
-      name: google_mlkit_text_recognition
-      sha256: "546e3e40181af7166d539f44416ff592a88bd12de61625ad9f2ec7166624f12b"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.3"
   graphs:
     dependency: transitive
     description:
@@ -805,54 +773,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.0"
-  permission_handler:
-    dependency: "direct main"
-    description:
-      name: permission_handler
-      sha256: e6bcecadfe40df6b888141f23cbaf6ba6c3da49fb33f6ff887d060dd48544fbd
-      url: "https://pub.dev"
-    source: hosted
-    version: "13.0.2"
-  permission_handler_android:
-    dependency: transitive
-    description:
-      name: permission_handler_android
-      sha256: baf93fbf80008c240b2cf5e6d62e9495ea7727fe327444d135c44bfff9af6b6e
-      url: "https://pub.dev"
-    source: hosted
-    version: "14.1.1"
-  permission_handler_apple:
-    dependency: transitive
-    description:
-      name: permission_handler_apple
-      sha256: "82d31c9b321c45785ccd73bce9c63af17037116193b4000b998a4363059adb6e"
-      url: "https://pub.dev"
-    source: hosted
-    version: "9.6.5"
-  permission_handler_html:
-    dependency: transitive
-    description:
-      name: permission_handler_html
-      sha256: "6ea98b3f17f60d3b527f2647ed2ab4dc0f6bfe25b22cb1c363f5d8f62252f6ac"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.1.4+1"
-  permission_handler_platform_interface:
-    dependency: transitive
-    description:
-      name: permission_handler_platform_interface
-      sha256: ed86a61c190258fdd65de395ea0632822e3415c1faec38eae0c31b479c28a531
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.4.1"
-  permission_handler_windows:
-    dependency: transitive
-    description:
-      name: permission_handler_windows
-      sha256: "210031f00c32d61038fb4175d82dd874a426bfbae2c2af774bd4e5abb5cac755"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.2.4"
   petitparser:
     dependency: transitive
     description:

@@ -57,7 +57,13 @@ class _RegisterPageState extends State<RegisterPage> {
             Icons.arrow_back_rounded,
             size: context.sp(22, min: 20, max: 26),
           ),
-          onPressed: () => context.go(AppRoutes.login),
+          onPressed: () {
+            if (GoRouter.maybeOf(context) != null) {
+              context.go(AppRoutes.login);
+            } else {
+              Navigator.of(context).maybePop();
+            }
+          },
         ),
       ),
       body: SafeArea(
@@ -87,7 +93,11 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
               );
-              context.go(AppRoutes.login);
+              if (GoRouter.maybeOf(context) != null) {
+                context.go(AppRoutes.login);
+              } else {
+                Navigator.of(context).maybePop();
+              }
             }
           },
           builder: (context, state) {
@@ -285,8 +295,9 @@ class _RegisterPageState extends State<RegisterPage> {
                                 ),
                         ),
                         SizedBox(height: context.hp(2)),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                        Wrap(
+                          alignment: WrapAlignment.center,
+                          crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
                             Text(
                               "Already have an account?",

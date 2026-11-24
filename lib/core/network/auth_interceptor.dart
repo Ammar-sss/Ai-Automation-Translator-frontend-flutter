@@ -35,7 +35,8 @@ class AuthInterceptor extends QueuedInterceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    if (err.response?.statusCode == 401 || err.response?.statusCode == 403) {
+    // Only refresh on 401 Unauthorized. 403 Forbidden indicates permission issues, not expired token.
+    if (err.response?.statusCode == 401) {
       if (err.requestOptions.path.contains(ApiEndpoint.refresh) ||
           err.requestOptions.path.contains(ApiEndpoint.login)) {
         await storage.clearToken();
@@ -77,7 +78,21 @@ class AuthInterceptor extends QueuedInterceptor {
           final originalOptions = err.requestOptions;
           originalOptions.headers["Authorization"] = "Bearer $newAccessToken";
 
-          final retryResponse = await dio.fetch(originalOptions);
+          // Use a separate Dio instance for retry to prevent deadlock/refresh loop with AuthInterceptor
+          final retryDio = Dio(
+            BaseOptions(
+              baseUrl: Env.baseUrl,
+              connectTimeout: Env.connectTimeout,
+              receiveTimeout: Env.receiveTimeout,
+              headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization": "Bearer $newAccessToken",
+              },
+            ),
+          );
+
+          final retryResponse = await retryDio.fetch(originalOptions);
           return handler.resolve(retryResponse);
         }
       } catch (e) {
