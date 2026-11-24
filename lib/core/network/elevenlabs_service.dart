@@ -2,21 +2,20 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:crypto/crypto.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:dio/dio.dart';
 
 import '../config/secrets.dart';
 
 class ElevenLabsService {
   final Dio _dio;
-  // Replace with your ElevenLabs API Key or inject via secure storage / env
   final String _apiKey = Secrets.elevenLabApi;
   // Default voice ID (e.g. Rachel, Adam, or custom voice ID)
   final String _defaultVoiceId = 'JBFqnCBsd6RMkjVDRZzb';
 
-  ElevenLabsService(this._dio);
+  ElevenLabsService([Dio? dio]) : _dio = dio ?? Dio();
 
   Future<File> _cacheFile(String text, String voiceId) async {
     final base = await getApplicationSupportDirectory();
@@ -44,7 +43,7 @@ class ElevenLabsService {
       final data = {
         'text': text,
         'model_id': 'eleven_v4',
-        ...languageCode != null ? {'language_code': languageCode} : {},
+        ...?languageCode == null ? null : {'language_code': languageCode},
         'voice_settings': {'stability': 0.5, 'similarity_boost': 0.75},
       };
 
@@ -61,7 +60,7 @@ class ElevenLabsService {
         ),
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 && response.data != null) {
         final bytes = Uint8List.fromList(response.data);
         await file.writeAsBytes(bytes, flush: true);
         return bytes;

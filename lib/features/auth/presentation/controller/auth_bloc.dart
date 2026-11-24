@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smart_translator_test/core/storage/app_database.dart';
 import 'package:smart_translator_test/core/storage/secure_storage_service.dart';
 import 'package:smart_translator_test/features/auth/data/models/login_request.dart';
 import 'package:smart_translator_test/features/auth/data/models/refresh_token_request.dart';
@@ -15,9 +16,14 @@ part 'auth_state.dart';
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository authRepository;
   final SecureStorageService storageService;
+  final AppDatabase appDatabase;
 
-  AuthBloc({required this.authRepository, required this.storageService})
-    : super(AuthInitial()) {
+  AuthBloc({
+    required this.authRepository,
+    required this.storageService,
+    AppDatabase? appDatabase,
+  }) : appDatabase = appDatabase ?? AppDatabase.instance,
+       super(AuthInitial()) {
     on<AuthCheckRequested>(_authCheckRequested);
     on<AuthLoginRequested>(_authLoginRequested);
     on<AuthRegisterRequested>(_authRegisterRequested);
@@ -91,6 +97,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } catch (_) {
     } finally {
       await storageService.clearToken();
+      try {
+        await appDatabase.clearAllData();
+      } catch (e) {
+        debugPrint('Failed to clear local database on logout: $e');
+      }
       emit(AuthUnAuthenticated());
     }
   }
@@ -103,6 +114,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final refreshToken = await storageService.getRefreshToken();
       if (refreshToken == null || refreshToken.isEmpty) {
+        await storageService.clearToken();
+        try {
+          await appDatabase.clearAllData();
+        } catch (_) {}
         emit(AuthUnAuthenticated());
         return;
       }
@@ -113,6 +128,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } catch (e) {
       final error = e.toString().replaceAll('Exception: ', '');
       emit(AuthFailure(message: error));
+      await storageService.clearToken();
+      try {
+        await appDatabase.clearAllData();
+      } catch (_) {}
       emit(AuthUnAuthenticated());
     }
   }

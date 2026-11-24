@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smart_translator_test/core/error/app_exception.dart';
 import 'package:smart_translator_test/core/storage/app_database.dart';
 import 'package:smart_translator_test/features/vocabulary/data/models/example.dart';
 import 'package:smart_translator_test/features/vocabulary/data/models/example_definitions.dart';
@@ -91,104 +92,93 @@ class VocabularyCubit extends Cubit<VocabularyState> {
       final response = await vocabularyRepository.confirmTermSave(
         saveTermRequest,
       );
-      if (response.data != null) {
-        // Ensure sourceLanguage and targetLanguage are populated even if backend DTO omits them
-        final serverTerm = response.data!;
-        final termWithLangs = Term(
-          id: serverTerm.id,
-          termWord: serverTerm.termWord,
-          sourceLanguage:
-              (serverTerm.sourceLanguage != null &&
-                  serverTerm.sourceLanguage!.isNotEmpty)
-              ? serverTerm.sourceLanguage
-              : saveTermRequest.sourceLanguage.backendValue,
-          targetLanguage:
-              (serverTerm.targetLanguage != null &&
-                  serverTerm.targetLanguage!.isNotEmpty)
-              ? serverTerm.targetLanguage
-              : saveTermRequest.targetLanguage.backendValue,
-          termDefinitions: serverTerm.termDefinitions,
-          termExamples: serverTerm.termExamples,
-          exampleDefinitions: serverTerm.exampleDefinitions,
-        );
+
+      if (response.statusCode == 409) {
+        return await _handleExistingTermConflict(saveTermRequest);
+      }
+
+      if (response.data != null ||
+          response.statusCode == 200 ||
+          response.statusCode == 201) {
+        final serverTerm = response.data;
+        final termWithLangs = serverTerm != null
+            ? Term(
+                id: serverTerm.id,
+                termWord: serverTerm.termWord,
+                sourceLanguage:
+                    (serverTerm.sourceLanguage != null &&
+                        serverTerm.sourceLanguage!.isNotEmpty)
+                    ? serverTerm.sourceLanguage
+                    : saveTermRequest.sourceLanguage.backendValue,
+                targetLanguage:
+                    (serverTerm.targetLanguage != null &&
+                        serverTerm.targetLanguage!.isNotEmpty)
+                    ? serverTerm.targetLanguage
+                    : saveTermRequest.targetLanguage.backendValue,
+                termDefinitions: serverTerm.termDefinitions,
+                termExamples: serverTerm.termExamples,
+                exampleDefinitions: serverTerm.exampleDefinitions,
+              )
+            : _mapSaveRequestToTerm(saveTermRequest);
 
         // Update local list instead of re-fetching all terms from the server
-        _cachedTerms = [termWithLangs, ..._cachedTerms];
+        _cachedTerms = [
+          termWithLangs,
+          ..._cachedTerms.where((t) => t.termWord != termWithLangs.termWord),
+        ];
         try {
-          await AppDatabase.instance.updateTerm(termWithLangs);
+          if (termWithLangs.id > 0) {
+            await AppDatabase.instance.updateTerm(termWithLangs);
+          }
         } catch (_) {}
         emit(TermSavedSuccess(term: termWithLangs));
         return termWithLangs;
-      } else if (response.message.toLowerCase().contains('success') ||
-          response.message.toLowerCase().contains('saved')) {
-        try {
-          final allResponse = await vocabularyRepository.getAllTerms();
-          if (allResponse.data != null) {
-            _cachedTerms = allResponse.data!;
-            final existing = _cachedTerms.firstWhere(
-              (t) =>
-                  t.termWord.trim().toLowerCase() ==
-                      saveTermRequest.termWord.trim().toLowerCase() &&
-                  (t.targetLanguage == null ||
-                      t.targetLanguage ==
-                          saveTermRequest.targetLanguage.backendValue),
-              orElse: () => _mapSaveRequestToTerm(saveTermRequest),
-            );
-            if (existing.id > 0) {
-              try {
-                await AppDatabase.instance.updateTerm(existing);
-              } catch (_) {}
-            }
-            emit(TermSavedSuccess(term: existing));
-            return existing;
-          }
-        } catch (_) {}
-        final fallbackTerm = _mapSaveRequestToTerm(saveTermRequest);
-        emit(TermSavedSuccess(term: fallbackTerm));
-        return fallbackTerm;
       } else {
         final errorMsg = response.message.isNotEmpty
             ? response.message
             : 'Failed to sync term online';
         emit(VocabularyFailure(message: errorMsg));
-        throw Exception(errorMsg);
+        throw AppException(errorMsg, statusCode: response.statusCode);
       }
     } catch (e) {
-      final error = e.toString().replaceAll("Exception: ", "");
-      if (error.toLowerCase().contains('already exists') ||
-          error.contains('409') ||
-          error.toLowerCase().contains('success') ||
-          error.toLowerCase().contains('saved')) {
-        try {
-          final allResponse = await vocabularyRepository.getAllTerms();
-          if (allResponse.data != null) {
-            _cachedTerms = allResponse.data!;
-            final existing = _cachedTerms.firstWhere(
-              (t) =>
-                  t.termWord.trim().toLowerCase() ==
-                      saveTermRequest.termWord.trim().toLowerCase() &&
-                  (t.targetLanguage == null ||
-                      t.targetLanguage ==
-                          saveTermRequest.targetLanguage.backendValue),
-              orElse: () => _mapSaveRequestToTerm(saveTermRequest),
-            );
-            if (existing.id > 0) {
-              try {
-                await AppDatabase.instance.updateTerm(existing);
-              } catch (_) {}
-            }
-            emit(TermSavedSuccess(term: existing));
-            return existing;
-          }
-        } catch (_) {}
-        // Fallback if getAllTerms fails
-        final fallbackTerm = _mapSaveRequestToTerm(saveTermRequest);
-        emit(TermSavedSuccess(term: fallbackTerm));
-        return fallbackTerm;
+      final appEx = e is AppException ? e : ApiErrorHandler.handle(e);
+      if (appEx.statusCode == 409) {
+        return await _handleExistingTermConflict(saveTermRequest);
       }
-      emit(VocabularyFailure(message: error));
+      emit(VocabularyFailure(message: appEx.message));
       rethrow;
     }
+  }
+
+  Future<Term> _handleExistingTermConflict(
+    SaveTermRequest saveTermRequest,
+  ) async {
+    try {
+      final allResponse = await vocabularyRepository.getAllTerms();
+      if (allResponse.data != null) {
+        _cachedTerms = allResponse.data!;
+        final existing = _cachedTerms.firstWhere(
+          (t) =>
+              t.termWord.trim().toLowerCase() ==
+                  saveTermRequest.termWord.trim().toLowerCase() &&
+              (t.targetLanguage == null ||
+                  t.targetLanguage ==
+                      saveTermRequest.targetLanguage.backendValue),
+          orElse: () => _mapSaveRequestToTerm(saveTermRequest),
+        );
+        if (existing.id > 0) {
+          try {
+            await AppDatabase.instance.updateTerm(existing);
+          } catch (_) {}
+        }
+        emit(TermSavedSuccess(term: existing));
+        return existing;
+      }
+    } catch (_) {}
+    // Fallback if getAllTerms fails
+    final fallbackTerm = _mapSaveRequestToTerm(saveTermRequest);
+    emit(TermSavedSuccess(term: fallbackTerm));
+    return fallbackTerm;
   }
 
   Future<void> getTermById(int id) async {
@@ -206,18 +196,17 @@ class VocabularyCubit extends Cubit<VocabularyState> {
     }
   }
 
-  Future<void> getAllTerms() async {
+  Future<void> getAllTerms({bool force = false}) async {
+    if (!force && state is VocabularyLoaded && _cachedTerms.isNotEmpty) {
+      return;
+    }
     emit(VocabularyLoading());
     try {
       final response = await vocabularyRepository.getAllTerms();
       if (response.data != null) {
         _cachedTerms = response.data!;
         try {
-          for (final t in _cachedTerms) {
-            if (t.id > 0) {
-              await AppDatabase.instance.updateTerm(t);
-            }
-          }
+          await AppDatabase.instance.updateTerms(_cachedTerms);
         } catch (_) {}
         emit(VocabularyLoaded(terms: _cachedTerms));
       } else {

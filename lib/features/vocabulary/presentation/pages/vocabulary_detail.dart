@@ -1,9 +1,9 @@
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:dio/dio.dart';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:smart_translator_test/app_snackbar.dart';
 import 'package:smart_translator_test/core/network/elevenlabs_service.dart';
+import 'package:smart_translator_test/core/services/audio_player_service.dart';
 import 'package:smart_translator_test/core/util/language_detect.dart';
 import 'package:smart_translator_test/features/vocabulary/data/models/term.dart';
 
@@ -12,7 +12,6 @@ class VocabularyDetail extends StatelessWidget {
   VocabularyDetail({super.key, required this.term});
 
   final ElevenLabsService _elevenLabsService = ElevenLabsService(Dio());
-  final AudioPlayer _audioPlayer = AudioPlayer();
 
   /// Opens the detail as a bottom sheet.
   static Future<void> show(BuildContext context, Term term) {
@@ -44,8 +43,7 @@ class VocabularyDetail extends StatelessWidget {
       );
       if (!context.mounted) return;
       if (audioBytes != null) {
-        await _audioPlayer.stop();
-        await _audioPlayer.play(BytesSource(audioBytes));
+        await AudioPlayerService().playBytes(audioBytes);
       } else {
         showAppSnackBar(context, 'Failed to generate speech.');
       }

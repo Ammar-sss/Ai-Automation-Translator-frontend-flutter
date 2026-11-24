@@ -103,6 +103,7 @@ class _MainShellState extends State<MainShell> {
         } else if (authState is AuthUnAuthenticated) {
           context.read<UserCubit>().reset();
           context.read<VocabularyCubit>().reset();
+          context.read<FolderCubit>().reset();
         }
       },
       child: Scaffold(

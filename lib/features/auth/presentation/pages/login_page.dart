@@ -208,8 +208,9 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                         ),
                         SizedBox(height: context.hp(2.5)),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                        Wrap(
+                          alignment: WrapAlignment.center,
+                          crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
                             Text(
                               "Don't have an account?",

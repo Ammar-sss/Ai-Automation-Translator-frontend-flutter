@@ -1,4 +1,4 @@
-import 'package:smart_translator_test/core/storage/secure_storage_service.dart';
+import 'package:smart_translator_test/core/error/app_exception.dart';
 import 'package:smart_translator_test/features/auth/data/datasource/auth_api_service.dart';
 
 import '../../../user/data/models/user.dart';
@@ -9,48 +9,57 @@ import '../models/register_request.dart';
 
 abstract class AuthRemoteDataSource {
   Future<LoginResponse> login(LoginRequest loginRequest);
-  Future<User> register(RegisterRequest registerRequest);
-  Future<LoginResponse> refreshToken(RefreshTokenRequest request);
   Future<void> logout(RefreshTokenRequest request);
+  Future<LoginResponse> refreshToken(RefreshTokenRequest request);
+  Future<User> register(RegisterRequest registerRequest);
 }
 
 class AuthRemoteDataSourceImpl extends AuthRemoteDataSource {
   final AuthApiService _apiService;
-  final SecureStorageService _storageService;
 
-  new({required this._apiService, required this._storageService});
+  AuthRemoteDataSourceImpl({required this._apiService});
 
   @override
   Future<LoginResponse> login(LoginRequest loginRequest) async {
     final apiResponse = await _apiService.login(loginRequest);
-    final loginResponse = apiResponse.data!;
-    await _storageService.saveToken(
-      loginResponse.token,
-      loginResponse.refreshToken,
-    );
-    return loginResponse;
+    if (apiResponse.data == null) {
+      throw AppException(
+        apiResponse.message.isNotEmpty
+            ? apiResponse.message
+            : 'Login failed: no data returned',
+      );
+    }
+    return apiResponse.data!;
   }
 
   @override
   Future<void> logout(RefreshTokenRequest request) async {
     await _apiService.logout(request);
-    await _storageService.clearToken();
   }
 
   @override
   Future<LoginResponse> refreshToken(RefreshTokenRequest request) async {
     final apiResponse = await _apiService.refreshToken(request);
-    final loginResponse = apiResponse.data!;
-    await _storageService.saveToken(
-      loginResponse.token,
-      loginResponse.refreshToken,
-    );
-    return loginResponse;
+    if (apiResponse.data == null) {
+      throw AppException(
+        apiResponse.message.isNotEmpty
+            ? apiResponse.message
+            : 'Token refresh failed: no data returned',
+      );
+    }
+    return apiResponse.data!;
   }
 
   @override
   Future<User> register(RegisterRequest registerRequest) async {
     final apiResponse = await _apiService.register(registerRequest);
+    if (apiResponse.data == null) {
+      throw AppException(
+        apiResponse.message.isNotEmpty
+            ? apiResponse.message
+            : 'Registration failed: no user data returned',
+      );
+    }
     return apiResponse.data!;
   }
 }
