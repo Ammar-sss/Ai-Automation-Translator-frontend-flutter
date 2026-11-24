@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "code-smell": {
+      "version": "2.0.1",
+      "installedAt": "2026-11-23T16:38:17.229Z",
+      "platform": "junie"
+    }
+  }
+}

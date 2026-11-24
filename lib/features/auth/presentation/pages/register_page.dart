@@ -74,6 +74,20 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
               );
+            } else if (state is AuthRegistrationSuccess) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  behavior: SnackBarBehavior.floating,
+                  content: const Text(
+                    'Account created successfully! Please sign in.',
+                  ),
+                  backgroundColor: Colors.green,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              );
+              context.go(AppRoutes.login);
             }
           },
           builder: (context, state) {

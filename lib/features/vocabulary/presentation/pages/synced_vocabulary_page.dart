@@ -179,6 +179,10 @@ class _SyncedVocabularyPageState extends State<SyncedVocabularyPage> {
 
                     if (isLoading) {
                       return Skeletonizer(
+                        effect: ShimmerEffect(
+                          baseColor: Colors.white.withValues(alpha: 0.15),
+                          highlightColor: Colors.white.withValues(alpha: 0.35),
+                        ),
                         child: _buildList(
                           TermTile.placeholders,
                           skeleton: true,

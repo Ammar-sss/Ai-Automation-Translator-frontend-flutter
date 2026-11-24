@@ -1,13 +1,12 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:smart_translator_test/features/practice/presentation/widgets/recall_button.dart';
 
-import 'recall_button.dart';
-
-class PracticeActionControls extends StatelessWidget {
+class PracticeRatingControls extends StatelessWidget {
   final VoidCallback onAgain;
   final VoidCallback onHard;
   final VoidCallback onGotIt;
 
-  const PracticeActionControls({
+  const PracticeRatingControls({
     super.key,
     required this.onAgain,
     required this.onHard,
@@ -20,6 +19,7 @@ class PracticeActionControls extends StatelessWidget {
     final text = Theme.of(context).textTheme;
 
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -41,18 +41,9 @@ class PracticeActionControls extends StatelessWidget {
                 letterSpacing: 0.5,
               ),
             ),
-            const SizedBox(width: 6),
-            Container(
-              width: 4,
-              height: 4,
-              decoration: BoxDecoration(
-                color: scheme.onSurfaceVariant,
-                shape: BoxShape.circle,
-              ),
-            ),
           ],
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 16),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
@@ -60,6 +51,7 @@ class PracticeActionControls extends StatelessWidget {
               icon: Icons.close_rounded,
               label: 'Again',
               sublabel: '<1min',
+              size: 64,
               iconColor: scheme.onErrorContainer,
               backgroundColor: scheme.errorContainer,
               onTap: onAgain,
@@ -68,31 +60,36 @@ class PracticeActionControls extends StatelessWidget {
               icon: Icons.access_time_rounded,
               label: 'Hard',
               sublabel: '10 min',
+              size: 48,
               iconColor: scheme.onSurfaceVariant,
               backgroundColor: scheme.surfaceContainerHigh,
+              labelColor: scheme.onSurfaceVariant,
               onTap: onHard,
             ),
             RecallButton(
               icon: Icons.check_rounded,
               label: 'Got It',
               sublabel: '3 days',
+              size: 64,
               iconColor: scheme.onPrimary,
               backgroundColor: scheme.primary,
-              isFeatured: true,
+              labelColor: scheme.primary,
+              sublabelColor: scheme.primary,
+              glow: true,
               onTap: onGotIt,
             ),
           ],
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 14),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.pie_chart_outline_rounded,
-                  size: 13,
-                  color: scheme.onSurfaceVariant,
+                const Icon(
+                  Icons.check_circle_rounded,
+                  size: 14,
+                  color: Colors.green,
                 ),
                 const SizedBox(width: 5),
                 Text(

@@ -31,9 +31,8 @@ class _MainShellState extends State<MainShell> {
 
   void _fetchProfileIfNeeded() {
     final userCubit = context.read<UserCubit>();
-    if (userCubit.state is! UserLoaded && userCubit.state is! UserLoading) {
-      userCubit.getProfile();
-    }
+    userCubit.getProfile(forceRefresh: true);
+    context.read<VocabularyCubit>().getAllTerms();
   }
 
   String _titleFor(int index) =>
@@ -99,7 +98,12 @@ class _MainShellState extends State<MainShell> {
 
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, authState) {
-        if (authState is AuthAuthenticated) _fetchProfileIfNeeded();
+        if (authState is AuthAuthenticated) {
+          _fetchProfileIfNeeded();
+        } else if (authState is AuthUnAuthenticated) {
+          context.read<UserCubit>().reset();
+          context.read<VocabularyCubit>().reset();
+        }
       },
       child: Scaffold(
         endDrawerEnableOpenDragGesture: true,
@@ -139,31 +143,7 @@ class _MainShellState extends State<MainShell> {
             onVocabularySynced: _onVocabularySynced,
           ),
         ),
-        body: RepaintBoundary(
-          child: OfflineBanner(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 240),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.easeInCubic,
-              transitionBuilder: (child, animation) {
-                return FadeTransition(
-                  opacity: animation,
-                  child: SlideTransition(
-                    position: Tween<Offset>(
-                      begin: const Offset(0.04, 0.0),
-                      end: Offset.zero,
-                    ).animate(animation),
-                    child: child,
-                  ),
-                );
-              },
-              child: KeyedSubtree(
-                key: ValueKey<int>(shell.currentIndex),
-                child: shell,
-              ),
-            ),
-          ),
-        ),
+        body: RepaintBoundary(child: OfflineBanner(child: shell)),
         bottomNavigationBar: NavigationBar(
           selectedIndex: shell.currentIndex,
           labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
