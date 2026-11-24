@@ -49,5 +49,3 @@ app.*.map.json
 
 # Agent related
 .agents/
-lib/core/config/secrets.dart
-
